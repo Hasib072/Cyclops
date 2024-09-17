@@ -1,0 +1,207 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #000;
+    margin: 0;
+  }
+  
+  .container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .form-container {
+    width: 40%;
+    background: linear-gradient(
+      0deg,
+      #34263d 0%,
+      #1f1925 92%,
+      #1d1823 100%
+    );
+    color: #fff;
+    padding: 4% 5%;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+  }
+  
+  .form-container h1 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    margin-top: 20%;
+  }
+  
+  .form-container p {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    color: whitesmoke;
+  }
+  
+  .input-container {
+    width: 100%;
+    margin-bottom: 15px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .input-container input {
+    width: 80%; /* Reduced width */
+    max-width: 300px; /* Max width for smaller screens */
+    height: 35px;
+    padding: 8px;
+    border-radius: 5px;
+    border-bottom: 2px solid #6c6c6c;
+    border-radius: 0px;
+    border: none;
+    background-color: transparent;
+    color: #fff;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    border-bottom: 2px solid #6c6c6c;
+  }
+  
+  .input-container input:focus {
+    outline: 2px solid #7b51a7;
+  }
+  
+  .input-container .icon {
+    position: absolute;
+    right: 15%;
+    color: #fff;
+  }
+  
+  button {
+    width: 80%; /* Reduced width */
+    max-width: 300px; /* Max width for smaller screens */
+    height: 35px;
+    padding: 0;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 15px;
+  }
+  
+  button.signin-button {
+    background: linear-gradient(
+      90deg,
+      #2a1a41 0%,
+      #4a2e64 56%,
+      #945cb7 100%
+    );
+    color: #fff;
+  }
+  
+  button.signin-button:hover {
+    background: linear-gradient(
+      90deg,
+      #2a1a41 0%,
+      #4a2e64 56%,
+      #7a3b8e 100%
+    );
+  }
+  
+  button.signin-button:disabled {
+    background-color: #333;
+    cursor: not-allowed;
+  }
+  
+  button.signup-button {
+    background: linear-gradient(
+      90deg,
+      #2a1a41 0%,
+      #4a2e64 56%,
+      #945cb7 100%
+    );
+    color: #fff;
+  }
+  
+  button.signup-button:hover {
+    background: linear-gradient(
+      90deg,
+      #2a1a41 0%,
+      #4a2e64 56%,
+      #7a3b8e 100%
+    );
+  }
+  
+  button.signup-button:disabled {
+    background-color: #333;
+    cursor: not-allowed;
+  }
+  
+  .toggle-link {
+    margin-top: 15px;
+    font-size: 0.8rem;
+    color: whitesmoke;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  .toggle-link:hover {
+    text-decoration: underline;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 70%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 0;
+    overflow: hidden;
+  }
+  
+  .overlay img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Logo styling */
+  .logo {
+    position: absolute;
+    margin: 0px;
+    top: -10px; /* Adjust top spacing */
+    right: 40px; /* Adjust right spacing */
+    z-index: 2; /* Make sure the logo stays on top */
+    width: 350px; /* Increased width */
+  }
+  
+  .form-container.hidden {
+    display: none;
+  }
+  
+  .background-cover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30%;
+    height: 100%;
+    background-color: #000;
+    z-index: -1;
+  }
+  

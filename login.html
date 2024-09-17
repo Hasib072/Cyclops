@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In/Sign Up</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <link rel="stylesheet" href="design.css" />
+  </head>
+  <body>
+    <div class="background-cover"></div>
+    <div class="container">
+      <!-- Logo at the top right -->
+      <img src="images/Cyclops_logo.svg" alt="Logo" class="logo" />
+
+      <!-- Sign In Form -->
+      <div id="signin-form" class="form-container">
+        <h1>Welcome Back</h1>
+        <p>We're glad to see you again!</p>
+        <div class="input-container">
+          <input
+            type="email"
+            placeholder="Email ID"
+            required
+            aria-label="Email"
+          />
+          <i class="fas fa-envelope icon"></i>
+        </div>
+        <div class="input-container">
+          <input
+            type="password"
+            placeholder="Password"
+            required
+            minlength="6"
+            aria-label="Password"
+          />
+          <i class="fas fa-key icon"></i>
+        </div>
+        <button class="signin-button" onclick="signin()">Sign In</button>
+        <a class="toggle-link" onclick="toggleForm()"
+          >Don't have an account? <i>Sign Up</i></a
+        >
+      </div>
+
+      <!-- Sign Up Form -->
+      <div id="signup-form" class="form-container hidden">
+        <h1>Create Account</h1>
+        <p>Join us today!</p>
+        <div class="input-container">
+          <input type="text" placeholder="Name" required aria-label="Name" />
+          <i class="fas fa-user icon"></i>
+        </div>
+        <div class="input-container">
+          <input
+            type="email"
+            placeholder="Email ID"
+            required
+            aria-label="Email"
+          />
+          <i class="fas fa-envelope icon"></i>
+        </div>
+        <div class="input-container">
+          <input
+            type="password"
+            placeholder="Password"
+            required
+            minlength="6"
+            aria-label="Password"
+          />
+          <i class="fas fa-key icon"></i>
+        </div>
+        <button class="signup-button" onclick="signup()">Sign Up</button>
+        <a class="toggle-link" onclick="toggleForm()"
+          >Already have an account? <i>Sign in</i></a
+        >
+      </div>
+
+      <!-- Overlay Section -->
+      <div class="overlay">
+        <img src="images/Group 1604.png" alt="Background" />
+      </div>
+    </div>
+
+    <script>
+      function signin() {
+        alert("Sign In successful");
+      }
+
+      function signup() {
+        alert("Sign Up successful");
+      }
+
+      function toggleForm() {
+        document.getElementById("signin-form").classList.toggle("hidden");
+        document.getElementById("signup-form").classList.toggle("hidden");
+      }
+    </script>
+  </body>
+</html>
