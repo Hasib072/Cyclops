@@ -1,0 +1,37 @@
+.FontHead01{
+    font-family: "Open Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-size: 2.4rem;
+    font-weight: bold;
+    color: white;
+}
+
+.FontBody01{
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-size: 1rem;
+    color: white;
+    text-decoration: none;
+}
+
+.button-no-outline {
+    border-color: #291f31 !important;
+    border-radius: 15px !important;
+    box-shadow: none !important;
+    border: none;
+  }
+
+  .button-no-outline:focus {
+    border-color: #472a60 !important;
+    box-shadow: none !important;
+  }
+
+  .custom-placeholder {
+    color: #472a60; /* Input text color */
+  }
+
+  .custom-placeholder::placeholder {
+    color: #ffffff; /* Placeholder text color */
+    opacity: 1;
+  }
+  

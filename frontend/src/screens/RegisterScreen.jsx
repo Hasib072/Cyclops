@@ -45,10 +45,18 @@ const RegisterScreen = () => {
 
    return (
       <FormContainer>
-         <h1>Register</h1>
+         <div
+            style={{
+               marginTop: '40%',
+               marginLeft: '24%',
+               marginRight: '24%',
+            }}
+         >
+         <h1 className='FontHead01'>Create Account</h1>
+         <p className='FontBody01'>Join us Today.</p>
          <Form onSubmit={submitHandler}>
             <Form.Group className='my-2' controlId='name'>
-               <Form.Label>Name</Form.Label>
+               {/* <Form.Label>Name</Form.Label> */}
                <Form.Control
                   type='name'
                   placeholder='Enter name'
@@ -58,7 +66,7 @@ const RegisterScreen = () => {
             </Form.Group>
 
             <Form.Group className='my-2' controlId='email'>
-               <Form.Label>Email Address</Form.Label>
+               {/* <Form.Label>Email Address</Form.Label> */}
                <Form.Control
                   type='email'
                   placeholder='Enter email'
@@ -68,7 +76,7 @@ const RegisterScreen = () => {
             </Form.Group>
 
             <Form.Group className='my-2' controlId='password'>
-               <Form.Label>Password</Form.Label>
+               {/* <Form.Label>Password</Form.Label> */}
                <Form.Control
                   type='password'
                   placeholder='Enter password'
@@ -77,7 +85,7 @@ const RegisterScreen = () => {
                ></Form.Control>
             </Form.Group>
             <Form.Group className='my-2' controlId='confirmPassword'>
-               <Form.Label>Confirm Password</Form.Label>
+               {/* <Form.Label>Confirm Password</Form.Label> */}
                <Form.Control
                   type='password'
                   placeholder='Confirm password'
@@ -94,10 +102,11 @@ const RegisterScreen = () => {
          </Form>
 
          <Row className='py-3'>
-            <Col>
-               Already have an account? <Link to={`/login`}>Login</Link>
+            <Col className='FontBody01'>
+               Already have an account? <Link style={{ textDecoration: 'none', color: 'white', fontStyle: 'italic' }} to={`/login`}>Login</Link>
             </Col>
          </Row>
+         </div>
       </FormContainer>
    );
 };
