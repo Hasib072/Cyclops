@@ -6,6 +6,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLoginMutation } from '../slices/usersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 import { toast } from 'react-toastify';
+import mail_ico from '../assets/icons/mail.png'
+import pass_ico from '../assets/icons/pass.png'
+
 // import Loader from '../components/Loader'; // Removed the Loader import
 
 const LoginScreen = () => {
@@ -40,46 +43,91 @@ const LoginScreen = () => {
       <FormContainer>
          <div
             style={{
-               marginTop: '40%',
+               marginTop: '35%',
                marginLeft: '24%',
                marginRight: '24%',
             }}
          >
             <h1 className='FontHead01'>Welcome Back</h1>
             <p className='FontBody01' style={{ marginBottom: '50px' }}>
-               We're glad to see you again!
+               &nbsp;We're glad to see you again!
             </p>
 
             <Form onSubmit={submitHandler}>
-               <Form.Group className='my-2' controlId='email'>
-                  {/* <Form.Label>Email Address</Form.Label> */}
-                  <Form.Control
-                     type='email'
-                     placeholder='Enter email'
-                     value={email}
-                     onChange={(e) => setEmail(e.target.value)}
-                     style={{
-                        marginBottom: '20px',
-                        height: '50px',
-                        backgroundColor: '#472a6',
-                        color: 'white',
-                        borderColor: '#472a6000',
-                     }}
-                  ></Form.Control>
+            <style>{`
+              .input-with-icon {
+                position: relative;
+              }
+              .input-icon {
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                height: 24px; /* Adjust the size of the icon as needed */
+                width: 24px;
+              }
+              .my-placeholder-class::placeholder {
+                color: white;
+              }
+              .my-placeholder-class:focus {
+                outline: none;
+                box-shadow: none;
+                border-bottom-color: #c378f4;
+              }
+            `}</style>
+
+               <Form.Group controlId="email">
+               <div className="input-with-icon">
+                 <Form.Control
+                   type="email"
+                   placeholder="Enter email"
+                   value={email}
+                   onChange={(e) => setEmail(e.target.value)}
+                   className="my-placeholder-class"
+                   style={{
+                     marginBottom: '40px',
+                     height: '50px',
+                     backgroundColor: '#472a6000',
+                     color: 'white',
+                     border: 'none',
+                     borderBottom: '2px solid #8754a9',
+                     borderRadius: '0',
+                     paddingRight: '45px', // Add padding to prevent text overlap
+                   }}
+                 />
+                 <img
+                   src={mail_ico} // Replace with your logo path
+                   alt="Logo"
+                   className="input-icon"
+                 />
+               </div>
                </Form.Group>
 
                <Form.Group className='my-2' controlId='password'>
-                  {/* <Form.Label>Password</Form.Label> */}
+                  <div className="input-with-icon">
                   <Form.Control
                      type='password'
                      placeholder='Enter password'
                      value={password}
                      onChange={(e) => setPassword(e.target.value)}
+                     className="my-placeholder-class"
                      style={{
-                        marginBottom: '40px',
+                        marginBottom: '70px',
                         height: '50px',
-                     }}
-                  ></Form.Control>
+                        backgroundColor: '#472a6000',
+                        color: 'white',
+                        border: 'none',
+                        borderBottom: '2px solid #8754a9',
+                        borderRadius: '0',
+                        paddingRight: '45px', // Add padding to prevent text overlap
+                      }}
+                  />
+                  <img
+                   src={pass_ico} // Replace with your logo path
+                   alt="Logo"
+                   className="input-icon"
+                 />
+                  </div>
                </Form.Group>
 
                <Button
@@ -93,18 +141,13 @@ const LoginScreen = () => {
                      display: 'block', // Centers the button horizontally
                      marginLeft: 'auto',
                      marginRight: 'auto',
-                     fontOpticalSizing: 'auto',
                      fontSize: '1.2rem',
                      fontWeight: 'bold',
-                     background: `
-                        rgb(29,24,35),
-                        linear-gradient(84deg, rgba(29,24,35,1) 0%, rgba(31,25,37,1) 20%, rgba(52,38,61,1) 90%)
-                     `,
-                     width: '280px',
+                     width: '80%',
                      height: '55px',
                   }}
                >
-                  Sign In
+                  Log In
                </Button>
             </Form>
 

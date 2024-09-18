@@ -18,7 +18,11 @@
     border-color: #291f31 !important;
     border-radius: 15px !important;
     box-shadow: none !important;
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
     border: none;
+    background: rgb(29,24,35);
+    background: linear-gradient(144deg, rgba(42,26,65,1) 14%, rgba(74,46,100,1) 40%, rgba(148,92,183,1) 100%);
   }
 
   .button-no-outline:focus {
@@ -26,18 +30,48 @@
     box-shadow: none !important;
   }
 
-  .custom-placeholder {
-    color: #472a60; /* Input text color */
-  }
 
-  .custom-placeholder::placeholder {
-    color: #ffffff; /* Placeholder text color */
-    opacity: 1;
-  }
-  
   /* .tempNav{
     background-color: #25252500 !important;
     position: absolute;
   } */
 
-  
+  /* Laptops (Between 992px and 1199px) */
+@media (max-width: 1199px) {
+  .FontHead01 {
+      font-size: 2.2rem;
+  }
+  .FontBody01 {
+      font-size: 0.95rem;
+  }
+}
+
+/* Tablets (Between 768px and 991px) */
+@media (max-width: 1025px) {
+  .FontHead01 {
+      font-size: 1.5rem;
+  }
+  .FontBody01 {
+      font-size: 0.9rem;
+  }
+}
+
+/* Mobile Devices (Between 576px and 767px) */
+@media (max-width: 769px) {
+  .FontHead01 {
+      font-size: 1rem;
+  }
+  .FontBody01 {
+      font-size: 0.65rem;
+  }
+}
+
+/* Small Mobile Devices (<576px) */
+@media (max-width: 575px) {
+  .FontHead01 {
+      font-size: 1.6rem;
+  }
+  .FontBody01 {
+      font-size: 0.8rem;
+  }
+}
