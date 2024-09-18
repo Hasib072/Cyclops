@@ -6,7 +6,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLoginMutation } from '../slices/usersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 import { toast } from 'react-toastify';
-import Loader from '../components/Loader';
+import mail_ico from '../assets/icons/mail.png'
+import pass_ico from '../assets/icons/pass.png'
+
+// import Loader from '../components/Loader'; // Removed the Loader import
 
 const LoginScreen = () => {
    const [email, setEmail] = useState('');
@@ -31,7 +34,6 @@ const LoginScreen = () => {
          dispatch(setCredentials({ ...res }));
          navigate('/');
       } catch (err) {
-         // eslint-disable-next-line no-debugger
          console.log(err);
          toast.error(err?.data?.message || err.error || err.status);
       }
@@ -39,46 +41,135 @@ const LoginScreen = () => {
 
    return (
       <FormContainer>
-         <h1>Sign In</h1>
+         <div
+            style={{
+               marginTop: '35%',
+               marginLeft: '24%',
+               marginRight: '24%',
+            }}
+         >
+            <h1 className='FontHead01'>Welcome Back</h1>
+            <p className='FontBody01' style={{ marginBottom: '50px' }}>
+               &nbsp;We're glad to see you again!
+            </p>
 
-         <Form onSubmit={submitHandler}>
-            <Form.Group className='my-2' controlId='email'>
-               <Form.Label>Email Address</Form.Label>
-               <Form.Control
-                  type='email'
-                  placeholder='Enter email'
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-               ></Form.Control>
-            </Form.Group>
+            <Form onSubmit={submitHandler}>
+            <style>{`
+              .input-with-icon {
+                position: relative;
+              }
+              .input-icon {
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                height: 24px; /* Adjust the size of the icon as needed */
+                width: 24px;
+              }
+              .my-placeholder-class::placeholder {
+                color: white;
+              }
+              .my-placeholder-class:focus {
+                outline: none;
+                box-shadow: none;
+                border-bottom-color: #c378f4;
+              }
+            `}</style>
 
-            <Form.Group className='my-2' controlId='password'>
-               <Form.Label>Password</Form.Label>
-               <Form.Control
-                  type='password'
-                  placeholder='Enter password'
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-               ></Form.Control>
-            </Form.Group>
+               <Form.Group controlId="email">
+               <div className="input-with-icon">
+                 <Form.Control
+                   type="email"
+                   placeholder="Enter email"
+                   value={email}
+                   onChange={(e) => setEmail(e.target.value)}
+                   className="my-placeholder-class"
+                   style={{
+                     marginBottom: '40px',
+                     height: '50px',
+                     backgroundColor: '#472a6000',
+                     color: 'white',
+                     border: 'none',
+                     borderBottom: '2px solid #8754a9',
+                     borderRadius: '0',
+                     paddingRight: '45px', // Add padding to prevent text overlap
+                   }}
+                 />
+                 <img
+                   src={mail_ico} // Replace with your logo path
+                   alt="Logo"
+                   className="input-icon"
+                 />
+               </div>
+               </Form.Group>
 
-            <Button
-               disabled={isLoading}
-               type='submit'
-               variant='primary'
-               className='mt-3'
-            >
-               Sign In
-            </Button>
-         </Form>
+               <Form.Group className='my-2' controlId='password'>
+                  <div className="input-with-icon">
+                  <Form.Control
+                     type='password'
+                     placeholder='Enter password'
+                     value={password}
+                     onChange={(e) => setPassword(e.target.value)}
+                     className="my-placeholder-class"
+                     style={{
+                        marginBottom: '70px',
+                        height: '50px',
+                        backgroundColor: '#472a6000',
+                        color: 'white',
+                        border: 'none',
+                        borderBottom: '2px solid #8754a9',
+                        borderRadius: '0',
+                        paddingRight: '45px', // Add padding to prevent text overlap
+                      }}
+                  />
+                  <img
+                   src={pass_ico} // Replace with your logo path
+                   alt="Logo"
+                   className="input-icon"
+                 />
+                  </div>
+               </Form.Group>
 
-         {isLoading && <Loader />}
+               <Button
+                  disabled={isLoading}
+                  type='submit'
+                  variant='primary'
+                  className='mt-3 button-no-outline'
+                  style={{
+                     marginTop: '15px',
+                     marginBottom: '5px',
+                     display: 'block', // Centers the button horizontally
+                     marginLeft: 'auto',
+                     marginRight: 'auto',
+                     fontSize: '1.2rem',
+                     fontWeight: 'bold',
+                     width: '80%',
+                     height: '55px',
+                  }}
+               >
+                  Log In
+               </Button>
+            </Form>
 
-         <Row className='py-3'>
-            <Col>
-               New Customer ? <Link to='/register'>Register</Link>
-            </Col>
-         </Row>
+            {/* Removed the Loader component usage */}
+            {/* {isLoading && <Loader />} */}
+
+            <Row className='py-3'>
+               <Col className='FontBody01' style={{ textAlign: 'center' }}>
+                  Don't have an account?{' '}
+                  <Link
+                     style={{
+                        textDecoration: 'none',
+                        color: 'white',
+                        fontStyle: 'italic',
+                     }}
+                     to='/register'
+                  >
+                     Sign up
+                  </Link>
+               </Col>
+            </Row>
+         </div>
       </FormContainer>
    );
 };
