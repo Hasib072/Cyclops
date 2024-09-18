@@ -3,27 +3,28 @@
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-  }
-  
-  body {
+}
+
+body {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     background-color: #000;
     margin: 0;
-  }
-  
-  .container {
+}
+
+.container {
     display: flex;
     width: 100%;
     height: 100%;
     position: relative;
     overflow: hidden;
-  }
-  
-  .form-container {
+}
+
+.form-container {
     width: 40%;
+    height:100%;
     background: linear-gradient(
       0deg,
       #34263d 0%,
@@ -32,7 +33,7 @@
     );
     color: #fff;
     padding: 4% 5%;
-    border-radius: 10px;
+    border-radius:0px 35px 35px 0px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -40,35 +41,40 @@
     left: 0;
     top: 0;
     bottom: 0;
+    overflow: hidden;
     z-index: 1;
-  }
-  
-  .form-container h1 {
+}
+
+.form-container h1 {
     font-size: 1.5rem;
     margin-bottom: 10px;
-    margin-top: 20%;
-  }
-  
-  .form-container p {
+    margin-top: 20%; 
+    margin-left: -28%; 
+
+}
+
+.form-container p {
     font-size: 0.9rem;
     margin-bottom: 20px;
     color: whitesmoke;
-  }
-  
-  .input-container {
+    margin-left: -25%; 
+}
+
+.input-container {
     width: 100%;
     margin-bottom: 15px;
     position: relative;
     display: flex;
     justify-content: center;
-  }
-  
-  .input-container input {
+    align-items: center;
+}
+
+.input-container input {
     width: 80%; /* Reduced width */
     max-width: 300px; /* Max width for smaller screens */
     height: 35px;
-    padding: 8px;
-    border-radius: 5px;
+    padding: 6px;
+    padding-right: 30px; /* Add padding to the right for icon space */
     border-bottom: 2px solid #6c6c6c;
     border-radius: 0px;
     border: none;
@@ -77,32 +83,34 @@
     font-size: 0.9rem;
     box-sizing: border-box;
     border-bottom: 2px solid #6c6c6c;
-  }
-  
-  .input-container input:focus {
+}
+
+.input-container input:focus {
     outline: 2px solid #7b51a7;
-  }
-  
-  .input-container .icon {
+}
+
+.input-container .icon {
     position: absolute;
-    right: 19%;
+    right: 20%; /* Adjust based on input size */
+    top: 50%;
+    transform: translateY(-50%);
     color: #fff;
-  }
-  
-  button {
+}
+
+button {
     width: 80%; /* Reduced width */
     max-width: 300px; /* Max width for smaller screens */
     height: 35px;
     padding: 0;
     border: none;
-    border-radius: 5px;
+    border-radius: 12px;
     font-size: 0.9rem;
     font-weight: bold;
     cursor: pointer;
     margin-bottom: 15px;
-  }
-  
-  button.signin-button {
+}
+
+button.signin-button {
     background: linear-gradient(
       90deg,
       #2a1a41 0%,
@@ -110,23 +118,23 @@
       #945cb7 100%
     );
     color: #fff;
-  }
-  
-  button.signin-button:hover {
+}
+
+button.signin-button:hover {
     background: linear-gradient(
       90deg,
       #2a1a41 0%,
       #4a2e64 56%,
       #7a3b8e 100%
     );
-  }
-  
-  button.signin-button:disabled {
+}
+
+button.signin-button:disabled {
     background-color: #333;
     cursor: not-allowed;
-  }
-  
-  button.signup-button {
+}
+
+button.signup-button {
     background: linear-gradient(
       90deg,
       #2a1a41 0%,
@@ -134,74 +142,95 @@
       #945cb7 100%
     );
     color: #fff;
-  }
-  
-  button.signup-button:hover {
+}
+
+button.signup-button:hover {
     background: linear-gradient(
       90deg,
       #2a1a41 0%,
       #4a2e64 56%,
       #7a3b8e 100%
     );
-  }
-  
-  button.signup-button:disabled {
+}
+
+button.signup-button:disabled {
     background-color: #333;
     cursor: not-allowed;
-  }
-  
-  .toggle-link {
+}
+
+.toggle-link {
     margin-top: 15px;
     font-size: 0.8rem;
     color: whitesmoke;
     text-decoration: none;
     cursor: pointer;
-  }
-  
-  .toggle-link:hover {
+}
+
+.toggle-link:hover {
     text-decoration: underline;
-  }
-  
-  .overlay {
+}
+
+.overlay {
     position: absolute;
     top: 0;
-    right: 0;
-    width: 70%;
+    left: 0;
+    width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 0;
     overflow: hidden;
-  }
-  
-  .overlay img {
+}
+
+.overlay img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
-  
-  /* Logo styling */
-  .logo {
+}
+
+/* Responsive Logo styling */
+.logo {
     position: absolute;
-    margin: 0px;
     top: -10px; /* Adjust top spacing */
     right: 40px; /* Adjust right spacing */
     z-index: 2; /* Make sure the logo stays on top */
-    width: 350px; /* Increased width */
-  }
-  
-  .form-container.hidden {
+    width: 25%; /* Use a percentage width to make it responsive */
+    max-width: 350px; /* Ensure the logo doesn't exceed a maximum width */
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 1024px) {
+    .logo {
+        width: 30%; /* Adjust logo width for medium-sized screens */
+        right: 20px; /* Adjust right position for medium-sized screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .logo {
+        width: 35%; /* Adjust logo width for smaller screens */
+        right: 10px; /* Adjust right position for smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .logo {
+        width: 40%; /* Adjust logo width for mobile screens */
+        right: 5px; /* Adjust right position for mobile screens */
+    }
+}
+
+.form-container.hidden {
     display: none;
-  }
-  
-  .background-cover {
+}
+
+.background-cover {
     position: absolute;
     top: 0;
     left: 0;
-    width: 30%;
+    width: 100%;
     height: 100%;
-    background-color: #000;
-    z-index: -1;
-  }
-  
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 0;
+}
