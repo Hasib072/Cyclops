@@ -7,7 +7,7 @@ import axios from 'axios';
  *
  * @param {string} user_email - Recipient's email address.
  * @param {string} subject - Subject of the email.
- * @param {string} name - Recipient's name.
+ * @param {string} user_name - Recipient's name.
  * @param {string} verificationCode - 6-digit verification code.
  * @returns {Promise<void>}
  * @throws {Error} If the email could not be sent.
@@ -20,7 +20,7 @@ const sendEmail = async (Email, subject, name, verificationCode) => {
   const templateParams = {
     user_email: Email,
     subject: subject,
-    name: name,
+    user_name: name,
     verification_code: verificationCode,
   };
 
