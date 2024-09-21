@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Custom Sidebar with SVGs and Footer</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        display: flex;
+        height: 100vh;
+        font-family: "Open Sans", sans-serif;
+        background-color: #000000;
+      }
+
+      .sidebar {
+        width: 250px;
+        background-color: #402b5e;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        justify-content: space-between;
+        border-radius: 0px 30px 30px 0px;
+      }
+
+      .profile {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+
+      .profile-img {
+        border-radius: 50%;
+        margin-right: 15px;
+      }
+
+      .profile-info h2 {
+        font-size: 20px;
+        margin-bottom: 5px;
+      }
+
+      .profile-info p {
+        font-size: 14px;
+        color: #ccc;
+      }
+
+      .menu {
+        margin-bottom: 30px;
+      }
+
+      .menu-item {
+        list-style: none;
+      }
+
+      .menu-item span {
+        font-size: 18px;
+        display: block;
+        margin-bottom: 10px;
+        font-weight: bold;
+      }
+
+      .submenu li {
+        list-style: none;
+        margin-bottom: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+      }
+
+      .submenu li svg {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+        fill: white;
+      }
+
+      .teams h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+
+      .teams ul li {
+        list-style: none;
+        margin-bottom: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+      }
+
+      .teams ul li svg {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+        fill: white;
+      }
+      .teams-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8%;
+      }
+
+      #add-team {
+        background: linear-gradient(
+          90deg,
+          #1f1333 0%,
+          /* Darker version of #2a1a41 */ #3a2450 56%,
+          /* Darker version of #4a2e64 */ #65387b 100%
+            /* Even darker version of #7a4a98 */
+        );
+
+        color: white;
+        border: none;
+        padding: 8px 10px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        border-radius: 10px;
+      }
+
+      .footer {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .footer ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .footer ul li {
+        margin-bottom: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+      }
+
+      .footer ul li svg {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        fill: white;
+      }
+
+      .main-content {
+        flex-grow: 1;
+        color: white;
+        padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <!-- Sidebar main content -->
+      <div>
+        <div class="profile">
+          <img
+            src="https://via.placeholder.com/50"
+            alt="Profile Picture"
+            class="profile-img"
+          />
+          <div class="profile-info">
+            <h2>Name Here</h2>
+            <p>usermail@gmail.com</p>
+          </div>
+        </div>
+
+        <div class="menu">
+          <ul>
+            <li class="menu-item">
+              <div class="teams-line">
+                <span class="icon-text">Home</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 10 "
+                  width="70"
+                  height="10"
+                >
+                  <path d="M0.5 1H22" stroke="#FFFFFF" fill="white" />
+                </svg>
+              </div>
+
+              <ul class="submenu">
+                <li>
+                  <!-- Custom SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path
+                      d="M12.0834 22.9585V16.9168H16.9167V22.9585C16.9167 23.623 17.4605 24.1668 18.1251 24.1668H21.7501C22.4146 24.1668 22.9584 23.623 22.9584 22.9585V14.5001H25.0126C25.5684 14.5001 25.8342 13.8114 25.4113 13.4489L15.3096 4.35012C14.8505 3.93928 14.1496 3.93928 13.6905 4.35012L3.58881 13.4489C3.17797 13.8114 3.43172 14.5001 3.98756 14.5001H6.04172V22.9585C6.04172 23.623 6.58547 24.1668 7.25006 24.1668H10.8751C11.5396 24.1668 12.0834 23.623 12.0834 22.9585Z"
+                      fill="white"
+                    />
+                  </svg>
+                  Dashboard
+                </li>
+                <li>
+                  <!-- Custom SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
+                    <path
+                      d="M24.1667 2.4165H4.83341C3.50425 2.4165 2.42883 3.504 2.42883 4.83317L2.41675 26.5832L7.25008 21.7498H24.1667C25.4959 21.7498 26.5834 20.6623 26.5834 19.3332V4.83317C26.5834 3.504 25.4959 2.4165 24.1667 2.4165ZM20.5417 16.9165H8.45842C7.79383 16.9165 7.25008 16.3728 7.25008 15.7082C7.25008 15.0436 7.79383 14.4998 8.45842 14.4998H20.5417C21.2063 14.4998 21.7501 15.0436 21.7501 15.7082C21.7501 16.3728 21.2063 16.9165 20.5417 16.9165ZM20.5417 13.2915H8.45842C7.79383 13.2915 7.25008 12.7478 7.25008 12.0832C7.25008 11.4186 7.79383 10.8748 8.45842 10.8748H20.5417C21.2063 10.8748 21.7501 11.4186 21.7501 12.0832C21.7501 12.7478 21.2063 13.2915 20.5417 13.2915ZM20.5417 9.6665H8.45842C7.79383 9.6665 7.25008 9.12275 7.25008 8.45817C7.25008 7.79359 7.79383 7.24984 8.45842 7.24984H20.5417C21.2063 7.24984 21.7501 7.79359 21.7501 8.45817C21.7501 9.12275 21.2063 9.6665 20.5417 9.6665Z"
+                      fill="white"
+                    />
+                  </svg>
+                  Notifications
+                </li>
+                <li>
+                  <!-- Custom SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26 ">
+                    <path
+                      d="M7.25 2.4165V9.6665H7.26208L7.25 9.67859L12.0833 14.4998L7.25 19.3332L7.26208 19.3453H7.25V26.5832H21.75V19.3453H21.7379L21.75 19.3332L16.9167 14.4998L21.75 9.67859L21.7379 9.6665H21.75V2.4165H7.25ZM19.3333 19.9373V24.1665H9.66667V19.9373L14.5 15.104L19.3333 19.9373ZM14.5 13.8957L9.66667 9.06234V4.83317H19.3333V9.06234L14.5 13.8957Z"
+                      fill="white"
+                    />
+                  </svg>
+                  Timesheet
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <hr />
+
+        <div class="teams">
+          <div class="teams-line">
+            <h3>Teams</h3>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 10 "
+              width="70"
+              height="10"
+            >
+              <path d="M0.5 1H22" stroke="#FFFFFF" fill="white" />
+            </svg>
+          </div>
+
+          <ul>
+            <li>
+              <!-- Custom SVG Icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+                <path
+                  d="M24.1667 7.25016H14.5001L12.7963 5.54641C12.3372 5.08725 11.7209 4.8335 11.0805 4.8335H4.83341C3.50425 4.8335 2.42883 5.921 2.42883 7.25016L2.41675 21.7502C2.41675 23.0793 3.50425 24.1668 4.83341 24.1668H24.1667C25.4959 24.1668 26.5834 23.0793 26.5834 21.7502V9.66683C26.5834 8.33766 25.4959 7.25016 24.1667 7.25016ZM18.1251 10.8752C19.4542 10.8752 20.5417 11.9627 20.5417 13.2918C20.5417 14.621 19.4542 15.7085 18.1251 15.7085C16.7959 15.7085 15.7084 14.621 15.7084 13.2918C15.7084 11.9627 16.7959 10.8752 18.1251 10.8752ZM22.9584 20.5418H13.2917V19.3335C13.2917 17.7264 16.518 16.9168 18.1251 16.9168C19.7322 16.9168 22.9584 17.7264 22.9584 19.3335V20.5418Z"
+                  fill="white"
+                />
+              </svg>
+              Team Name
+            </li>
+            <li>
+              <!-- Custom SVG Icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+                <path
+                  d="M24.1667 7.25016H14.5001L12.7963 5.54641C12.3372 5.08725 11.7209 4.8335 11.0805 4.8335H4.83341C3.50425 4.8335 2.42883 5.921 2.42883 7.25016L2.41675 21.7502C2.41675 23.0793 3.50425 24.1668 4.83341 24.1668H24.1667C25.4959 24.1668 26.5834 23.0793 26.5834 21.7502V9.66683C26.5834 8.33766 25.4959 7.25016 24.1667 7.25016ZM18.1251 10.8752C19.4542 10.8752 20.5417 11.9627 20.5417 13.2918C20.5417 14.621 19.4542 15.7085 18.1251 15.7085C16.7959 15.7085 15.7084 14.621 15.7084 13.2918C15.7084 11.9627 16.7959 10.8752 18.1251 10.8752ZM22.9584 20.5418H13.2917V19.3335C13.2917 17.7264 16.518 16.9168 18.1251 16.9168C19.7322 16.9168 22.9584 17.7264 22.9584 19.3335V20.5418Z"
+                  fill="white"
+                />
+                " />
+              </svg>
+              Jasons Crew
+            </li>
+            <li>
+              <!-- Custom SVG Icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+                <path
+                  d="M24.1667 7.25016H14.5001L12.7963 5.54641C12.3372 5.08725 11.7209 4.8335 11.0805 4.8335H4.83341C3.50425 4.8335 2.42883 5.921 2.42883 7.25016L2.41675 21.7502C2.41675 23.0793 3.50425 24.1668 4.83341 24.1668H24.1667C25.4959 24.1668 26.5834 23.0793 26.5834 21.7502V9.66683C26.5834 8.33766 25.4959 7.25016 24.1667 7.25016ZM18.1251 10.8752C19.4542 10.8752 20.5417 11.9627 20.5417 13.2918C20.5417 14.621 19.4542 15.7085 18.1251 15.7085C16.7959 15.7085 15.7084 14.621 15.7084 13.2918C15.7084 11.9627 16.7959 10.8752 18.1251 10.8752ZM22.9584 20.5418H13.2917V19.3335C13.2917 17.7264 16.518 16.9168 18.1251 16.9168C19.7322 16.9168 22.9584 17.7264 22.9584 19.3335V20.5418Z"
+                  fill="white"
+                />
+              </svg>
+              Times Team
+            </li>
+            <li>
+              <button id="add-team">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+                  <path
+                    d="M14.5001 8.45817C13.8355 8.45817 13.2917 9.00192 13.2917 9.6665V13.2915H9.66675C9.00216 13.2915 8.45841 13.8353 8.45841 14.4998C8.45841 15.1644 9.00216 15.7082 9.66675 15.7082H13.2917V19.3332C13.2917 19.9978 13.8355 20.5415 14.5001 20.5415C15.1647 20.5415 15.7084 19.9978 15.7084 19.3332V15.7082H19.3334C19.998 15.7082 20.5417 15.1644 20.5417 14.4998C20.5417 13.8353 19.998 13.2915 19.3334 13.2915H15.7084V9.6665C15.7084 9.00192 15.1647 8.45817 14.5001 8.45817ZM14.5001 2.4165C7.83008 2.4165 2.41675 7.82984 2.41675 14.4998C2.41675 21.1698 7.83008 26.5832 14.5001 26.5832C21.1701 26.5832 26.5834 21.1698 26.5834 14.4998C26.5834 7.82984 21.1701 2.4165 14.5001 2.4165ZM14.5001 24.1665C9.17133 24.1665 4.83341 19.8286 4.83341 14.4998C4.83341 9.17109 9.17133 4.83317 14.5001 4.83317C19.8288 4.83317 24.1667 9.17109 24.1667 14.4998C24.1667 19.8286 19.8288 24.1665 14.5001 24.1665Z"
+                    fill="white"
+                  />
+                </svg>
+                Add Team
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sidebar footer -->
+      <div class="footer">
+        <ul>
+          <li>
+            <!-- Custom SVG Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+              <path
+                d="M14.5001 2.4165C7.83008 2.4165 2.41675 7.82984 2.41675 14.4998C2.41675 21.1698 7.83008 26.5832 14.5001 26.5832C21.1701 26.5832 26.5834 21.1698 26.5834 14.4998C26.5834 7.82984 21.1701 2.4165 14.5001 2.4165ZM14.5001 20.5415C13.8355 20.5415 13.2917 19.9978 13.2917 19.3332V14.4998C13.2917 13.8353 13.8355 13.2915 14.5001 13.2915C15.1647 13.2915 15.7084 13.8353 15.7084 14.4998V19.3332C15.7084 19.9978 15.1647 20.5415 14.5001 20.5415ZM15.7084 10.8748H13.2917V8.45817H15.7084V10.8748Z"
+                fill="white"
+              />
+            </svg>
+            About us
+          </li>
+          <li>
+            <!-- Custom SVG Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
+              <path
+                d="M23.4778 15.684C23.5262 15.2973 23.5624 14.9107 23.5624 14.4998C23.5624 14.089 23.5262 13.7023 23.4778 13.3157L26.0274 11.3219C26.257 11.1407 26.3174 10.8144 26.1724 10.5486L23.7558 6.36775C23.6108 6.10192 23.2845 6.00525 23.0187 6.10192L20.0099 7.31025C19.3816 6.82692 18.7049 6.42817 17.9678 6.12609L17.5087 2.924C17.4724 2.634 17.2187 2.4165 16.9166 2.4165H12.0833C11.7812 2.4165 11.5274 2.634 11.4912 2.924L11.032 6.12609C10.2949 6.42817 9.61826 6.839 8.98993 7.31025L5.98118 6.10192C5.70326 5.99317 5.38909 6.10192 5.24409 6.36775L2.82743 10.5486C2.67034 10.8144 2.74284 11.1407 2.97243 11.3219L5.52201 13.3157C5.47368 13.7023 5.43743 14.1011 5.43743 14.4998C5.43743 14.8986 5.47368 15.2973 5.52201 15.684L2.97243 17.6778C2.74284 17.859 2.68243 18.1853 2.82743 18.4511L5.24409 22.6319C5.38909 22.8978 5.71534 22.9944 5.98118 22.8978L8.98993 21.6894C9.61826 22.1728 10.2949 22.5715 11.032 22.8736L11.4912 26.0757C11.5274 26.3657 11.7812 26.5832 12.0833 26.5832H16.9166C17.2187 26.5832 17.4724 26.3657 17.5087 26.0757L17.9678 22.8736C18.7049 22.5715 19.3816 22.1607 20.0099 21.6894L23.0187 22.8978C23.2966 23.0065 23.6108 22.8978 23.7558 22.6319L26.1724 18.4511C26.3174 18.1853 26.257 17.859 26.0274 17.6778L23.4778 15.684ZM14.4999 18.729C12.1678 18.729 10.2708 16.8319 10.2708 14.4998C10.2708 12.1678 12.1678 10.2707 14.4999 10.2707C16.832 10.2707 18.7291 12.1678 18.7291 14.4998C18.7291 16.8319 16.832 18.729 14.4999 18.729Z"
+                fill="white"
+              />
+            </svg>
+            Settings
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <!-- Main content goes here -->
+      <h1>Welcome to the Dashboard</h1>
+      <p>This is where the main content will appear.</p>
+    </div>
+
+    <script>
+      document
+        .getElementById("add-team")
+        .addEventListener("click", function () {
+          let newTeam = prompt("Enter new team name:");
+          if (newTeam) {
+            let teamsList = document.querySelector(".teams ul");
+            let li = document.createElement("li");
+            li.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12l18-12v24z"/></svg> ${newTeam}`;
+            teamsList.insertBefore(li, teamsList.lastElementChild);
+          }
+        });
+    </script>
+  </body>
+</html>
