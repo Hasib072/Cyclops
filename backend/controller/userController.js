@@ -3,6 +3,7 @@ import asyncHandler from 'express-async-handler';
 import User from '../models/userModel.js';
 import sendEmail from '../utils/sendEmail.js';
 import generateToken from '../utils/generateToken.js';
+import bcrypt from 'bcryptjs';
 
 //  @desc   Auth user/set token
 //  @route   POST /api/users/auth
@@ -31,128 +32,129 @@ const authUser = asyncHandler(async (req, res) => {
   }
 });
 
-//  @desc   Register a new user
-//  @route   POST /api/users
-//  @access Public
+// @desc    Register a new user
+// @route   POST /api/users
+// @access  Public
 const registerUser = asyncHandler(async (req, res) => {
    const { name, email, password } = req.body;
  
-   const userExist = await User.findOne({ email: email });
+   // Check if user already exists
+   const userExist = await User.findOne({ email });
  
    if (userExist) {
      res.status(400);
      throw new Error('User already exists');
    }
  
+   // Create new user instance
    const user = new User({
      name,
      email,
      password,
    });
  
-   // Generate verification code
-   const verificationCode = user.generateVerificationCode();
+   // Save user to the database
+   await user.save();
+ 
+   // Respond with success
+   res.status(201).json({
+     message: 'User registered successfully. Please verify your email.',
+   });
+ });
+
+// @desc    Verify user's email
+// @route   POST /api/users/verify-email
+// @access  Public
+const verifyEmail = asyncHandler(async (req, res) => {
+   const { email, code } = req.body;
+ 
+   // Find user by email
+   const user = await User.findOne({ email });
+ 
+   if (!user) {
+     res.status(400);
+     throw new Error('Invalid email');
+   }
+ 
+   if (user.isVerified) {
+     res.status(400);
+     throw new Error('User already verified');
+   }
+ 
+   // Check if verification code is valid and not expired
+   if (user.verificationCode !== code || user.verificationCodeExpires < Date.now()) {
+     res.status(400);
+     throw new Error('Invalid or expired verification code');
+   }
+ 
+   // Update user's verification status
+   user.isVerified = true;
+   user.verificationCode = undefined;
+   user.verificationCodeExpires = undefined;
  
    await user.save();
  
-   // Send verification email
-   const subject = 'Email Verification';
-   const text = `Your verification code is: ${verificationCode}`;
+   // Optionally, generate a token upon successful verification
+   generateToken(res, user._id);
  
+   res.json({
+     message: 'Email verified successfully',
+     user: {
+       _id: user._id,
+       name: user.name,
+       email: user.email,
+       isVerified: user.isVerified,
+     },
+   });
+ });
+
+// Similarly, remove email sending from resendVerificationCode
+const resendVerificationCode = asyncHandler(async (req, res) => {
+   const { email } = req.body;
+ 
+   // Find user by email
+   const user = await User.findOne({ email });
+ 
+   if (!user) {
+     res.status(400);
+     throw new Error('Invalid email');
+   }
+ 
+   if (user.isVerified) {
+     res.status(400);
+     throw new Error('User already verified');
+   }
+ 
+   // Generate new verification code
+   const verificationCode = user.generateVerificationCode();
+ 
+   // Save updated user to the database
+   await user.save();
+ 
+   // Prepare email details (to be handled on frontend)
+   const subject = 'Email Verification';
+   const text = `Your new verification code is: ${verificationCode}`;
+ 
+   // **Remove or comment out the backend email sending**
+   /*
    try {
-     await sendEmail(user.email, subject, text);
-     res.status(201).json({
-       message: 'User registered successfully. Verification code sent to email.',
+     // Resend verification email via EmailJS
+     await sendEmail(user.email, subject, user.name, verificationCode);
+     res.json({
+       message: 'Verification code resent to email.',
      });
    } catch (error) {
-     console.error(error);
+     console.error('Error in resendVerificationCode:', error);
      res.status(500);
      throw new Error('Email could not be sent');
    }
+   */
+ 
+   // Instead, respond with success
+   res.json({
+     message: 'Verification code resent. Please check your email.',
+   });
  });
-
-//  @desc   Verify user's email
-//  @route   POST /api/users/verify-email
-//  @access Public
-const verifyEmail = asyncHandler(async (req, res) => {
-  const { email, code } = req.body;
-
-  const user = await User.findOne({ email });
-
-  if (!user) {
-    res.status(400);
-    throw new Error('Invalid email');
-  }
-
-  if (user.isVerified) {
-    res.status(400);
-    throw new Error('User already verified');
-  }
-
-  if (
-    user.verificationCode !== code ||
-    user.verificationCodeExpires < Date.now()
-  ) {
-    res.status(400);
-    throw new Error('Invalid or expired verification code');
-  }
-
-  user.isVerified = true;
-  user.verificationCode = undefined;
-  user.verificationCodeExpires = undefined;
-
-  await user.save();
-
-  generateToken(res, user._id); // Optionally log the user in after verification
-
-  res.json({
-    message: 'Email verified successfully',
-    user: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isVerified: user.isVerified,
-    },
-  });
-});
-
-//  @desc   Resend verification code
-//  @route   POST /api/users/resend-verification
-//  @access Public
-const resendVerificationCode = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-
-  const user = await User.findOne({ email });
-
-  if (!user) {
-    res.status(400);
-    throw new Error('Invalid email');
-  }
-
-  if (user.isVerified) {
-    res.status(400);
-    throw new Error('User already verified');
-  }
-
-  // Generate new verification code
-  const verificationCode = user.generateVerificationCode();
-  await user.save();
-
-  // Send verification email
-  const subject = 'Email Verification';
-  const text = `Your new verification code is: ${verificationCode}`;
-
-  try {
-    await sendEmail(user.email, subject, text);
-    res.json({
-      message: 'Verification code resent to email.',
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500);
-    throw new Error('Email could not be sent');
-  }
-});
 
 //  @desc   Logout user
 //  @route   POST /api/users/logout

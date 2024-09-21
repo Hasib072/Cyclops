@@ -1,4 +1,5 @@
-// screens/RegisterScreen.js
+// frontend/src/screens/RegisterScreen.jsx
+
 import { useState, useEffect } from 'react';
 import { Form, Button, Row, Col, Modal } from 'react-bootstrap';
 import FormContainer from '../components/FormContainer';
@@ -14,20 +15,27 @@ import { toast } from 'react-toastify';
 import mail_ico from '../assets/icons/mail.png';
 import pass_ico from '../assets/icons/pass.png';
 import user_circle_ico from '../assets/icons/account_circle.png';
+import emailjs from 'emailjs-com';
+import axios from 'axios';
+
 
 const RegisterScreen = () => {
+  // Registration form state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Verification modal state
   const [showModal, setShowModal] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
+  const [generatedCode, setGeneratedCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // RTK Query mutations
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
   const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
   const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
@@ -64,50 +72,119 @@ const RegisterScreen = () => {
     return `${min}:${sec < 10 ? '0' : ''}${sec}`;
   };
 
+  // Function to generate a random 6-digit code
+  const generateVerificationCode = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+  // Function to send email via EmailJS
+  const sendVerificationEmail = (recipientEmail, code) => {
+   console.log('inside sendVerificationEmail')
+   const serviceID = 'service_wdsl71y';
+    const templateID = 'template_su2618a';
+    const userID = '4VnuPnqlpNMQjv7tj';
+   console.log('inside sendVerificationEmail after ENV')
+    
+    const templateParams = {
+      user_email: recipientEmail,
+      subject: 'Email Verification',
+      user_name: name,
+      verification_code: code,
+    };
+    console.log('inside sendVerificationEmail after TemplateParams')
+    
+    // Return the promise to allow chaining
+  return emailjs.send(serviceID, templateID, templateParams, userID)
+  .then((response) => {
+    console.log('SUCCESS!', response.status, response.text);
+    toast.success('Verification email sent successfully!');
+    return response; // Pass the response to the next handler
+  })
+  .catch((err) => {
+    console.error('FAILED...', err);
+    toast.error('Failed to send verification email.');
+    throw err; // Propagate the error to be caught in submitHandler
+  });
+      
+  };
+
   const submitHandler = async (e) => {
-    e.preventDefault();
+   e.preventDefault();
 
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
+   if (password !== confirmPassword) {
+     toast.error('Passwords do not match');
+     return;
+   }
 
-    try {
-      await register({ name, email, password }).unwrap();
-      toast.success('Registration successful! Please verify your email.');
-      setShowModal(true);
-      setTimeLeft(600); // Reset timer
-    } catch (err) {
-      toast.error(err?.data?.message || err.error);
-    }
-  };
+   try {
+     // Register user via backend API
+     const response = await register({ name, email, password }).unwrap();
+     //   toast.success(response.message || 'Registration successful! Please verify your email.');
 
-  const verifyHandler = async () => {
-    if (verificationCode.length !== 6 || !/^\d{6}$/.test(verificationCode)) {
-      toast.error('Please enter a valid 6-digit verification code');
-      return;
-    }
+     // Generate a verification code
+     const code = generateVerificationCode();
+     setGeneratedCode(code);
 
-    try {
-      const res = await verifyEmail({ email, code: verificationCode }).unwrap();
-      toast.success(res.message);
-      dispatch(setCredentials(res.user)); // Update Redux state with verified user
-      setShowModal(false);
-      navigate('/');
-    } catch (err) {
-      toast.error(err?.data?.message || err.error);
-    }
-  };
+     console.log({ email, code });
 
-  const resendHandler = async () => {
-    try {
-      await resendVerification({ email }).unwrap();
-      toast.success('Verification code resent to your email.');
-      setTimeLeft(600); // Reset timer
-    } catch (err) {
-      toast.error(err?.data?.message || err.error);
-    }
-  };
+     // Send verification email via EmailJS and handle the promise
+     await sendVerificationEmail(email, code)
+       .then((response) => {
+         console.log("Verification email sent successfully:", response);
+       })
+       .catch((error) => {
+         console.error("Error sending verification email:", error);
+       });
+
+     // Save verification code to backend
+     await axios.post('/api/users/save-verification-code', { email, code });
+
+     // Show the verification modal
+     setShowModal(true);
+     setTimeLeft(600); // Reset timer
+   } catch (err) {
+     toast.error(err?.data?.message || err.error);
+   }
+ };
+
+
+ const verifyHandler = async () => {
+   if (verificationCode.length !== 6 || !/^\d{6}$/.test(verificationCode)) {
+     toast.error('Please enter a valid 6-digit verification code');
+     return;
+   }
+
+   try {
+     // Send verification code to backend
+     const res = await verifyEmail({ email, code: verificationCode }).unwrap();
+     toast.success(res.message);
+     dispatch(setCredentials(res.user)); // Update Redux state with verified user
+     setShowModal(false);
+     navigate('/');
+   } catch (err) {
+     toast.error(err?.data?.message || err.error);
+   }
+ };
+
+ const resendHandler = async () => {
+   try {
+     // Generate a new verification code
+     const newCode = generateVerificationCode();
+     setGeneratedCode(newCode);
+
+     // Resend verification email via EmailJS
+     await sendVerificationEmail(email, newCode);
+
+     // Update verification code on backend
+     await resendVerification({ email, code: newCode }).unwrap();
+
+     toast.success('Verification code resent to your email.');
+     setTimeLeft(600); // Reset timer
+   } catch (err) {
+     toast.error('Failed to resend verification email.');
+     console.error(err);
+   }
+ };
 
   return (
     <FormContainer>
