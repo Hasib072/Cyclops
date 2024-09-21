@@ -1,38 +1,56 @@
-import mongoose from "mongoose";
+// models/userModel.js
+import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const userSchema = mongoose.Schema(
-   {
-      name: {
-         type: String,
-         required: true,
-      },
-      email: {
-         type: String,
-         required: true,
-         unique: true,
-      },
-      password: {
-         type: String,
-         required: true,
-      },
-   },
-   {
-      timeStamps: true,
-   }
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationCode: String,
+    verificationCodeExpires: Date,
+  },
+  {
+    timestamps: true,
+  }
 );
 
 userSchema.pre('save', async function (next) {
-   if (!this.isModified('password')) { // this keyword for User.create return password
-      next()
-   }
-   const salt = await bcrypt.genSalt(10);
-   this.password = await bcrypt.hash(this.password, salt);
-})
+  if (!this.isModified('password')) {
+    next();
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
-   return await bcrypt.compare(enteredPassword, this.password);
-}
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Method to generate verification code
+userSchema.methods.generateVerificationCode = function () {
+  // Generate a 6-digit code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  this.verificationCode = code;
+  // Set expiration time (e.g., 10 minutes)
+  this.verificationCodeExpires = Date.now() + 10 * 60 * 1000;
+  return code;
+};
 
 const User = mongoose.model('User', userSchema);
 
