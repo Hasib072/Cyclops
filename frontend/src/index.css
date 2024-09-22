@@ -5,6 +5,14 @@
     font-weight: bold;
     color: white;
 }
+.FontHead02{
+  font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+}
+
 
 .FontBody01{
     font-family: "Inter", sans-serif;
@@ -12,6 +20,13 @@
     font-size: 1rem;
     color: white;
     text-decoration: none;
+}
+.FontBody02{
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-size: 0.9rem;
+  color: white;
+  text-decoration: none;
 }
 
 .button-no-outline {
@@ -35,6 +50,8 @@
     background-color: #25252500 !important;
     position: absolute;
   } */
+  
+
 
   /* Laptops (Between 992px and 1199px) */
 @media (max-width: 1199px) {

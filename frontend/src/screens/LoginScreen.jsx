@@ -1,6 +1,6 @@
 // frontend/src/screens/LoginScreen.jsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Form, Button, Row, Col, Modal } from 'react-bootstrap';
 import FormContainer from '../components/FormContainer';
@@ -20,9 +20,10 @@ const LoginScreen = () => {
 
   // Verification modal state
   const [showModal, setShowModal] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
   const [generatedCode, setGeneratedCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -39,6 +40,18 @@ const LoginScreen = () => {
       navigate('/');
     }
   }, [navigate, userInfo]);
+
+  // Add this useEffect hook to handle the countdown
+  useEffect(() => {
+    let timer;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
 
   useEffect(() => {
     if (!showModal) return;
@@ -146,41 +159,89 @@ const LoginScreen = () => {
   };
 
   const verifyHandler = async () => {
-    if (verificationCode.length !== 6 || !/^\d{6}$/.test(verificationCode)) {
+    const code = verificationCode.join('');
+    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
       toast.error('Please enter a valid 6-digit verification code');
       return;
     }
 
     try {
       // Send verification code to backend
-      const res = await verifyEmail({ email, code: verificationCode }).unwrap();
+      const res = await verifyEmail({ email, code }).unwrap();
       toast.success(res.message);
       dispatch(setCredentials(res.user)); // Update Redux state with verified user
       setShowModal(false);
       navigate('/');
     } catch (err) {
-      console.error('Error verifying email:', err);
-      toast.error(err?.data?.message || err.error || 'Failed to verify email');
+      toast.error(err?.data?.message || err.error);
     }
   };
 
   const resendHandler = async () => {
     try {
+      // Prevent resending if cooldown is active
+      if (resendCooldown > 0) return;
+  
       // Generate a new verification code
       const newCode = generateVerificationCode();
       setGeneratedCode(newCode);
-
+  
       // Resend verification email via EmailJS
       await sendVerificationEmail(email, newCode);
-
+  
       // Update verification code on backend
       await resendVerification({ email, code: newCode }).unwrap();
 
-      toast.success('Verification code resent to your email.');
+      // Start the cooldown timer (30 seconds)
+      setResendCooldown(30);
+  
+      // Reset timer and OTP inputs
       setTimeLeft(600); // Reset timer
+      setVerificationCode(['', '', '', '', '', '']); // Reset OTP inputs
+  
+      
     } catch (err) {
-      console.error('Error resending verification code:', err);
       toast.error('Failed to resend verification email.');
+      console.error(err);
+    }
+  };
+
+  // Refs for OTP inputs
+  const inputRefs = useRef([]);
+
+  const handleChange = (element, index) => {
+    const value = element.value;
+    if (/^\d$/.test(value)) {
+      const newVerificationCode = [...verificationCode];
+      newVerificationCode[index] = value;
+      setVerificationCode(newVerificationCode);
+      // Move focus to next input
+      if (index < 5) {
+        inputRefs.current[index + 1].focus();
+      }
+    } else if (value === '') {
+      const newVerificationCode = [...verificationCode];
+      newVerificationCode[index] = '';
+      setVerificationCode(newVerificationCode);
+    }
+  };
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === 'Backspace' && verificationCode[index] === '') {
+      if (index > 0) {
+        inputRefs.current[index - 1].focus();
+      }
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData('text').trim();
+    if (/^\d{6}$/.test(pasteData)) {
+      const pasteArray = pasteData.split('');
+      setVerificationCode(pasteArray);
+      // Focus the last input
+      inputRefs.current[5].focus();
     }
   };
 
@@ -317,53 +378,125 @@ const LoginScreen = () => {
           </Col>
         </Row>
 
-        {/* Verification Modal */}
-        <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>Email Verification</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p>
-              Please enter the 6-digit verification code sent to your email.
-              <br />
-              Code expires in: {formatTime(timeLeft)}
-            </p>
-            <Form.Group controlId='verificationCode'>
-              <Form.Control
-                type='text'
-                placeholder='Enter verification code'
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-                maxLength={6}
-                pattern="\d{6}"
-                required
-              />
-            </Form.Group>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant='secondary'
-              onClick={() => setShowModal(false)}
-              disabled={isVerifying}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant='warning'
-              onClick={resendHandler}
-              disabled={isResending}
-            >
-              {isResending ? 'Resending...' : 'Resend Code'}
-            </Button>
-            <Button
-              variant='primary'
-              onClick={verifyHandler}
-              disabled={isVerifying}
-            >
-              {isVerifying ? 'Verifying...' : 'Verify'}
-            </Button>
-          </Modal.Footer>
-        </Modal>
+        {/* Enhanced Verification Modal */}
+<Modal
+  show={showModal}
+  onHide={() => setShowModal(false)}
+  centered
+  // Remove backdrop="static" to allow closing by clicking outside
+  // Remove keyboard={false} if you want to allow closing with the ESC key
+>
+  <div
+    style={{
+      background: 'linear-gradient(151deg, rgba(47,38,60,1) 14%, rgba(18,18,18,1) 100%)',
+      color: 'white',
+      borderRadius: '5px',
+      padding: '20px',
+    }}
+  >
+    {/* Modal Header without Close Button */}
+    <Modal.Header
+      style={{
+        background: 'transparent',
+        borderBottom: 'none',
+        paddingBottom: '0',
+        display: 'flex',
+      }}
+    >
+      <Modal.Title>
+        <h1 className='FontHead02'>Verify Your Account</h1>
+      </Modal.Title>
+    </Modal.Header>
+
+    {/* Modal Body */}
+    <Modal.Body style={{ background: 'transparent' }}>
+      <p className='FontBody02' style={{ paddingBottom: '30px' }}>
+        Please enter the 6-digit verification code sent to your email.
+        <br />
+        Code expires in: {formatTime(timeLeft)}
+      </p>
+      <p className='FontBody01' style={{fontWeight: 'bold', fontSize:'1.2rem', paddingLeft: '8%'}}>Enter Code</p>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginBottom: '20px',
+          paddingRight: '10%',
+          paddingLeft: '9%',
+        }}
+        onPaste={handlePaste}
+      >
+        {verificationCode.map((digit, index) => (
+          <input
+            key={index}
+            type='text'
+            inputMode='numeric'
+            maxLength='1'
+            value={digit}
+            onChange={(e) => handleChange(e.target, index)}
+            onKeyDown={(e) => handleKeyDown(e, index)}
+            ref={(el) => (inputRefs.current[index] = el)}
+            style={{
+              width: '50px',
+              height: '60px',
+              textAlign: 'center',
+              fontSize: '22px',
+              border: '2px solid #fff',
+              borderRadius: '15px',
+              background: 'linear-gradient(180deg, #2f263c 0%, #121212 100%)',
+              color: '#fff',
+              outline: 'none',
+              marginRight: index < 5 ? '10px' : '0',
+            }}
+          />
+        ))}
+      </div>
+      <p className='FontBody02' style={{ color: '#fff', marginBottom: '20px', textAlign: 'center' }}>
+        Didn’t receive the code yet?{' '}
+        <span
+          onClick={resendCooldown === 0 ? resendHandler : null}
+          style={{
+            textDecoration: 'underline',
+            cursor: resendCooldown > 0 ? 'not-allowed' : 'pointer',
+            color: resendCooldown > 0 ? 'gray' : 'white',
+          }}
+        >
+          {resendCooldown > 0 ? `Resend Code (${resendCooldown}s)` : <i>Resend Code</i>}
+        </span>
+      </p>
+    </Modal.Body>
+
+    {/* Modal Footer with Centered Verify Button */}
+    <Modal.Footer
+      style={{
+        background: 'transparent',
+        borderTop: 'none',
+        display: 'flex',
+        justifyContent: 'center',
+      }}
+    >
+      <Button
+        variant='primary'
+        onClick={verifyHandler}
+        className='mt-3 button-no-outline'
+            style={{
+              marginBottom: '5px',
+              display: 'block',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              fontOpticalSizing: 'auto',
+              fontSize: '1.2rem',
+              fontWeight: 'bold',
+              width: '60%',
+              height: '50px',
+            }}
+        disabled={isVerifying}
+      >
+        {isVerifying ? 'Verifying...' : 'Verify'}
+      </Button>
+    </Modal.Footer>
+  </div>
+</Modal>
       </div>
     </FormContainer>
   );
