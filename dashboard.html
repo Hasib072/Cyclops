@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workspace Dashboard</title>
+
+    <!-- Google Font: Open Sans -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        font-family: "Open Sans", sans-serif;
+        background-color: #121212;
+        color: #fff;
+      }
+
+      .container {
+        margin: 50px;
+      }
+
+      .header {
+        padding: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #121212;
+        margin-bottom: 14px;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        background-color: white;
+        color: #4a2e64;
+        padding: 4px;
+        border-radius: 10px;
+        width: fit-content;
+      }
+
+      .greeting {
+        display: flex;
+        flex-direction: column;
+        margin-right: 30px;
+      }
+
+      .greeting h1 {
+        margin: 0;
+        font-size: 34px;
+        font-weight: bolder;
+        padding-left: 20px;
+      }
+
+      .greeting p {
+        margin: 0;
+        font-size: 14px;
+        font-weight: bold;
+        padding-left: 20px;
+      }
+
+      .user-info img {
+        width: auto;
+        height: 140px;
+        max-width: none;
+        padding: 0;
+        margin: 0;
+        border: none;
+      }
+
+      .header-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .actions button {
+        display: flex;
+        align-items: center;
+        background: linear-gradient(
+          90deg,
+          #2a1a41 0%,
+          #4a2e64 56%,
+          #945cb7 100%
+        );
+        border: none;
+        padding: 12px 12px;
+        border-radius: 10px;
+        color: #fff;
+        cursor: pointer;
+        text-align: left;
+        width: 300px;
+      }
+
+      .actions button svg {
+        width: 35px;
+        height: 35px;
+        margin-right: 14px;
+      }
+
+      .actions button div {
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      .actions button p {
+        margin: 5px 0 0;
+        font-size: 14px;
+        font-weight: normal;
+      }
+
+      .workspaces {
+        padding: 20px;
+      }
+
+      .tabs {
+        display: flex;
+        justify-content: flex-start;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .tabs button {
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        font-family: "Open Sans", sans-serif;
+        font-size: 13px;
+        padding: 8px;
+      }
+
+      .tabs button.active {
+        background-color: #444;
+        border-radius: 5px;
+      }
+
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+      }
+
+      .workspace-card {
+        background-color: #121212;
+        border-radius: 10px;
+        padding: 10px;
+        position: relative;
+        width: 100%;
+      }
+
+      .workspace-card img {
+        width: 100%;
+        height: 130px;
+        border-radius: 5px;
+        object-fit: cover;
+      }
+
+      .workspace-card h3 {
+        margin: 10px 0 5px;
+        font-size: 14px;
+      }
+
+      .workspace-card small {
+        color: #fff;
+        font-size: 12px;
+      }
+
+      .avatar-group {
+        position: absolute;
+        bottom: 5px;
+        right: 4px;
+        display: flex;
+      }
+
+      .avatar-group img {
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        margin-left: -6px;
+        border: 2px solid #121212;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="header-content">
+          <div class="user-info">
+            <div class="greeting">
+              <h1>Hello User !</h1>
+              <p>It's good to see you again.</p>
+            </div>
+            <img src="images/Group 1607.png" alt="User Image" />
+          </div>
+
+          <div class="actions">
+            <button>
+              <svg
+                width="61"
+                height="61"
+                viewBox="0 0 61 61"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clip-path="url(#clip0_127_988)">
+                  <path
+                    d="M25.4168 10.1665H10.1668C7.371 10.1665 5.10891 12.454 5.10891 15.2498L5.0835 45.7498C5.0835 48.5457 7.371 50.8332 10.1668 50.8332H50.8335C53.6293 50.8332 55.9168 48.5457 55.9168 45.7498V20.3332C55.9168 17.5373 53.6293 15.2498 50.8335 15.2498H30.5002L25.4168 10.1665Z"
+                    fill="white"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_127_988">
+                    <rect width="61" height="61" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+              <div>
+                ADD WORKSPACE
+                <p>Create a new Workspace</p>
+              </div>
+            </button>
+
+            <button>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+                <path
+                  d="M24.1667 7.25016H14.5001L12.7963 5.54641C12.3372 5.08725 11.7209 4.8335 11.0805 4.8335H4.83341C3.50425 4.8335 2.42883 5.921 2.42883 7.25016L2.41675 21.7502C2.41675 23.0793 3.50425 24.1668 4.83341 24.1668H24.1667C25.4959 24.1668 26.5834 23.0793 26.5834 21.7502V9.66683C26.5834 8.33766 25.4959 7.25016 24.1667 7.25016ZM18.1251 10.8752C19.4542 10.8752 20.5417 11.9627 20.5417 13.2918C20.5417 14.621 19.4542 15.7085 18.1251 15.7085C16.7959 15.7085 15.7084 14.621 15.7084 13.2918C15.7084 11.9627 16.7959 10.8752 18.1251 10.8752ZM22.9584 20.5418H13.2917V19.3335C13.2917 17.7264 16.518 16.9168 18.1251 16.9168C19.7322 16.9168 22.9584 17.7264 22.9584 19.3335V20.5418Z"
+                  fill="white"
+                />
+              </svg>
+              <div>
+                JOIN WORKSPACE
+                <p>Join a workspace of another user</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <div class="workspaces">
+        <div class="tabs">
+          <button
+            id="recentlyVisited"
+            class="active"
+            onclick="setActiveTab('recentlyVisited')"
+          >
+            Recently Visited
+          </button>
+          <button id="myWorkspace" onclick="setActiveTab('myWorkspace')">
+            My Workspace
+          </button>
+          <button
+            id="sharedWorkspace"
+            onclick="setActiveTab('sharedWorkspace')"
+          >
+            Shared Workspace
+          </button>
+        </div>
+
+        <div class="grid-container">
+          <div class="workspace-card">
+            <img src="https://via.placeholder.com/200x100" alt="Material UI" />
+            <h3>Material UI</h3>
+            <small>Edited 5hrs ago</small>
+            <div class="avatar-group">
+              <img src="https://via.placeholder.com/30" alt="User 1" />
+              <img src="https://via.placeholder.com/30" alt="User 2" />
+              <img src="https://via.placeholder.com/30" alt="User 3" />
+            </div>
+          </div>
+
+          <div class="workspace-card">
+            <img
+              src="https://via.placeholder.com/200x100"
+              alt="UI/UX Case Study"
+            />
+            <h3>UI/UX Case Study</h3>
+            <small>Edited 5hrs ago</small>
+          </div>
+
+          <div class="workspace-card">
+            <img src="https://via.placeholder.com/200x100" alt="Grocery App" />
+            <h3>Grocery App</h3>
+            <small>Edited 5hrs ago</small>
+            <div class="avatar-group">
+              <img src="https://via.placeholder.com/30" alt="User 1" />
+              <img src="https://via.placeholder.com/30" alt="User 2" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function setActiveTab(activeId) {
+        const tabs = document.querySelectorAll(".tabs button");
+        tabs.forEach((tab) => {
+          if (tab.id === activeId) {
+            tab.classList.add("active");
+          } else {
+            tab.classList.remove("active");
+          }
+        });
+      }
+
+      // Set the default active tab on page load
+      document.addEventListener("DOMContentLoaded", () => {
+        setActiveTab("recentlyVisited");
+      });
+    </script>
+  </body>
+</html>
