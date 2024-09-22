@@ -1,13 +1,15 @@
+// backend/server.js
+
 import path from 'path';
 import express from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import cors from 'cors'
+import cors from 'cors';
 
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 import connectDB from './config/db.js';
-import userRoutes from './routes/userRoutes.js'
+import userRoutes from './routes/userRoutes.js';
 
 dotenv.config();
 
@@ -24,20 +26,21 @@ app.use(cookieParser());
 
 app.use(cors());
 
-app.use('/api/users', userRoutes);//whenever api endpoint => /api/user, then call route => userRoutes
-// app.get('/', (req, res) => res.send('Server is ready')); //move to line 35
+// Use user routes
+app.use('/api/users', userRoutes);
 
+// Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
-   const __dirname = path.resolve();
-   app.use(express.static(path.join(__dirname, '/frontend/dist')));
-   app.get('*', (req, res) =>
-      res.sendFile(path.resolve(__dirname, 'frontend', 'dist', 'index.html'))
-   );
+  const __dirname = path.resolve();
+  app.use(express.static(path.join(__dirname, '/frontend/dist')));
+  app.get('*', (req, res) =>
+    res.sendFile(path.resolve(__dirname, 'frontend', 'dist', 'index.html'))
+  );
 } else {
-   app.get('/', (req, res) => res.send('Server is ready')); //for root hit
+  app.get('/', (req, res) => res.send('Server is ready')); //for root hit
 }
 
 app.use(notFound); //for handle non-exist api url
 app.use(errorHandler); //for handle and show error with stack in response
 
-app.listen(port, () => console.log(`Server stared on port ${port}`));
+app.listen(port, () => console.log(`Server started on port ${port}`));
