@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Define Todo Stage</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap");
+
+      body {
+        font-family: "Open Sans", sans-serif;
+        background-color: black;
+        color: white;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        background: linear-gradient(to bottom, #2f263c 0%, #121212 100%);
+        border-radius: 10px;
+        padding: 20px 40px;
+        max-width: 400px;
+        width: 100%;
+        height: 500px;
+        text-align: left;
+        position: relative;
+      }
+
+      h1 {
+        font-size: 28px;
+        margin: 10px 0;
+      }
+
+      p {
+        margin: 5px 0 20px 0;
+        font-size: 14px;
+      }
+
+      .content {
+        display: flex;
+        gap: 30px;
+        position: relative;
+        height: calc(100% - 180px);
+      }
+
+      .left {
+        width: 40%;
+      }
+
+      .content::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 40%;
+        width: 1px;
+        background-color: #fff;
+        opacity: 0.3;
+      }
+
+      .right {
+        width: 60%;
+        padding-left: 0px;
+      }
+
+      select,
+      .stage-box,
+      .add-stage {
+        width: 100%;
+        margin: 8px;
+      }
+
+      select#template {
+        margin-top: 8px;
+        margin-left: -4px;
+        width: 100%;
+        background-color: white;
+        color: #999999;
+        padding: 6px 10px 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+      }
+
+      .stage-box,
+      .add-stage {
+        display: flex;
+        align-items: center;
+        background-color: transparent;
+        padding: 0px 8px;
+        justify-content: space-between;
+        border: 2px solid transparent;
+        position: relative;
+        border-radius: 8px;
+      }
+
+      .stage-box.open {
+        border-radius: 8px;
+        border-image: linear-gradient(to right, #9854cb, #c8b8dd) 1;
+      }
+
+      .stage-box.in-progress {
+        border-radius: 8px;
+        border-image: linear-gradient(to right, #343ad5, #a4b3ec) 1;
+      }
+
+      .stage-box.review {
+        border-radius: 8px;
+        border-image: linear-gradient(to right, #e5cf59, #e4d66b 24%, #e2eca4) 1;
+      }
+
+      .stage-box::before,
+      .add-stage::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+
+        background: transparent;
+      }
+
+      .stage-section {
+        margin-bottom: 20px;
+      }
+
+      .stage-title,
+      .add-stage {
+        font-size: 14px;
+        color: white;
+        margin-bottom: 5px;
+        font-weight: bold;
+        display: flex;
+        margin-right: -20px;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .stage-box span,
+      .add-stage span {
+        font-size: 14px;
+        color: #fff;
+        padding: 2px 0px;
+        display: flex;
+        align-items: center;
+      }
+
+      .stage-box svg {
+        margin-right: 8px;
+      }
+
+      .add-stage svg {
+        margin-right: -42px;
+      }
+
+      .add-stage {
+        background: none;
+        border: 2px dashed #fff;
+        color: #fff;
+        border-radius: 8px; /* Adjusted to match stage boxes */
+        padding: 2px 8px;
+
+        cursor: pointer;
+      }
+
+      .stage-status {
+        display: flex;
+        gap: 10px;
+      }
+
+      .status-btn {
+        padding: 6px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+        height: 15px;
+        width: 15px;
+      }
+
+      .purple {
+        background-color: #7e57c2;
+      }
+
+      .blue {
+        background-color: #42a5f5;
+      }
+
+      .yellow {
+        background-color: #fdd835;
+      }
+
+      .white {
+        background-color: #d4d4d4;
+      }
+
+      .next-btn {
+        background: linear-gradient(
+          to right,
+          #2a1a41 0%,
+          #4a2e64 56%,
+          #945cb7 100%
+        );
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 10px 60px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+      }
+
+      .next-btn:hover {
+        opacity: 0.9;
+      }
+
+      .next-btn:active {
+        background-color: #007bff;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Define Todo Stage</h1>
+      <p>
+        Choose a pre-configured solution or customize to your liking with
+        advanced ClickApps, required views, and task statuses.
+      </p>
+
+      <div class="content">
+        <div class="left">
+          <div class="stage-section">
+            <label for="template">Stages Template</label>
+            <select id="template">
+              <option>Basic</option>
+              <!-- Add more options if necessary -->
+            </select>
+          </div>
+        </div>
+
+        <div class="right">
+          <div class="stage-section">
+            <p class="stage-title">
+              Not Started
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clip-path="url(#clip0_145_1074)">
+                  <path
+                    d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+                    fill="white"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_145_1074">
+                    <rect width="24" height="24" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+            </p>
+            <div class="stage-box open">
+              <span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                >
+                  <path
+                    d="M4 18H20C20.55 18 21 17.55 21 17C21 16.45 20.55 16 20 16H4C3.45 16 3 16.45 3 17C3 17.55 3.45 18 4 18ZM4 13H20C20.55 13 21 12.55 21 12C21 11.45 20.55 11 20 11H4C3.45 11 3 11.45 3 12C3 12.55 3.45 13 4 13ZM3 7C3 7.55 3.45 8 4 8H20C20.55 8 21 7.55 21 7C21 6.45 20.55 6 20 6H4C3.45 6 3 6.45 3 7Z"
+                    fill="white"
+                  />
+                </svg>
+                OPEN
+              </span>
+              <div class="stage-status">
+                <button class="status-btn purple"></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="stage-section">
+            <p class="stage-title">
+              Active
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clip-path="url(#clip0_145_1074)">
+                  <path
+                    d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+                    fill="white"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_145_1074">
+                    <rect width="24" height="24" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+            </p>
+            <div class="stage-box in-progress">
+              <span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                >
+                  <path
+                    d="M4 18H20C20.55 18 21 17.55 21 17C21 16.45 20.55 16 20 16H4C3.45 16 3 16.45 3 17C3 17.55 3.45 18 4 18ZM4 13H20C20.55 13 21 12.55 21 12C21 11.45 20.55 11 20 11H4C3.45 11 3 11.45 3 12C3 12.55 3.45 13 4 13ZM3 7C3 7.55 3.45 8 4 8H20C20.55 8 21 7.55 21 7C21 6.45 20.55 6 20 6H4C3.45 6 3 6.45 3 7Z"
+                    fill="white"
+                  />
+                </svg>
+                IN PROGRESS
+              </span>
+              <div class="stage-status">
+                <button class="status-btn blue"></button>
+              </div>
+            </div>
+            <div class="stage-box review">
+              <span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                >
+                  <path
+                    d="M4 18H20C20.55 18 21 17.55 21 17C21 16.45 20.55 16 20 16H4C3.45 16 3 16.45 3 17C3 17.55 3.45 18 4 18ZM4 13H20C20.55 13 21 12.55 21 12C21 11.45 20.55 11 20 11H4C3.45 11 3 11.45 3 12C3 12.55 3.45 13 4 13ZM3 7C3 7.55 3.45 8 4 8H20C20.55 8 21 7.55 21 7C21 6.45 20.55 6 20 6H4C3.45 6 3 6.45 3 7Z"
+                    fill="white"
+                  />
+                </svg>
+                REVIEW
+              </span>
+              <div class="stage-status">
+                <button class="status-btn yellow"></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="stage-section">
+            <p class="stage-title">
+              Done
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clip-path="url(#clip0_145_1074)">
+                  <path
+                    d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+                    fill="white"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_145_1074">
+                    <rect width="24" height="24" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+            </p>
+            <div class="add-stage">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+              >
+                <path
+                  d="M4 18H20C20.55 18 21 17.55 21 17C21 16.45 20.55 16 20 16H4C3.45 16 3 16.45 3 17C3 17.55 3.45 18 4 18ZM4 13H20C20.55 13 21 12.55 21 12C21 11.45 20.55 11 20 11H4C3.45 11 3 11.45 3 12C3 12.55 3.45 13 4 13ZM3 7C3 7.55 3.45 8 4 8H20C20.55 8 21 7.55 21 7C21 6.45 20.55 6 20 6H4C3.45 6 3 6.45 3 7Z"
+                  fill="white"
+                />
+              </svg>
+              ADD STAGE
+              <div class="stage-status"></div>
+              <button class="status-btn white"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="next-btn">Next</button>
+    </div>
+  </body>
+</html>
