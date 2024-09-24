@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400&display=swap"
+      rel="stylesheet"
+    />
+    <title>Define Workspace Views</title>
+    <style>
+      body {
+        font-family: "Open Sans", sans-serif;
+        background-color: black;
+        color: white;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        background: linear-gradient(to bottom, #2f263c 0%, #121212 100%);
+        border-radius: 10px;
+        padding: 20px 40px;
+        max-width: 400px;
+        width: 100%;
+        height: 500px;
+        text-align: left;
+        position: relative;
+      }
+
+      h1 {
+        font-size: 28px;
+        margin: 10px 0;
+      }
+
+      p {
+        margin: 5px 0 20px 0;
+        font-size: 14px;
+      }
+
+      .options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .option {
+        background: transparent;
+        border: 2px solid #622985;
+        border-radius: 10px;
+        padding: 4px 12px;
+        font-size: 17px;
+        font-weight: bold;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+      }
+
+      .option svg {
+        width: 20px; /* Adjusted size of SVG icon */
+        height: 20px; /* Adjusted size of SVG icon */
+        margin-right: 8px; /* Space between SVG and text */
+      }
+
+      .option input {
+        width: 32px; /* Reduced width of checkbox */
+        height: 18px; /* Reduced height of checkbox */
+        appearance: none;
+        background-color: #b0b0b0;
+        border-radius: 15px;
+        position: relative;
+        cursor: pointer;
+        margin-left: auto; /* Move checkbox to the right */
+      }
+
+      .option input::before {
+        content: "";
+        position: absolute;
+        width: 16px; /* Adjusted size of small circle */
+        height: 16px; /* Adjusted size of small circle */
+        background-color: white;
+        border-radius: 50%;
+        top: 1px;
+        left: 1px;
+        transition: 0.3s;
+      }
+
+      .option input:checked {
+        background-color: #5f4277;
+      }
+
+      .option input:checked::before {
+        transform: translateX(
+          14px
+        ); /* Adjusted translation for smaller checkbox */
+      }
+
+      .next-btn {
+        background: linear-gradient(
+          to right,
+          #2a1a41 0%,
+          #4a2e64 56%,
+          #945cb7 100%
+        );
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 10px 60px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+      }
+
+      .next-btn:hover {
+        opacity: 0.9;
+      }
+
+      .next-btn:active {
+        background-color: #007bff;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Define Workspace Views</h1>
+      <p>
+        Choose a pre-configured solution or customize to your liking with
+        advanced ClickApps, required views, and task statuses.
+      </p>
+
+      <div class="options">
+        <label class="option">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+            <path
+              d="M3.5 15.1665H5.83333V12.8332H3.5V15.1665ZM3.5 19.8332H5.83333V17.4998H3.5V19.8332ZM3.5 10.4998H5.83333V8.1665H3.5V10.4998ZM8.16667 15.1665H24.5V12.8332H8.16667V15.1665ZM8.16667 19.8332H24.5V17.4998H8.16667V19.8332ZM8.16667 8.1665V10.4998H24.5V8.1665H8.16667Z"
+              fill="white"
+            />
+          </svg>
+          <span>Lists</span>
+          <input type="checkbox" />
+        </label>
+        <label class="option">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+            <path
+              d="M10.5 12.8335H8.16667V15.1668H10.5V12.8335ZM15.1667 12.8335H12.8333V15.1668H15.1667V12.8335ZM19.8333 12.8335H17.5V15.1668H19.8333V12.8335ZM22.1667 4.66683H21V2.3335H18.6667V4.66683H9.33333V2.3335H7V4.66683H5.83333C4.53833 4.66683 3.51167 5.71683 3.51167 7.00016L3.5 23.3335C3.5 24.6168 4.53833 25.6668 5.83333 25.6668H22.1667C23.45 25.6668 24.5 24.6168 24.5 23.3335V7.00016C24.5 5.71683 23.45 4.66683 22.1667 4.66683ZM22.1667 23.3335H5.83333V10.5002H22.1667V23.3335Z"
+              fill="white"
+            />
+          </svg>
+          <span>Calendar</span>
+          <input type="checkbox" />
+        </label>
+        <label class="option">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+            <path
+              d="M22.1667 8.16667H10.5C9.21667 8.16667 8.16667 9.21667 8.16667 10.5V22.1667C8.16667 23.45 9.21667 24.5 10.5 24.5H22.1667C23.45 24.5 24.5 23.45 24.5 22.1667V10.5C24.5 9.21667 23.45 8.16667 22.1667 8.16667ZM22.1667 11.6667C22.1667 12.3083 21.6417 12.8333 21 12.8333H11.6667C11.025 12.8333 10.5 12.3083 10.5 11.6667C10.5 11.025 11.025 10.5 11.6667 10.5H21C21.6417 10.5 22.1667 11.025 22.1667 11.6667ZM15.1667 17.5V15.1667H17.5V17.5H15.1667ZM17.5 19.8333V22.1667H15.1667V19.8333H17.5ZM12.8333 17.5H10.5V15.1667H12.8333V17.5ZM19.8333 15.1667H22.1667V17.5H19.8333V15.1667ZM10.5 19.8333H12.8333V22.1667H10.5V19.8333ZM19.8333 22.1667V19.8333H22.1667V22.1667H19.8333ZM7 19.8333H5.83333C4.55 19.8333 3.5 18.7833 3.5 17.5V5.83333C3.5 4.55 4.55 3.5 5.83333 3.5H17.5C18.7833 3.5 19.8333 4.55 19.8333 5.83333V7H17.5V5.83333H5.83333V17.5H7V19.8333Z"
+              fill="white"
+            />
+          </svg>
+          <span>Table</span>
+          <input type="checkbox" />
+        </label>
+        <label class="option">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+            <path
+              d="M7.46634 10.7335H7.69967C8.59801 10.7335 9.33301 11.4685 9.33301 12.3668V20.5335C9.33301 21.4318 8.59801 22.1668 7.69967 22.1668H7.46634C6.56801 22.1668 5.83301 21.4318 5.83301 20.5335V12.3668C5.83301 11.4685 6.56801 10.7335 7.46634 10.7335ZM13.9997 5.8335C14.898 5.8335 15.633 6.5685 15.633 7.46683V20.5335C15.633 21.4318 14.898 22.1668 13.9997 22.1668C13.1013 22.1668 12.3663 21.4318 12.3663 20.5335V7.46683C12.3663 6.5685 13.1013 5.8335 13.9997 5.8335ZM20.533 15.1668C21.4313 15.1668 22.1663 15.9018 22.1663 16.8002V20.5335C22.1663 21.4318 21.4313 22.1668 20.533 22.1668C19.6347 22.1668 18.8997 21.4318 18.8997 20.5335V16.8002C18.8997 15.9018 19.6347 15.1668 20.533 15.1668Z"
+              fill="white"
+            />
+          </svg>
+          <span>Gantt</span>
+          <input type="checkbox" />
+        </label>
+        <label class="option">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+            <path
+              d="M3.5 5.83333V22.1667C3.5 23.45 4.55 24.5 5.83333 24.5H22.1667C23.45 24.5 24.5 23.45 24.5 22.1667V5.83333C24.5 4.55 23.45 3.5 22.1667 3.5H5.83333C4.55 3.5 3.5 4.55 3.5 5.83333ZM12.8333 22.1667H7C6.35833 22.1667 5.83333 21.6417 5.83333 21V15.1667H11.6667C12.3083 15.1667 12.8333 15.6917 12.8333 16.3333V22.1667ZM11.6667 12.8333H5.83333V7C5.83333 6.35833 6.35833 5.83333 7 5.83333H12.8333V11.6667C12.8333 12.3083 12.3083 12.8333 11.6667 12.8333ZM21 22.1667H15.1667V16.3333C15.1667 15.6917 15.6917 15.1667 16.3333 15.1667H22.1667V21C22.1667 21.6417 21.6417 22.1667 21 22.1667ZM22.1667 12.8333H16.3333C15.6917 12.8333 15.1667 12.3083 15.1667 11.6667V5.83333H21C21.6417 5.83333 22.1667 6.35833 22.1667 7V12.8333Z"
+              fill="white"
+            />
+          </svg>
+          <span>Board</span>
+          <input type="checkbox" />
+        </label>
+        <label class="option">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
+            <path
+              d="M6.66634 4.66683H25.333V18.6668H8.03134L6.66634 20.0318V4.66683ZM6.66634 2.3335C5.38301 2.3335 4.34467 3.3835 4.34467 4.66683L4.33301 25.6668L8.99967 21.0002H25.333C26.6163 21.0002 27.6663 19.9502 27.6663 18.6668V4.66683C27.6663 3.3835 26.6163 2.3335 25.333 2.3335H6.66634ZM8.99967 14.0002H18.333V16.3335H8.99967V14.0002ZM8.99967 10.5002H22.9997V12.8335H8.99967V10.5002ZM8.99967 7.00016H22.9997V9.3335H8.99967V7.00016Z"
+              fill="white"
+            />
+          </svg>
+          <span>Chat</span>
+          <input type="checkbox" checked />
+        </label>
+        <label class="option">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+            <path
+              d="M26.8337 9.33333C26.8337 10.6167 25.7837 11.6667 24.5003 11.6667C24.2903 11.6667 24.092 11.6433 23.9053 11.585L19.752 15.7267C19.8103 15.9133 19.8337 16.1233 19.8337 16.3333C19.8337 17.6167 18.7837 18.6667 17.5003 18.6667C16.217 18.6667 15.167 17.6167 15.167 16.3333C15.167 16.1233 15.1903 15.9133 15.2487 15.7267L12.2737 12.7517C12.087 12.81 11.877 12.8333 11.667 12.8333C11.457 12.8333 11.247 12.81 11.0603 12.7517L5.75199 18.0717C5.81033 18.2583 5.83366 18.4567 5.83366 18.6667C5.83366 19.95 4.78366 21 3.50033 21C2.21699 21 1.16699 19.95 1.16699 18.6667C1.16699 17.3833 2.21699 16.3333 3.50033 16.3333C3.71033 16.3333 3.90866 16.3567 4.09533 16.415L9.41533 11.1067C9.35699 10.92 9.33366 10.71 9.33366 10.5C9.33366 9.21667 10.3837 8.16667 11.667 8.16667C12.9503 8.16667 14.0003 9.21667 14.0003 10.5C14.0003 10.71 13.977 10.92 13.9187 11.1067L16.8937 14.0817C17.0803 14.0233 17.2903 14 17.5003 14C17.7103 14 17.9203 14.0233 18.107 14.0817L22.2487 9.92833C22.1903 9.74167 22.167 9.54333 22.167 9.33333C22.167 8.05 23.217 7 24.5003 7C25.7837 7 26.8337 8.05 26.8337 9.33333Z"
+              fill="white"
+            />
+          </svg>
+          <span>Timeline</span>
+          <input type="checkbox" />
+        </label>
+      </div>
+
+      <button class="next-btn">Next</button>
+    </div>
+  </body>
+</html>
