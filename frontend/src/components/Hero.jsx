@@ -31,7 +31,7 @@ const Hero = () => {
    };
  
    return (
-     <div style={{ display: 'flex' }}>
+     <div style={{ display: 'flex'}}>
        {userInfo && <Sidebar user={userInfo} onToggle={handleSidebarToggle} />} {/* Pass callback */}
  
        {/* Main Content */}
