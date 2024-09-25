@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Profile Info</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body,
+      html {
+        height: 100%;
+        background-color: #000; /* Black background */
+        font-family: "Open Sans", sans-serif;
+      }
+      .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        flex-direction: column;
+      }
+      .form-container {
+        background: linear-gradient(to bottom, #2f263c 0%, #121212 100%);
+        padding: 25px 20px;
+        border-radius: 10px;
+        width: 390px;
+        color: #fff;
+        height: 68%;
+        text-align: left;
+        position: relative;
+      }
+      h1 {
+        font-weight: bold;
+        margin-bottom: 16px;
+      }
+      h2 {
+        font-size: 1.2em; /* Size for the social links heading */
+        margin: 8px 0px;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+      .input-group {
+        margin-bottom: 8px;
+      }
+      .input-group label {
+        font-size: 0.9em;
+        margin: 4px;
+        display: block;
+      }
+      .input-group input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        background-color: #565656; /* Changed background color */
+        color: #fff;
+        font-size: 0.95em;
+      }
+      .input-group input::placeholder {
+        color: #999999;
+      }
+      .name-photo-container {
+        margin-left: 0px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .photo-upload {
+        margin-right: 30px;
+        display: flex; /* Added to align image and label */
+        align-items: flex-start; /* Aligns image to the top */
+        margin-top: -10px; /* Adjust this value to move the image up */
+      }
+      .photo-upload img {
+        width: 70px;
+        height: 70px;
+        cursor: pointer;
+        border-radius: 8px;
+        background-color: #565656;
+      }
+      .photo-upload input[type="file"] {
+        display: none;
+      }
+      .company-role-container,
+      .city-country-container,
+      .social-links-container {
+        display: flex;
+        justify-content: space-between;
+      }
+      .company-role-container .input-group {
+        width: 58%; /* Increased width for Company */
+      }
+      .company-role-container .input-group:last-child {
+        width: 38%; /* Decreased width for Job Role */
+      }
+      .city-country-container .input-group,
+      .social-links-container .input-group {
+        width: 48%; /* Keep these inputs half-width to fit side by side */
+      }
+      .update-button {
+        background: linear-gradient(
+          to right,
+          #2a1a41 0%,
+          #4a2e64 56%,
+          #945cb7 100%
+        );
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 10px 40px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        position: absolute; /* Positioning at the bottom right */
+        bottom: 10px; /* Adjusted position */
+        right: 20px; /* Adjusted position */
+      }
+      .update-button:hover {
+        opacity: 0.9; /* Hover effect */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="form-container">
+        <h1>Edit Profile Info</h1>
+        <form action="#" method="post">
+          <!-- Name and Photo Upload Container -->
+          <div class="name-photo-container">
+            <div class="input-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" placeholder="Current Name" />
+            </div>
+            <div class="photo-upload">
+              <label for="photo-upload">
+                <img src="images/Group 1620.png" alt="Upload Photo" />
+              </label>
+              <input type="file" id="photo-upload" />
+            </div>
+          </div>
+          <!-- Company and Job Role Container -->
+          <div class="company-role-container">
+            <div class="input-group">
+              <label for="company">Company</label>
+              <input
+                type="text"
+                id="company"
+                placeholder="Current Company Name"
+              />
+            </div>
+            <div class="input-group">
+              <label for="job-role">Job Role</label>
+              <input type="text" id="job-role" placeholder="Job Role" />
+            </div>
+          </div>
+          <!-- City and Country Container -->
+          <div class="city-country-container">
+            <div class="input-group">
+              <label for="city">City</label>
+              <input type="text" id="city" placeholder="Current City" />
+            </div>
+            <div class="input-group">
+              <label for="country">Country</label>
+              <input type="text" id="country" placeholder="Current Country" />
+            </div>
+          </div>
+          <!-- Social Links Section -->
+          <h2>Social Links</h2>
+          <!-- Added heading for social links -->
+          <div class="social-links-container">
+            <div class="input-group">
+              <label for="linkedin">LinkedIn</label>
+              <input type="text" id="linkedin" placeholder="link" />
+            </div>
+            <div class="input-group">
+              <label for="github">Github</label>
+              <input type="text" id="github" placeholder="link" />
+            </div>
+          </div>
+          <button type="submit" class="update-button">Update</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
