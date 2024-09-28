@@ -98,6 +98,42 @@
         height: 18px; /* Set the height of the SVG */
         margin-right: 5px; /* Spacing between the icon and text */
       }
+
+      .button-container {
+        display: flex; /* Align buttons in a row */
+        margin-top: 10px; /* Space above this container */
+        max-height: 0; /* Initially hidden */
+        overflow: hidden; /* Prevents overflow */
+        transition: max-height 0.3s ease; /* Smooth transition for height */
+    }
+    
+    .button-container.show {
+        max-height: 200px; /* Set a reasonable max height for visible state */
+    }
+    
+    .invisible {
+        display: none; /* This class will hide the button container */
+    }
+    
+
+      .custom-button {
+        background-color: transparent; /* Transparent background */
+        border: 2px solid white; /* Border color */
+        margin: 0px 8px;
+        padding: 2px 12px;
+        font-size: 14px;
+        color: white; /* Text color */
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      .line-below {
+        border: 1px solid #fff;
+        margin-top:10px;
+        padding: 0px;
+      }
+
     </style>
   </head>
   <body>
@@ -245,7 +281,19 @@
             </a>
           </li>
         </ul>
-        <button class="filter-button">Filter</button>
+        <div class="button-container_2">
+          <button class="filter-button" onclick="toggleButton()">Filter</button>
+      </div>      
+  </div>
+
+  <div class="button-container invisible" id="toggle-container">
+      <button class="custom-button">Expand All</button>
+      <button class="custom-button">Sort</button>
+      <button class="custom-button">Assigned</button>
+      <button class="custom-button">Closed</button>
+  </div>
+
+  <div class="line-below invisible" id="line-below"></div> <!-- Initially hidden -->
       </div>
     </div>
     <script>
@@ -261,6 +309,28 @@
           this.classList.add("active");
         });
       });
+
+
+       //filter
+       function toggleButton() {
+        const toggleContainer = document.getElementById('toggle-container');
+        const lineBelow = document.getElementById('line-below'); // Reference to the line-below div
+        const filterButton = document.querySelector('.filter-button');
+    
+        // Toggle visibility and button text
+        if (toggleContainer.classList.contains('invisible')) {
+            toggleContainer.classList.remove('invisible'); // Show the buttons
+            toggleContainer.classList.add('show'); // Add class to handle transition
+            lineBelow.classList.remove('invisible'); // Show the line below
+            filterButton.textContent = 'Hide'; // Change button text to "Hide"
+        } else {
+            toggleContainer.classList.add('invisible'); // Hide the buttons
+            toggleContainer.classList.remove('show'); // Remove class to handle transition
+            lineBelow.classList.add('invisible'); // Hide the line below
+            filterButton.textContent = 'Filter'; // Change button text back to "Filter"
+        }
+    }
+    
     </script>
   </body>
 </html>

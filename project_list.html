@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workspace Header</title>
+    <style>
+      /* General Styles */
+      body {
+        margin: 0;
+        font-family: "Open Sans", sans-serif;
+        background-color: #181818;
+        color: white;
+      }
+
+      .container {
+        padding: 20px;
+        margin: 10px 30px;
+      }
+
+      .workspace-name {
+        font-size: 28px;
+        font-weight: bold;
+        margin: 0 0 2px 0;
+      }
+
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #fff; /* Thicker border for the bottom line */
+        padding-bottom: 2px;
+        position: relative;
+      }
+
+      .menu {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .menu li {
+        margin-right: 4px;
+        position: relative;
+      }
+
+      .menu li a {
+        color: #fff;
+        position: relative;
+        text-decoration: none;
+        font-size: 14px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex; /* Flex to align items */
+        align-items: center; /* Center items vertically */
+      }
+
+      .menu li a:hover {
+        background-color: #3a3a3a;
+      }
+
+      /* Active item pseudo-element for underline */
+      .menu li .active::after {
+        content: "";
+        position: absolute;
+        bottom: -6px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background-color: #945cb7; /* Purple underline */
+      }
+
+      .filter-button {
+        margin-right: 2%;
+        margin-bottom: 2px;
+        border: 2px solid #fff;
+        background-color: transparent;
+        color: #fff;
+        padding: 8px 40px;
+        border-radius: 20px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.3s ease, color 0.3s ease;
+      }
+
+      .filter-button:hover,
+      .custom-button:hover {
+        background: linear-gradient(
+          to right,
+          #2a1a41 0%,
+          #4a2e64 56%,
+          #945cb7 100%
+        );
+        color: white;
+      }
+
+      .icon {
+        width: 18px; /* Set the width of the SVG */
+        height: 18px; /* Set the height of the SVG */
+        margin-right: 5px; /* Spacing between the icon and text */
+      }
+
+      .button-container {
+        display: flex; /* Align buttons in a row */
+        margin-top: 10px; /* Space above this container */
+        max-height: 0; /* Initially hidden */
+        overflow: hidden; /* Prevents overflow */
+        transition: max-height 0.3s ease; /* Smooth transition for height */
+    }
+    
+    .button-container.show {
+        max-height: 200px; /* Set a reasonable max height for visible state */
+    }
+    
+    .invisible {
+        display: none; /* This class will hide the button container */
+    }
+    
+
+      .custom-button {
+        background-color: transparent; /* Transparent background */
+        border: 2px solid white; /* Border color */
+        margin: 0px 8px;
+        padding: 2px 12px;
+        font-size: 14px;
+        color: white; /* Text color */
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      .line-below {
+        border: 1px solid #fff;
+        margin-top:10px;
+        padding: 0px;
+      }
+
+      .task-list-wrapper {
+        background-color: #2b2b2b; /* Background color for the task list container */
+        border-radius: 40px; /* Rounded corners */
+        padding: 20px;
+        margin: 20px 40px;
+        display: flex;
+        position: relative;
+      }
+
+      .sidebar {
+        width: 4%; /* Sidebar occupies 10% of the width */
+        background-color: #9fa2ff; /* Different background for visibility */
+        height: calc(100vh - 60px); /* Sidebar full height minus padding */
+        position: absolute;
+        border-radius: 40px 0 0 40px;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
+
+      .task-list-content {
+        width: 90%; /* Content occupies 90% of the width */
+        padding-left: 5%; /* Space between sidebar and content */
+        height: calc(
+          100vh - 100px
+        ); /* Make content full height minus padding */
+      }
+
+      .task-list-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px; /* Space below the header */
+      }
+
+      .task-list-header h2 {
+        display: flex;
+        margin-bottom: 0px;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .icons {
+        display: flex;
+        gap: 10px;
+        margin-left: 15px;
+      }
+
+      .icons svg {
+        fill: #a5a5a5; /* Adjust fill color as needed */
+        cursor: pointer;
+        transition: fill 0.3s ease;
+      }
+
+      .task-list-header p {
+        font-size: 16px;
+        color: #fff;
+        margin-bottom: 0px; /* Reduced margin for better spacing */
+      }
+
+      /* SVG Button Wrapper */
+      .svg-button-wrapper {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px; /* Space between status sections */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer; /* Change cursor to indicate it's clickable */
+      }
+
+      .svg-button-wrapper svg {
+        margin-right: 10px; /* Space between SVG and text */
+      }
+
+      .svg-button-wrapper:hover .task-status-header {
+        transition: background-color 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Add a subtle shadow effect */
+      }
+
+      .task-container {
+        display: block;
+      }
+
+      .task-info {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* Space between the icon and task name */
+      }
+
+      .task-heading {
+        font-size: 12px;
+        color: #8a8a8a; /* Grey color for the small heading */
+        margin-bottom: 5px; /* Space between heading and task name */
+      }
+
+      /* Task Status Headers */
+      .task-status-header {
+        font-weight: bold;
+        margin-top: 16px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        display: flex; /* Change to flex display */
+        justify-content: center; /* Center content horizontally */
+        align-items: center;
+        color: #fff;
+        width: 120px;
+        transition: background 0.3s; /* Smooth transition */
+      }
+
+      .opened-header {
+        background-color: #9854cb; /* Color for opened status */
+      }
+
+      .in-progress-header {
+        background-color: #547ccb; /* Color for in-progress status */
+      }
+
+      .review-header {
+        background-color: #ff9800; /* Color for review status */
+      }
+
+      /* Task Item Styles */
+      .task-item {
+        margin-left: 40px;
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #555;
+        transition: background 0.2s; /* Smooth transition */
+      }
+
+      .task-item:hover {
+        background-color: rgba(255, 255, 255, 0.1); /* Highlight on hover */
+        border-radius: 4px;
+      }
+
+      .task-name {
+        margin-left: 8px;
+        flex: 2.1;
+        font-weight: bold;
+      }
+
+      .task-priority {
+        flex: 1;
+        text-align:left;
+        font-weight: bold;
+      }
+
+      .high-priority {
+        color: #fb8282;       
+      }
+
+      .moderate-priority {
+        color: #f7bb61;        ;
+      }
+
+      .low-priority {
+        color: #8dde90;       
+      }
+
+      .task-due-date {
+        flex: 1;
+      }
+
+      .task-assignee {
+        flex: 0.5;
+        text-align: left;
+      }
+      .add-task {
+        position: relative; /* Use relative positioning */
+        margin-bottom: 10px; /* Add space below to separate it from Add New List */
+        text-align: center;
+        padding: 10px;
+        cursor: pointer;
+        color: #aaa;
+        transition: color 0.3s;
+    }
+    
+    .add-new-list {
+        text-align: center;
+        padding: 10px;
+        cursor: pointer;
+        color: #aaa;
+        transition: color 0.3s;
+    } 
+    
+
+      .add-task:hover,
+      .add-new-list:hover {
+        color: white; /* Change color on hover */
+      }
+
+
+      /* Initial rotation -90 degrees */
+      svg.rotate-closed {
+        transform: rotate(0deg);
+        transition: transform 0.3s ease;
+      }
+
+      svg.rotate-open {
+        transform: rotate(-90deg);
+        transition: transform 0.3s ease; /* Smooth transition for rotation */
+      }
+
+      .task-container {
+        display: flex;
+        align-items: center; /* Center vertically */
+        width: 50%;
+      }
+
+      .task_headingg {
+        margin-left: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #555;
+        transition: background 0.2s;
+        cursor: pointer;
+        color: #ffffff;
+      }
+
+      .task-heading-1 {
+        display: flex;
+        flex: 2.55;
+      }
+
+      .task-heading-2 {
+        flex: 0.98;
+        text-align: left;
+      }
+
+      .task-heading-3 {
+        flex: 1;
+        text-align: left;
+      }
+
+      .task-heading-4 {
+        flex: 0.55;
+        text-align: left;
+      }
+
+      .avatar-group {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4px;
+    }
+    
+    .avatar-group img {
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        margin-left: -6px;
+        border: 2px solid #fff;
+    }
+    
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="workspace-name">Workspace Name</h1>
+
+      <div class="nav">
+        <ul class="menu">
+          <li>
+            <a href="#" class="active">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="icon"
+              >
+                <path
+                  d="M4.5 14.625H11.25C11.8687 14.625 12.375 14.1187 12.375 13.5V4.5C12.375 3.88125 11.8687 3.375 11.25 3.375H4.5C3.88125 3.375 3.375 3.88125 3.375 4.5V13.5C3.375 14.1187 3.88125 14.625 4.5 14.625ZM4.5 23.625H11.25C11.8687 23.625 12.375 23.1187 12.375 22.5V18C12.375 17.3813 11.8687 16.875 11.25 16.875H4.5C3.88125 16.875 3.375 17.3813 3.375 18V22.5C3.375 23.1187 3.88125 23.625 4.5 23.625ZM15.75 23.625H22.5C23.1187 23.625 23.625 23.1187 23.625 22.5V13.5C23.625 12.8813 23.1187 12.375 22.5 12.375H15.75C15.1313 12.375 14.625 12.8813 14.625 13.5V22.5C14.625 23.1187 15.1313 23.625 15.75 23.625ZM14.625 4.5V9C14.625 9.61875 15.1313 10.125 15.75 10.125H22.5C23.1187 10.125 23.625 9.61875 23.625 9V4.5C23.625 3.88125 23.1187 3.375 22.5 3.375H15.75C15.1313 3.375 14.625 3.88125 14.625 4.5Z"
+                  fill="white"
+                />
+              </svg>
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 2 22 22"
+                class="icon"
+              >
+                <path
+                  d="M3.5 15.1665H5.83333V12.8332H3.5V15.1665ZM3.5 19.8332H5.83333V17.4998H3.5V19.8332ZM3.5 10.4998H5.83333V8.1665H3.5V10.4998ZM8.16667 15.1665H24.5V12.8332H8.16667V15.1665ZM8.16667 19.8332H24.5V17.4998H8.16667V19.8332ZM8.16667 8.1665V10.4998H24.5V8.1665H8.16667Z"
+                  fill="white"
+                />
+              </svg>
+              List
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 26"
+                class="icon"
+              >
+                <path
+                  d="M3.5 5.83333V22.1667C3.5 23.45 4.55 24.5 5.83333 24.5H22.1667C23.45 24.5 24.5 23.45 24.5 22.1667V5.83333C24.5 4.55 23.45 3.5 22.1667 3.5H5.83333C4.55 3.5 3.5 4.55 3.5 5.83333ZM12.8333 22.1667H7C6.35833 22.1667 5.83333 21.6417 5.83333 21V15.1667H11.6667C12.3083 15.1667 12.8333 15.6917 12.8333 16.3333V22.1667ZM11.6667 12.8333H5.83333V7C5.83333 6.35833 6.35833 5.83333 7 5.83333H12.8333V11.6667C12.8333 12.3083 12.3083 12.8333 11.6667 12.8333ZM21 22.1667H15.1667V16.3333C15.1667 15.6917 15.6917 15.1667 16.3333 15.1667H22.1667V21C22.1667 21.6417 21.6417 22.1667 21 22.1667ZM22.1667 12.8333H16.3333C15.6917 12.8333 15.1667 12.3083 15.1667 11.6667V5.83333H21C21.6417 5.83333 22.1667 6.35833 22.1667 7V12.8333Z"
+                  fill="white"
+                />
+              </svg>
+              Board
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 26"
+                class="icon"
+              >
+                <path
+                  d="M11.25 11.2725H16.875V23.625H11.25V11.2725ZM19.125 23.625H22.5C23.7375 23.625 24.75 22.6125 24.75 21.375V11.25H19.125V23.625ZM22.5 3.375H5.625C4.3875 3.375 3.375 4.3875 3.375 5.625V9H24.75V5.625C24.75 4.3875 23.7375 3.375 22.5 3.375ZM3.375 21.375C3.375 22.6125 4.3875 23.625 5.625 23.625H9V11.25H3.375V21.375Z"
+                  fill="white"
+                />
+                />
+              </svg>
+              Table
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="icon"
+              >
+                <path
+                  d="M7.46634 10.7335H7.69967C8.59801 10.7335 9.33301 11.4685 9.33301 12.3668V20.5335C9.33301 21.4318 8.59801 22.1668 7.69967 22.1668H7.46634C6.56801 22.1668 5.83301 21.4318 5.83301 20.5335V12.3668C5.83301 11.4685 6.56801 10.7335 7.46634 10.7335ZM13.9997 5.8335C14.898 5.8335 15.633 6.5685 15.633 7.46683V20.5335C15.633 21.4318 14.898 22.1668 13.9997 22.1668C13.1013 22.1668 12.3663 21.4318 12.3663 20.5335V7.46683C12.3663 6.5685 13.1013 5.8335 13.9997 5.8335ZM20.533 15.1668C21.4313 15.1668 22.1663 15.9018 22.1663 16.8002V20.5335C22.1663 21.4318 21.4313 22.1668 20.533 22.1668C19.6347 22.1668 18.8997 21.4318 18.8997 20.5335V16.8002C18.8997 15.9018 19.6347 15.1668 20.533 15.1668Z"
+                  fill="white"
+                />
+              </svg>
+              Gantt Chart
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 26 26"
+                class="icon"
+              >
+                <path
+                  d="M22.5 3.375H21.375V2.25C21.375 1.63125 20.8687 1.125 20.25 1.125C19.6313 1.125 19.125 1.63125 19.125 2.25V3.375H7.875V2.25C7.875 1.63125 7.36875 1.125 6.75 1.125C6.13125 1.125 5.625 1.63125 5.625 2.25V3.375H4.5C3.2625 3.375 2.25 4.3875 2.25 5.625V23.625C2.25 24.8625 3.2625 25.875 4.5 25.875H22.5C23.7375 25.875 24.75 24.8625 24.75 23.625V5.625C24.75 4.3875 23.7375 3.375 22.5 3.375ZM21.375 23.625H5.625C5.00625 23.625 4.5 23.1187 4.5 22.5V9H22.5V22.5C22.5 23.1187 21.9937 23.625 21.375 23.625Z"
+                  fill="white"
+                />
+              </svg>
+              Calendar
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="icon"
+              >
+                <path
+                  d="M24.75 12.375V3.375H16.875V6.75H10.125V3.375H2.25V12.375H10.125V9H12.375V20.25H16.875V23.625H24.75V14.625H16.875V18H14.625V9H16.875V12.375H24.75ZM7.875 10.125H4.5V5.625H7.875V10.125ZM19.125 16.875H22.5V21.375H19.125V16.875ZM19.125 5.625H22.5V10.125H19.125V5.625Z"
+                  fill="white"
+                />
+                />
+              </svg>
+              Map
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 26 26"
+                class="icon"
+              >
+                <path
+                  d="M4.5 14.625C5.7375 14.625 6.75 13.6125 6.75 12.375C6.75 11.1375 5.7375 10.125 4.5 10.125C3.2625 10.125 2.25 11.1375 2.25 12.375C2.25 13.6125 3.2625 14.625 4.5 14.625ZM5.77125 15.8625C5.355 15.795 4.93875 15.75 4.5 15.75C3.38625 15.75 2.32875 15.9862 1.3725 16.4025C0.54 16.7625 0 17.5725 0 18.4838V20.25H5.0625V18.4387C5.0625 17.505 5.32125 16.6275 5.77125 15.8625ZM22.5 14.625C23.7375 14.625 24.75 13.6125 24.75 12.375C24.75 11.1375 23.7375 10.125 22.5 10.125C21.2625 10.125 20.25 11.1375 20.25 12.375C20.25 13.6125 21.2625 14.625 22.5 14.625ZM27 18.4838C27 17.5725 26.46 16.7625 25.6275 16.4025C24.6713 15.9862 23.6138 15.75 22.5 15.75C22.0613 15.75 21.645 15.795 21.2288 15.8625C21.6788 16.6275 21.9375 17.505 21.9375 18.4387V20.25H27V18.4838ZM18.27 15.3562C16.9538 14.7712 15.3337 14.3438 13.5 14.3438C11.6663 14.3438 10.0463 14.7825 8.73 15.3562C7.515 15.8962 6.75 17.1112 6.75 18.4387V20.25H20.25V18.4387C20.25 17.1112 19.485 15.8962 18.27 15.3562ZM9.07875 18C9.18 17.7413 9.225 17.5613 10.1025 17.2238C11.1937 16.7963 12.3413 16.5938 13.5 16.5938C14.6587 16.5938 15.8063 16.7963 16.8975 17.2238C17.7638 17.5613 17.8088 17.7413 17.9212 18H9.07875ZM13.5 9C14.1187 9 14.625 9.50625 14.625 10.125C14.625 10.7438 14.1187 11.25 13.5 11.25C12.8813 11.25 12.375 10.7438 12.375 10.125C12.375 9.50625 12.8813 9 13.5 9ZM13.5 6.75C11.6325 6.75 10.125 8.2575 10.125 10.125C10.125 11.9925 11.6325 13.5 13.5 13.5C15.3675 13.5 16.875 11.9925 16.875 10.125C16.875 8.2575 15.3675 6.75 13.5 6.75Z"
+                  fill="white"
+                />
+              </svg>
+              Team
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="icon"
+              >
+                <path
+                  d="M9.78656 17.8876L5.39906 13.5001L9.78656 9.11256C10.2253 8.67381 10.2253 7.97631 9.78656 7.53756C9.34781 7.09881 8.65031 7.09881 8.21156 7.53756L3.04781 12.7013C2.60906 13.1401 2.60906 13.8488 3.04781 14.2876L8.21156 19.4626C8.65031 19.9013 9.34781 19.9013 9.78656 19.4626C10.2253 19.0238 10.2253 18.3263 9.78656 17.8876ZM17.2116 17.8876L21.5991 13.5001L17.2116 9.11256C16.7728 8.67381 16.7728 7.97631 17.2116 7.53756C17.6503 7.09881 18.3478 7.09881 18.7866 7.53756L23.9503 12.7013C24.3891 13.1401 24.3891 13.8488 23.9503 14.2876L18.7866 19.4626C18.3478 19.9013 17.6503 19.9013 17.2116 19.4626C16.7728 19.0238 16.7728 18.3263 17.2116 17.8876Z"
+                  fill="white"
+                />
+                />
+              </svg>
+              Repository
+            </a>
+          </li>
+        </ul>
+        <div class="button-container_2">
+          <button class="filter-button" onclick="toggleButton()">Filter</button>
+      </div>      
+  </div>
+
+  <div class="button-container invisible" id="toggle-container">
+      <button class="custom-button">Expand All</button>
+      <button class="custom-button">Sort</button>
+      <button class="custom-button">Assigned</button>
+      <button class="custom-button">Closed</button>
+  </div>
+
+  <div class="line-below invisible" id="line-below"></div> <!-- Initially hidden -->
+</div>
+    <!-- New Task List Section -->
+    <div class="task-list-wrapper">
+      <div class="sidebar"></div>
+      <div class="task-list-content">
+        <div class="task-list-header">
+          <h2>
+            My List 01
+            <span class="icons">
+              <!-- Three Dots SVG -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="30"
+                height="30"
+                fill="#CED0FF"
+                viewBox="0 0 24 24"
+              >
+                <circle cx="5" cy="12" r="2"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+                <circle cx="19" cy="12" r="2"></circle>
+              </svg>
+
+              <!-- Custom SVG (User-provided) -->
+              <svg
+                width="27"
+                height="27"
+                viewBox="0 0 27 27"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clip-path="url(#clip0_202_584)">
+                  <!-- Remove the background path -->
+                  <path
+                    d="M15.75 19.125H4.5V21.375H15.75V19.125ZM22.5 10.125H4.5V12.375H22.5V10.125ZM4.5 16.875H22.5V14.625H4.5V16.875ZM4.5 5.625V7.875H22.5V5.625H4.5Z"
+                    fill="#CED0FF"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_202_584">
+                    <rect width="27" height="27" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+
+              <svg
+                width="27"
+                height="27"
+                viewBox="0 0 27 27"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clip-path="url(#clip0_202_597)">
+                  <path
+                    d="M13.5 6.6375C14.805 6.6375 15.8625 7.695 15.8625 9C15.8625 10.305 14.805 11.3625 13.5 11.3625C12.195 11.3625 11.1375 10.305 11.1375 9C11.1375 7.695 12.195 6.6375 13.5 6.6375ZM13.5 16.7625C16.8413 16.7625 20.3625 18.405 20.3625 19.125V20.3625H6.6375V19.125C6.6375 18.405 10.1588 16.7625 13.5 16.7625ZM13.5 4.5C11.0138 4.5 9 6.51375 9 9C9 11.4862 11.0138 13.5 13.5 13.5C15.9862 13.5 18 11.4862 18 9C18 6.51375 15.9862 4.5 13.5 4.5ZM13.5 14.625C10.4963 14.625 4.5 16.1325 4.5 19.125V22.5H22.5V19.125C22.5 16.1325 16.5037 14.625 13.5 14.625Z"
+                    fill="#CED0FF"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_202_597">
+                    <rect width="27" height="27" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+              <svg
+                width="27"
+                height="27"
+                viewBox="0 0 27 27"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clip-path="url(#clip0_202_602)">
+                  <path
+                    d="M19.125 3.375H7.875C6.6375 3.375 5.625 4.3875 5.625 5.625V23.625L13.5 20.25L21.375 23.625V5.625C21.375 4.3875 20.3625 3.375 19.125 3.375ZM19.125 20.25L13.5 17.7975L7.875 20.25V5.625H19.125V20.25Z"
+                    fill="#CED0FF"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_202_602">
+                    <rect width="27" height="27" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+              <svg
+                width="27"
+                height="27"
+                viewBox="0 0 27 27"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clip-path="url(#clip0_202_603)">
+                  <path
+                    d="M15.75 1.125H11.25C10.6312 1.125 10.125 1.63125 10.125 2.25C10.125 2.86875 10.6312 3.375 11.25 3.375H15.75C16.3687 3.375 16.875 2.86875 16.875 2.25C16.875 1.63125 16.3687 1.125 15.75 1.125ZM13.5 15.75C14.1187 15.75 14.625 15.2437 14.625 14.625V10.125C14.625 9.50625 14.1187 9 13.5 9C12.8812 9 12.375 9.50625 12.375 10.125V14.625C12.375 15.2437 12.8812 15.75 13.5 15.75ZM21.4087 8.31375L22.2525 7.47C22.68 7.0425 22.6912 6.33375 22.2525 5.895L22.2412 5.88375C21.8025 5.445 21.105 5.45625 20.6662 5.88375L19.8225 6.7275C18.0787 5.3325 15.885 4.5 13.5 4.5C8.09999 4.5 3.50999 8.955 3.37499 14.355C3.22874 20.07 7.80749 24.75 13.5 24.75C19.1025 24.75 23.625 20.2162 23.625 14.625C23.625 12.24 22.7925 10.0462 21.4087 8.31375ZM13.5 22.5C9.14624 22.5 5.62499 18.9788 5.62499 14.625C5.62499 10.2712 9.14624 6.75 13.5 6.75C17.8537 6.75 21.375 10.2712 21.375 14.625C21.375 18.9788 17.8537 22.5 13.5 22.5Z"
+                    fill="#CED0FF"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_202_603">
+                    <rect width="27" height="27" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+            </span>
+          </h2>
+        </div>
+        <p>Description about the list</p>
+
+        <div class="task-status-section">
+          <!-- OPENED Section -->
+          <div class="svg-button-wrapper">
+            <svg width="27" height="27" viewBox="0 0 27 27" fill="none">
+              <g clip-path="url(#clip0_202_634)">
+                <path
+                  d="M9.79887 13.1738L12.7126 16.0875C13.1514 16.5263 13.8601 16.5263 14.2989 16.0875L17.2126 13.1738C17.9214 12.465 17.4151 11.25 16.4139 11.25H10.5864C9.58512 11.25 9.09012 12.465 9.79887 13.1738Z"
+                  fill="#A5A5A5"
+                />
+              </g>
+            </svg>
+            <div class="task-status-header opened-header">OPENED</div>
+          </div>
+          <div class="opened-status">
+            <div class="task_headingg">
+              <div class="task-heading-1">Name</div>
+              <div class="task-heading-2">Priority</div>
+              <div class="task-heading-3">Due Date</div>
+              <div class="task-heading-4">Assignee</div>
+            </div>
+            <ul class="task-list" style="list-style: none; padding: 0">
+              <li class="task-item">
+                <div class="task-container">
+                  <div class="task-info">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle cx="6" cy="6" r="6" fill="#9854CB" />
+                    </svg>
+                    <div class="task-name">Task#1 Name</div>
+                  </div>
+                </div>
+                <div class="task-priority high-priority">HIGH</div>
+                <div class="task-due-date">TOMORROW</div>
+                <div class="task-assignee">
+                  <div class="avatar-group">
+                      <img src="https://via.placeholder.com/30" alt="User 1" />
+                      <img src="https://via.placeholder.com/30" alt="User 2" />
+                  </div>
+              </div>
+              
+              </li>
+
+              <li class="task-item">
+                <div class="task-container">
+                  <div class="task-info">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle cx="6" cy="6" r="6" fill="#9854CB" />
+                    </svg>
+                    <div class="task-name">Another Task</div>
+                  </div>
+                </div>
+                <div class="task-priority low-priority">LOW</div>
+                <div class="task-due-date">AUG 20</div>
+                <div class="task-assignee"><svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_202_689)">
+                  <path d="M13.125 10.5C15.0588 10.5 16.625 8.93375 16.625 7C16.625 5.06625 15.0588 3.5 13.125 3.5C11.1912 3.5 9.625 5.06625 9.625 7C9.625 8.93375 11.1912 10.5 13.125 10.5ZM13.125 5.25C14.0875 5.25 14.875 6.0375 14.875 7C14.875 7.9625 14.0875 8.75 13.125 8.75C12.1625 8.75 11.375 7.9625 11.375 7C11.375 6.0375 12.1625 5.25 13.125 5.25ZM13.125 12.25C10.7887 12.25 6.125 13.4225 6.125 15.75V17.5H20.125V15.75C20.125 13.4225 15.4613 12.25 13.125 12.25ZM7.875 15.75C8.0675 15.12 10.7712 14 13.125 14C15.4875 14 18.2 15.1287 18.375 15.75H7.875ZM5.25 13.125V10.5H7.875V8.75H5.25V6.125H3.5V8.75H0.875V10.5H3.5V13.125H5.25Z" fill="#6C6C6C"/>
+                  </g>
+                  <defs>
+                  <clipPath id="clip0_202_689">
+                  <rect width="21" height="21" fill="white"/>
+                  </clipPath>
+                  </defs>
+                  </svg></div>
+              </li>
+
+              <li class="task-item">
+                <div class="task-container">
+                  <div class="task-info">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle cx="6" cy="6" r="6" fill="#9854CB" />
+                    </svg>
+                    <div class="task-name">And another task to do</div>
+                  </div>
+                </div>
+                <div class="task-priority">
+                  <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <g clip-path="url(#clip0_202_691)">
+                          <path d="M12.25 5.25L11.375 3.5H4.375V18.375H6.125V12.25H10.5L11.375 14H17.5V5.25H12.25ZM15.75 12.25H12.25L11.375 10.5H6.125V5.25H10.5L11.375 7H15.75V12.25Z" fill="#6C6C6C"/>
+                      </g>
+                      <defs>
+                          <clipPath id="clip0_202_691">
+                              <rect width="21" height="21" fill="white"/>
+                          </clipPath>
+                      </defs>
+                  </svg> 
+              </div>
+              
+                <div class="task-due-date"><svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_202_690)">
+                  <path d="M6.125 9.625H7.875V11.375H6.125V9.625ZM18.375 5.25V17.5C18.375 18.4625 17.5875 19.25 16.625 19.25H4.375C3.40375 19.25 2.625 18.4625 2.625 17.5L2.63375 5.25C2.63375 4.2875 3.40375 3.5 4.375 3.5H5.25V1.75H7V3.5H14V1.75H15.75V3.5H16.625C17.5875 3.5 18.375 4.2875 18.375 5.25ZM4.375 7H16.625V5.25H4.375V7ZM16.625 17.5V8.75H4.375V17.5H16.625ZM13.125 11.375H14.875V9.625H13.125V11.375ZM9.625 11.375H11.375V9.625H9.625V11.375Z" fill="#6C6C6C"/>
+                  </g>
+                  <defs>
+                  <clipPath id="clip0_202_690">
+                  <rect width="21" height="21" fill="white"/>
+                  </clipPath>
+                  </defs>
+                  </svg></div>
+                <div class="task-assignee"><svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_202_689)">
+                  <path d="M13.125 10.5C15.0588 10.5 16.625 8.93375 16.625 7C16.625 5.06625 15.0588 3.5 13.125 3.5C11.1912 3.5 9.625 5.06625 9.625 7C9.625 8.93375 11.1912 10.5 13.125 10.5ZM13.125 5.25C14.0875 5.25 14.875 6.0375 14.875 7C14.875 7.9625 14.0875 8.75 13.125 8.75C12.1625 8.75 11.375 7.9625 11.375 7C11.375 6.0375 12.1625 5.25 13.125 5.25ZM13.125 12.25C10.7887 12.25 6.125 13.4225 6.125 15.75V17.5H20.125V15.75C20.125 13.4225 15.4613 12.25 13.125 12.25ZM7.875 15.75C8.0675 15.12 10.7712 14 13.125 14C15.4875 14 18.2 15.1287 18.375 15.75H7.875ZM5.25 13.125V10.5H7.875V8.75H5.25V6.125H3.5V8.75H0.875V10.5H3.5V13.125H5.25Z" fill="#6C6C6C"/>
+                  </g>
+                  <defs>
+                  <clipPath id="clip0_202_689">
+                  <rect width="21" height="21" fill="white"/>
+                  </clipPath>
+                  </defs>
+                  </svg></div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- IN PROGRESS Section -->
+          <div class="svg-button-wrapper">
+            <svg width="27" height="27" viewBox="0 0 27 27" fill="none">
+              <g clip-path="url(#clip0_202_634)">
+                <path
+                  d="M9.79887 13.1738L12.7126 16.0875C13.1514 16.5263 13.8601 16.5263 14.2989 16.0875L17.2126 13.1738C17.9214 12.465 17.4151 11.25 16.4139 11.25H10.5864C9.58512 11.25 9.09012 12.465 9.79887 13.1738Z"
+                  fill="#A5A5A5"
+                />
+              </g>
+            </svg>
+            <div class="task-status-header in-progress-header">IN PROGRESS</div>
+          </div>
+          <div class="in-progress-status">
+            <div class="task_headingg">
+              <div class="task-heading-1">Name</div>
+              <div class="task-heading-2">Priority</div>
+              <div class="task-heading-3">Due Date</div>
+              <div class="task-heading-4">Assignee</div>
+            </div>
+            <ul style="list-style: none; padding: 0">
+              <li class="task-item">
+                <div class="task-container">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle cx="6" cy="6" r="6" fill="#547CCB" />
+                  </svg>
+                  <div class="task-name">Some task in progress</div>
+                </div>
+                <div class="task-priority moderate-priority">MODERATE</div>
+                <div class="task-due-date">AUG 25</div>
+                <div class="task-assignee"><div class="avatar-group">
+                  <img src="https://via.placeholder.com/30" alt="User 1" />
+                  <img src="https://via.placeholder.com/30" alt="User 2" />
+                  <img src="https://via.placeholder.com/30" alt="User 3" />
+                </div>
+              </div></div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- REVIEW Section -->
+          <div class="svg-button-wrapper">
+            <svg width="27" height="27" viewBox="0 0 27 27" fill="none">
+              <g clip-path="url(#clip0_202_634)">
+                <path
+                  d="M9.79887 13.1738L12.7126 16.0875C13.1514 16.5263 13.8601 16.5263 14.2989 16.0875L17.2126 13.1738C17.9214 12.465 17.4151 11.25 16.4139 11.25H10.5864C9.58512 11.25 9.09012 12.465 9.79887 13.1738Z"
+                  fill="#A5A5A5"
+                />
+              </g>
+            </svg>
+            <div class="task-status-header review-header">REVIEW</div>
+          </div>
+          <div class="review-status">
+            <div class="task_headingg">
+              <div class="task-heading-1">Name</div>
+              <div class="task-heading-2">Priority</div>
+              <div class="task-heading-3">Due Date</div>
+              <div class="task-heading-4">Assignee</div>
+            </div>
+            <ul style="list-style: none; padding: 0">
+              <li class="task-item">
+                <div class="task-container">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle cx="6" cy="6" r="6" fill="#ff9800" />
+                  </svg>
+                  <div class="task-name">Task under review</div>
+                </div>
+                <div class="task-priority high-priority">HIGH</div>
+                <div class="task-due-date">SEPT 10</div>
+                <div class="task-assignee"><svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_202_689)">
+                  <path d="M13.125 10.5C15.0588 10.5 16.625 8.93375 16.625 7C16.625 5.06625 15.0588 3.5 13.125 3.5C11.1912 3.5 9.625 5.06625 9.625 7C9.625 8.93375 11.1912 10.5 13.125 10.5ZM13.125 5.25C14.0875 5.25 14.875 6.0375 14.875 7C14.875 7.9625 14.0875 8.75 13.125 8.75C12.1625 8.75 11.375 7.9625 11.375 7C11.375 6.0375 12.1625 5.25 13.125 5.25ZM13.125 12.25C10.7887 12.25 6.125 13.4225 6.125 15.75V17.5H20.125V15.75C20.125 13.4225 15.4613 12.25 13.125 12.25ZM7.875 15.75C8.0675 15.12 10.7712 14 13.125 14C15.4875 14 18.2 15.1287 18.375 15.75H7.875ZM5.25 13.125V10.5H7.875V8.75H5.25V6.125H3.5V8.75H0.875V10.5H3.5V13.125H5.25Z" fill="#6C6C6C"/>
+                  </g>
+                  <defs>
+                  <clipPath id="clip0_202_689">
+                  <rect width="21" height="21" fill="white"/>
+                  </clipPath>
+                  </defs>
+                  </svg></div>
+              </li>
+            </ul>
+          </div>
+          <div class="add-task">+ Add Task</div>
+          <div class="add-new-list">+ Add New List</div>
+        </div>
+        
+
+        <script>
+          // Select all menu links
+          const menuLinks = document.querySelectorAll(".menu li a");
+    
+          // Loop through each link and add a click event listener
+          menuLinks.forEach((link) => {
+            link.addEventListener("click", function () {
+              // Remove the 'active' class from all links
+              menuLinks.forEach((item) => item.classList.remove("active"));
+              // Add the 'active' class to the clicked link
+              this.classList.add("active");
+            });
+          });
+    
+          document.addEventListener("DOMContentLoaded", function () {
+            // Get all svg-button-wrapper divs
+            const wrappers = document.querySelectorAll(".svg-button-wrapper");
+    
+            wrappers.forEach((wrapper) => {
+              // Get the corresponding section and svg inside the wrapper
+              const section = wrapper.nextElementSibling;
+              const svg = wrapper.querySelector("svg"); // Adjust this selector if needed
+    
+              // Initially check if the section is visible using getComputedStyle
+              const isVisible = getComputedStyle(section).display === "block";
+    
+              if (isVisible) {
+                // If the section is visible initially, rotate the SVG to 0 degrees (open state)
+                svg.classList.add("rotate-open");
+              } else {
+                // Otherwise, rotate it to -90 degrees (closed state)
+                svg.classList.add("rotate-closed");
+              }
+    
+              wrapper.addEventListener("click", function () {
+                // Toggle the clicked section's visibility
+                const isVisible = getComputedStyle(section).display === "block";
+                section.style.display = isVisible ? "none" : "block";
+    
+                // Toggle the rotate classes based on the visibility of the section
+                if (!isVisible) {
+                  // If the section becomes visible, rotate the SVG to 0 degrees (open state)
+                  svg.classList.remove("rotate-closed");
+                  svg.classList.add("rotate-open");
+                } else {
+                  // If the section becomes hidden, rotate the SVG to -90 degrees (closed state)
+                  svg.classList.remove("rotate-open");
+                  svg.classList.add("rotate-closed");
+                }
+              });
+            });
+          });
+          //filter
+          function toggleButton() {
+            const toggleContainer = document.getElementById('toggle-container');
+            const lineBelow = document.getElementById('line-below'); // Reference to the line-below div
+            const filterButton = document.querySelector('.filter-button');
+        
+            // Toggle visibility and button text
+            if (toggleContainer.classList.contains('invisible')) {
+                toggleContainer.classList.remove('invisible'); // Show the buttons
+                toggleContainer.classList.add('show'); // Add class to handle transition
+                lineBelow.classList.remove('invisible'); // Show the line below
+                filterButton.textContent = 'Hide'; // Change button text to "Hide"
+            } else {
+                toggleContainer.classList.add('invisible'); // Hide the buttons
+                toggleContainer.classList.remove('show'); // Remove class to handle transition
+                lineBelow.classList.add('invisible'); // Hide the line below
+                filterButton.textContent = 'Filter'; // Change button text back to "Filter"
+            }
+        }
+        
+        
+        
+        </script>
+      </body>
+    </html>
