@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map</title>
+    <style>
+      body {
+        background-color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .big {
+        background-color: black;
+        height: 80%;
+        width: 80%;
+        position: absolute;
+        margin: 10%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .container {
+        position: relative;
+        display: flex;
+      }
+
+      .box {
+        background-color: #333;
+        border: 2px solid #9854cb;
+        color: white;
+        padding: 10px 30px;
+        border-radius: 8px;
+        display: absolute;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: background-color 0.3s; /* Transition effect */
+      }
+
+      .box:hover {
+        background-color: #444; /* Slightly lighter on hover */
+      }
+
+      .text {
+        margin-right: 10px;
+      }
+
+      /* Initially hide icons */
+      .delete-icon,
+      .plus.top,
+      .plus.bottom,
+      .plus.left,
+      .plus.right {
+        display: none; /* Hide by default */
+      }
+
+      /* Show icons on box hover */
+      .box:hover .delete-icon,
+      .box:hover .plus {
+        display: flex; /* Show on hover */
+      }
+
+      .delete-icon {
+        background-color: #ff6666;
+        border-radius: 50%;
+        padding: 2px;
+        cursor: pointer;
+        position: absolute;
+        top: -16px;
+        right: -10px;
+      }
+
+      .plus {
+        background-color: #9854cb;
+        color: white;
+        font-size: 20px;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        cursor: pointer;
+      }
+
+      .plus.top {
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .plus.bottom {
+        bottom: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .plus.left {
+        left: -40px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .plus.right {
+        right: -40px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      /* Updated button styles */
+      .buttons {
+        position: fixed;
+        bottom: 60px;
+        left: 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .button {
+        background-color: #424242;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border: none;
+        border-radius: 10%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 20px;
+      }
+
+      .button:hover {
+        background-color: #a0a0a0; /* Lighter grey on hover */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="big">
+      <div class="container">
+        <div class="box">
+          <span class="text">Root</span>
+          <span class="delete-icon">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 27 27"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g clip-path="url(#clip0_237_2076)">
+                <path
+                  d="M6.75 21.375C6.75 22.6125 7.7625 23.625 9 23.625H18C19.2375 23.625 20.25 22.6125 20.25 21.375V7.875H6.75V21.375ZM9 10.125H18V21.375H9V10.125ZM17.4375 4.5L16.3125 3.375H10.6875L9.5625 4.5H5.625V6.75H21.375V4.5H17.4375Z"
+                  fill="white"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_237_2076">
+                  <rect width="27" height="27" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
+          </span>
+          <div class="plus top">
+            <svg
+              width="27"
+              height="27"
+              viewBox="0 0 27 27"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g clip-path="url(#clip0_237_2071)">
+                <path
+                  d="M21.375 14.625H14.625V21.375H12.375V14.625H5.625V12.375H12.375V5.625H14.625V12.375H21.375V14.625Z"
+                  fill="white"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_237_2071">
+                  <rect width="27" height="27" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
+          </div>
+          <div class="plus bottom">
+            <svg
+              width="27"
+              height="27"
+              viewBox="0 0 27 27"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g clip-path="url(#clip0_237_2071)">
+                <path
+                  d="M21.375 14.625H14.625V21.375H12.375V14.625H5.625V12.375H12.375V5.625H14.625V12.375H21.375V14.625Z"
+                  fill="white"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_237_2071">
+                  <rect width="27" height="27" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
+          </div>
+          <div class="plus left">
+            <svg
+              width="27"
+              height="27"
+              viewBox="0 0 27 27"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g clip-path="url(#clip0_237_2071)">
+                <path
+                  d="M21.375 14.625H14.625V21.375H12.375V14.625H5.625V12.375H12.375V5.625H14.625V12.375H21.375V14.625Z"
+                  fill="white"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_237_2071">
+                  <rect width="27" height="27" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
+          </div>
+          <div class="plus right">
+            <svg
+              width="27"
+              height="27"
+              viewBox="0 0 27 27"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g clip-path="url(#clip0_237_2071)">
+                <path
+                  d="M21.375 14.625H14.625V21.375H12.375V14.625H5.625V12.375H12.375V5.625H14.625V12.375H21.375V14.625Z"
+                  fill="white"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_237_2071">
+                  <rect width="27" height="27" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- New buttons for adding/removing -->
+    <div class="buttons">
+      <button class="button">+</button>
+      <button class="button">-</button>
+    </div>
+  </body>
+</html>
