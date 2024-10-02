@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 // RTK Query Hooks
 import {
@@ -77,7 +77,7 @@ const ProfileScreen = () => {
     if (profile) {
       console.log('Profile Data: ', profile); // Debugging line
       console.log('Profile Image Path: ', profile.profileImage);
-      
+
       setProfileFormData({
         name: profile.user?.name || '',
         email: profile.user?.email || '',
@@ -156,80 +156,160 @@ const ProfileScreen = () => {
       minHeight: '100vh',
       color: 'white',
     },
-    header: {
-      marginBottom: '20px',
-    },
     profileCard: {
-      backgroundColor: '#302f2f',
+      width: '80%',
+      margin: '30px auto',
       borderRadius: '20px',
-      padding: '20px',
-      boxShadow: '0 0 10px rgba(0, 0, 0, 0.7)',
-      position: 'relative',
+      backgroundColor: '#302f2f',
       overflow: 'hidden',
-    },
-    profileBanner: {
-      width: '100%',
-      height: '150px',
-      objectFit: 'cover',
-      borderRadius: '10px',
-      marginBottom: '20px',
-      backgroundColor: '#444',
-    },
-    profileImage: {
-      width: '100px',
-      height: '100px',
-      borderRadius: '50%',
-      objectFit: 'cover',
-      border: '3px solid #fff',
-      position: 'absolute',
-      top: '100px',
-      left: '20px',
-      backgroundColor: '#555',
-    },
-    profileDetails: {
+      boxShadow: '0 0 10px rgba(0, 0, 0, 0.7)',
       display: 'flex',
       flexDirection: 'column',
-      gap: '10px',
-      marginLeft: '140px', // To accommodate the profile image
+      position: 'relative',
+      height: '350px',
     },
-    detailItem: {
-      fontSize: '16px',
-    },
-    socialLinks: {
+    banner: {
+      height: '200px', // Same as HTML
+      width: '100%',
+      borderRadius: '20px',
+      position: 'relative',
+      overflow: 'hidden',
+      backgroundColor: '#444', // Fallback color
       display: 'flex',
-      gap: '10px',
-      marginTop: '10px',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
-    socialIcon: {
-      width: '24px',
-      height: '24px',
-      fill: '#8A8A8A',
-      cursor: 'pointer',
-      transition: 'fill 0.3s ease',
+    bannerImage: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
     },
-    editButton: {
-      marginTop: '20px',
-      background: 'linear-gradient(90deg, #1f1333 0%, #3a2450 56%, #65387b 100%)',
+    uploadBannerButton: {
+      background: 'transparent',
       border: 'none',
-      padding: '10px 20px',
-      color: 'white',
-      borderRadius: '10px',
+      color: '#a7a7a7',
+      fontSize: '28px',
+      fontWeight: 'bold',
       cursor: 'pointer',
-      transition: 'background 0.3s ease',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    imagePreview: {
-      marginTop: '10px',
+    uploadBannerText: {
+      marginRight: '10px',
+    },
+    uploadBannerIcon: {
+      width: '30px',
+      height: '30px',
+      marginLeft: '4px',
+      fontWeight: 'normal',
+    },
+    profileInfo: {
+      padding: '20px',
+      width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      position: 'relative',
+      backgroundColor: '#302f2f',
+      height: 'auto',
+    },
+    photoUpload: {
+      marginLeft: '6%',
+      marginRight: '16px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      marginTop: '-7%',
+    },
+    photoImage: {
       width: '100px',
       height: '100px',
+      // cursor: 'pointer',
+      borderRadius: '20px',
+      backgroundColor: '#565656',
       objectFit: 'cover',
-      borderRadius: '50%',
     },
-    bannerPreview: {
+    editProfileButton: {
+      background: 'transparent',
+      border: '2px solid #8a8a8a',
+      color: '#8a8a8a',
+      padding: '4px 10px',
+      fontSize: '12px',
+      borderRadius: '16px',
+      cursor: 'pointer',
       marginTop: '10px',
-      width: '100%',
-      height: '150px',
-      objectFit: 'cover',
-      borderRadius: '10px',
+      display: 'flex',
+      alignItems: 'center',
+      transition: 'background-color 0.3s ease',
+    },
+    editProfileButtonHover: {
+      backgroundColor: 'rgba(138, 138, 138, 0.1)',
+    },
+    editProfileIcon: {
+      width: '16px',
+      height: '16px',
+      marginRight: '6px',
+    },
+    details: {
+      flexGrow: 1,
+      color: '#ccc',
+      textAlign: 'left',
+    },
+    name: {
+      fontSize: '24px',
+      color: '#fff',
+      marginBottom: '8px',
+      fontWeight: 'bold',
+    },
+    job: {
+      fontSize: '14px',
+      color: '#fff',
+      marginBottom: '8px',
+    },
+    location: {
+      fontSize: '14px',
+      color: '#fff',
+      marginBottom: '8px',
+    },
+    socialIcons: {
+      display: 'flex',
+      marginRight: '2.5%',
+      marginTop: '-6.5%',
+      alignItems: 'center',
+    },
+    socialIcon: {
+      fontSize: '18px',
+      color: '#888',
+      textDecoration: 'none',
+      marginLeft: '4px',
+      transition: 'color 0.3s ease',
+    },
+    socialIconHover: {
+      color: '#fff',
+    },
+    signOutButton: {
+      backgroundColor: 'transparent',
+      border: '3px solid #c54848',
+      color: '#c54848',
+      padding: '4px 10px',
+      fontSize: '12px',
+      borderRadius: '16px',
+      cursor: 'pointer',
+      position: 'absolute',
+      bottom: '5.5%',
+      right: '4.5%',
+      display: 'flex',
+      alignItems: 'center',
+      transition: 'background-color 0.3s ease',
+    },
+    signOutButtonHover: {
+      backgroundColor: 'rgba(197, 72, 72, 0.1)',
+    },
+    signOutIcon: {
+      width: '16px',
+      height: '16px',
+      marginRight: '6px',
     },
   };
 
@@ -239,131 +319,203 @@ const ProfileScreen = () => {
   return (
     <div style={styles.container}>
       {/* Sidebar */}
-      {userInfo && (
-        <Sidebar user={userInfo} onToggle={handleSidebarToggle} />
-      )}
+      {userInfo && <Sidebar user={userInfo} onToggle={handleSidebarToggle} />}
 
       {/* Main Content */}
       <div style={styles.mainContent}>
-        <h1 style={styles.header}>Your Profile</h1>
-
         {isProfileLoading ? (
           <Loader />
         ) : profileError ? (
           <p style={{ color: 'red' }}>{profileError.data?.message || profileError.error}</p>
         ) : (
-          profile && ( // Ensure profile is defined
+          profile && (
             <div style={styles.profileCard}>
               {/* Profile Banner */}
-              <img
-                src={
-                  profile.profileBanner
-                    ? `${BACKEND_URL}/${profile.profileBanner}`
-                    : 'https://via.placeholder.com/800x150.png?text=Profile+Banner'
-                }
-                alt="Profile Banner alt text"
-                style={styles.profileBanner}
-              />
-               
-              {/* Profile Image */}
-              <img
-                src={
-                  profile.profileImage
-                    ? `${BACKEND_URL}/${profile.profileImage}`
-                    : 'https://via.placeholder.com/100.png?text=Profile+Image'
-                }
-                alt="Profile alt text"
-                style={styles.profileImage}
-              />
-
-              <div style={styles.profileDetails}>
-                <div style={styles.detailItem}>
-                  <strong>Name:</strong> {profileFormData.name}
-                </div>
-                <div style={styles.detailItem}>
-                  <strong>Email:</strong> {profileFormData.email}
-                </div>
-                <div style={styles.detailItem}>
-                  <strong>Company Name:</strong> {profileFormData.companyName || 'N/A'}
-                </div>
-                <div style={styles.detailItem}>
-                  <strong>Job Role:</strong> {profileFormData.jobRole || 'N/A'}
-                </div>
-                <div style={styles.detailItem}>
-                  <strong>City:</strong> {profileFormData.city || 'N/A'}
-                </div>
-                <div style={styles.detailItem}>
-                  <strong>Country:</strong> {profileFormData.country || 'N/A'}
-                </div>
-                <div style={styles.detailItem}>
-                  <strong>GitHub Link:</strong>{' '}
-                  {profileFormData.gitHubLink ? (
-                    <a href={profileFormData.gitHubLink} target='_blank' rel='noopener noreferrer' style={{ color: '#1e90ff' }}>
-                      {profileFormData.gitHubLink}
-                    </a>
-                  ) : (
-                    'N/A'
-                  )}
-                </div>
-                <div style={styles.detailItem}>
-                  <strong>LinkedIn Link:</strong>{' '}
-                  {profileFormData.linkedInLink ? (
-                    <a href={profileFormData.linkedInLink} target='_blank' rel='noopener noreferrer' style={{ color: '#1e90ff' }}>
-                      {profileFormData.linkedInLink}
-                    </a>
-                  ) : (
-                    'N/A'
-                  )}
-                </div>
-              </div>
-
-              {/* Social Icons */}
-              <div style={styles.socialLinks}>
-                {profileFormData.gitHubLink && (
-                  <a href={profileFormData.gitHubLink} target='_blank' rel='noopener noreferrer'>
-                    {/* GitHub SVG */}
+              <div style={styles.banner}>
+                {profile.profileBanner ? (
+                  <img
+                    src={`${BACKEND_URL}/${profile.profileBanner}`}
+                    alt="Profile Banner"
+                    style={styles.bannerImage}
+                  />
+                ) : (
+                  <label htmlFor="banner-upload" style={styles.uploadBannerButton}>
+                    <span style={styles.uploadBannerText}>Upload Banner</span>
+                    {/* SVG Icon */}
                     <svg
-                      style={styles.socialIcon}
-                      xmlns='http://www.w3.org/2000/svg'
-                      viewBox='0 0 24 24'
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 18 18"
+                      style={styles.uploadBannerIcon}
                     >
-                      <path d='M12 0C5.373 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.387.6.111.82-.261.82-.577 
-                      0-.285-.011-1.042-.016-2.046-3.338.726-4.042-1.611-4.042-1.611-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 
-                      1.205.085 1.838 1.237 1.838 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.419-1.304.762-1.605-2.665-.304-5.466-1.335-5.466-5.93 
-                      0-1.31.469-2.381 1.236-3.22-.124-.303-.536-1.524.117-3.176 0 0 1.008-.322 3.3 1.23.957-.266 1.984-.399 3.003-.403 
-                      1.018.004 2.046.137 3.006.403 2.288-1.552 3.294-1.23 3.294-1.23.655 1.653.243 2.874.119 3.176.77.839 1.235 1.91 1.235 3.22 
-                      0 4.61-2.807 5.624-5.479 5.921.43.372.814 1.103.814 2.222 0 1.606-.015 2.898-.015 3.293 0 .319.216.694.825.576C20.565 21.801 24 
-                      17.309 24 12C24 5.373 18.627 0 12 0z' />
+                      <path
+                        d="M14.284 5.83333L13.1376 7.00833L15.2352 9.16667H6.96692V10.8333H15.2352L13.1376 12.9833L14.284 14.1667L18.349 10L14.284 5.83333ZM3.71488 4.16667H10.2189V2.5H3.71488C2.82057 2.5 2.08887 3.25 2.08887 4.16667V15.8333C2.08887 16.75 2.82057 17.5 3.71488 17.5H10.2189V15.8333H3.71488V4.16667Z"
+                        fill="#A7A7A7"
+                      />
                     </svg>
-                  </a>
-                )}
-                {profileFormData.linkedInLink && (
-                  <a href={profileFormData.linkedInLink} target='_blank' rel='noopener noreferrer'>
-                    {/* LinkedIn SVG */}
-                    <svg
-                      style={styles.socialIcon}
-                      xmlns='http://www.w3.org/2000/svg'
-                      viewBox='0 0 24 24'
-                    >
-                      <path d='M4.98 3C3.33 3 2 4.33 2 5.98C2 7.62 3.33 8.95 4.98 8.95S7.96 7.62 7.96 5.98 
-                      C7.96 4.33 6.63 3 4.98 3zM2 21H6V12H2V21zM12 21C16.42 21 20 
-                      17.42 20 13S16.42 5 12 5 4 8.58 4 
-                      13s3.58 8 8 8zm0-11c-2.21 0-4 
-                      1.79-4 4s1.79 4 4 4 4-1.79 
-                      4-4-1.79-4-4-4zM18 21h-4v-2h4v2z' />
-                    </svg>
-                  </a>
+                    {/* Hidden File Input */}
+                    <input
+                      type="file"
+                      id="banner-upload"
+                      style={{ display: 'none' }}
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                  </label>
                 )}
               </div>
 
-              {/* Edit Profile Button */}
-              <Button style={styles.editButton} onClick={handleShowModal}>
-                Edit Profile
-              </Button>
+              {/* Profile Info */}
+              <div style={styles.profileInfo}>
+                {/* Photo Upload */}
+                <div style={styles.photoUpload}>
+                  <label htmlFor="photo-upload">
+                    <img
+                      src={
+                        profile.profileImage
+                          ? `${BACKEND_URL}/${profile.profileImage}`
+                          : 'https://via.placeholder.com/100.png?text=Profile+Image'
+                      }
+                      alt="Upload Photo"
+                      style={styles.photoImage}
+                    />
+                  </label>
+                  {/* <input
+                    type="file"
+                    id="photo-upload"
+                    style={{ display: 'none' }}
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  /> */}
+                  <Button
+                    style={styles.editProfileButton}
+                    onClick={handleShowModal}
+                  >
+                    {/* SVG Icon */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 18 18"
+                      style={styles.editProfileIcon}
+                    >
+                      <path
+                        d="M3 17.25V21h3.75l11.92-11.92-3.75-3.75L3 17.25zm16.8-11.92l1.44-1.44c.19-.19.19-.51 0-.7l-2.8-2.8c-.19-.19-.51-.19-.7 0l-1.44 1.44 3.75 3.75z"
+                        fill="#8A8A8A"
+                      />
+                    </svg>
+                    Edit Profile
+                  </Button>
+                </div>
+
+                {/* Details */}
+                <div style={styles.details}>
+                  <h1 style={styles.name}>{profileFormData.name}</h1>
+                  <p style={styles.job}>
+                    {profileFormData.companyName || 'N/A'}, {profileFormData.jobRole || 'N/A'}
+                  </p>
+                  <p style={styles.location}>
+                    {profileFormData.city || 'N/A'}, {profileFormData.country || 'N/A'}
+                  </p>
+                </div>
+
+                {/* Social Icons */}
+                <div style={styles.socialIcons}>
+                {profileFormData.email && (
+                    <a
+                      href={profileFormData.email}
+                      className="icon mail"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={styles.socialIcon}
+                    >
+                      {/* GitHub SVG */}
+                      <svg
+                         width='30'
+                         height='30'
+                         viewBox='0 0 50 50'
+                         fill='#8A8A8A'
+                         xmlns='http://www.w3.org/2000/svg'
+                      >
+                        <path d="M12 23.403V23.39 10.389L11.88 10.3h-.01L9.14 8.28C7.47 7.04 5.09 7.1 3.61 8.56 2.62 9.54 2 10.9 2 12.41v3.602L12 23.403zM38 23.39v.013l10-7.391V12.41c0-1.49-.6-2.85-1.58-3.83-1.46-1.457-3.765-1.628-5.424-.403L38.12 10.3 38 10.389V23.39zM14 24.868l10.406 7.692c.353.261.836.261 1.189 0L36 24.868V11.867L25 20l-11-8.133V24.868zM38 25.889V41c0 .552.448 1 1 1h6.5c1.381 0 2.5-1.119 2.5-2.5V18.497L38 25.889zM12 25.889L2 18.497V39.5C2 40.881 3.119 42 4.5 42H11c.552 0 1-.448 1-1V25.889z" />
+                      </svg>
+                      
+                    </a>
+                  )}
+                  {profileFormData.gitHubLink && (
+                    <a
+                      href={profileFormData.gitHubLink}
+                      className="icon mail"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={styles.socialIcon}
+                    >
+                      {/* GitHub SVG */}
+                      <svg
+                         width='30'
+                         height='30'
+                         viewBox='0 0 24 24'
+                         fill='#8A8A8A'
+                         xmlns='http://www.w3.org/2000/svg'
+                      >
+                        <path d="M12 0C5.373 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.387.6.111.82-.261.82-.577 
+                        0-.285-.011-1.042-.016-2.046-3.338.726-4.042-1.611-4.042-1.611-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 
+                        1.205.085 1.838 1.237 1.838 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.419-1.304.762-1.605-2.665-.304-5.466-1.335-5.466-5.93 
+                        0-1.31.469-2.381 1.236-3.22-.124-.303-.536-1.524.117-3.176 0 0 1.008-.322 3.3 1.23.957-.266 1.984-.399 3.003-.403 
+                        1.018.004 2.046.137 3.006.403 2.288-1.552 3.294-1.23 3.294-1.23.655 1.653.243 2.874.119 3.176.77.839 1.235 1.91 1.235 3.22 
+                        0 4.61-2.807 5.624-5.479 5.921.43.372.814 1.103.814 2.222 0 1.606-.015 2.898-.015 3.293 0 .319.216.694.825.576C20.565 21.801 24 
+                        17.309 24 12C24 5.373 18.627 0 12 0z" />
+                      </svg>
+                    </a>
+                  )}
+                  {profileFormData.linkedInLink && (
+                    <a
+                      href={profileFormData.linkedInLink}
+                      className="icon linkedin"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={styles.socialIcon}
+                    >
+                      {/* LinkedIn SVG */}
+                      <svg
+                         width='30'
+                         height='30'
+                         viewBox='0 0 50 50'
+                         fill='#8A8A8A'
+                         xmlns='http://www.w3.org/2000/svg'
+                        
+                      >
+                        <path d='M41,4H9C6.24,4,4,6.24,4,9v32c0,2.76,2.24,5,5,5h32c2.76,0,5-2.24,5-5V9C46,6.24,43.76,4,41,4z M17,20v19h-6V20H17z M11,14.47c0-1.4,1.2-2.47,3-2.47s2.93,1.07,3,2.47c0,1.4-1.12,2.53-3,2.53C12.2,17,11,15.87,11,14.47z M39,39h-6c0,0,0-9.26,0-10 c0-2-1-4-3.5-4.04h-0.08C27,24.96,26,27.02,26,29c0,0.91,0,10,0,10h-6V20h6v2.56c0,0,1.93-2.56,5.81-2.56 c3.97,0,7.19,2.73,7.19,8.26V39z' />
+                      </svg>
+                      
+                    </a>
+                  )}
+                </div>
+              </div>
+              {/* Sign Out Button */}
+      {profile && (
+        <button
+          style={styles.signOutButton}
+          onClick={handleLogout}
+        >
+          {/* SVG Icon */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 18 18"
+            style={styles.signOutIcon}
+          >
+            <path
+              d="M14.284 5.83333L13.1376 7.00833L15.2352 9.16667H6.96692V10.8333H15.2352L13.1376 12.9833L14.284 14.1667L18.349 10L14.284 5.83333ZM3.71488 4.16667H10.2189V2.5H3.71488C2.82057 2.5 2.08887 3.25 2.08887 4.16667V15.8333C2.08887 16.75 2.82057 17.5 3.71488 17.5H10.2189V15.8333H3.71488V4.16667Z"
+              fill="#C54848"
+            />
+          </svg>
+          Sign Out
+        </button>
+      )}
             </div>
+            )
           )
-        )}
+        }
       </div>
+
+      
 
       {/* Edit Profile Modal */}
       <Modal show={showEditModal} onHide={handleCloseModal} centered>
@@ -470,14 +622,14 @@ const ProfileScreen = () => {
                 <img
                   src={URL.createObjectURL(profileImage)}
                   alt='Profile Preview'
-                  style={styles.imagePreview}
+                  style={styles.photoImage}
                 />
               )}
               {!profileImage && profile?.profileImage && (
                 <img
                   src={`${BACKEND_URL}/${profile.profileImage}`}
                   alt='Current Profile'
-                  style={styles.imagePreview}
+                  style={styles.photoImage}
                 />
               )}
             </Form.Group>
@@ -495,14 +647,14 @@ const ProfileScreen = () => {
                 <img
                   src={URL.createObjectURL(profileBanner)}
                   alt='Banner Preview'
-                  style={styles.bannerPreview}
+                  style={styles.bannerImage}
                 />
               )}
               {!profileBanner && profile?.profileBanner && (
                 <img
                   src={`${BACKEND_URL}/${profile.profileBanner}`}
                   alt='Current Banner'
-                  style={styles.bannerPreview}
+                  style={styles.bannerImage}
                 />
               )}
             </Form.Group>
