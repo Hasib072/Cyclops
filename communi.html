@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: #1e1e1e;
+        font-family: "Open Sans", sans-serif;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .chat-container {
+        width: 80%;
+        height: 90%;
+        border: none;
+        padding: 40px 20px;
+        background-color: black;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-message,
+      .my-message {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 30px;
+      }
+
+      .sender {
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        background-color: #3a3a3a;
+        border-radius: 50%;
+        margin-right: 10px;
+        margin-bottom: -14px;
+        z-index: 1;
+        border: 2px solid #121212;
+      }
+
+      .message-container {
+        display: flex;
+        align-items: flex-start;
+        width: 100%;
+      }
+
+      .message-content {
+        background-color: #2f2f2f;
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-size: 14px;
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-left: 10; /* Remove left margin */
+      }
+
+      /* Initially hide the Reply button and reaction */
+       .reply-btn, .thumbs-up {
+        display: none;
+      }
+      /* Show the buttons when hovering over the message */
+      .message-content:hover .reply-btn,
+      .message-content:hover .thumbs-up {
+       display: inline-block; 
+      }
+
+      .message-content p {
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .reaction {
+        margin-top: 5px;
+        font-size: 12px;
+        color: #b3b3b3;
+        cursor: pointer;
+        position: absolute;
+        bottom: -20%;
+        left: 78%;
+      }
+
+      .reaction span,
+      .reaction_2 span {
+        background-color: #2a2a2a;
+        border-radius: 12px;
+        border: 2px solid #3a3a3a;
+        padding: 2px 8px;
+      }
+
+      .reaction_2 {
+        margin-top: 5px;
+        font-size: 12px;
+        color: #b3b3b3;
+        cursor: pointer;
+        position: absolute;
+        bottom: -20%;
+        left: 3%;
+      }
+
+      .my-message {
+        display: flex; /* Use flexbox for layout */
+        justify-content: space-between; /* Space between content and reaction */
+        align-items: flex-start; /* Align items to the top */
+        bottom: 20px; /* Maintain spacing between messages */
+      }
+
+      .my-message .message-content {
+        background-color: #382251;
+        color: #fff;
+        padding: 15px 40px;
+        border-radius: 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        margin-left: auto;
+        margin-right: 0;
+      }
+
+      .chat-input {
+        display: flex;
+        position: relative;
+        width:100%;
+        margin-top:6%;
+        align-items: center;
+        padding:10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .chat-input input {
+        flex: 1;
+        padding: 18px 10px;
+        font-size:16px;
+        border-radius: 18px;
+        background-color: black;
+        border: 2px solid #382251;
+        color: #fff;
+        padding-left:80px;
+        position:relative;
+      }
+
+      .icon-container {
+        position:absolute;
+        display: flex;
+        align-items: center; 
+        left:20px;
+        top:50%;   
+        transform: translateY(-50%);  
+    }
+
+      .chat-input button {
+        position: absolute;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 10px 20px;
+        background-color: #8159ad;
+        border: none;
+        border-radius: 10px;
+        color: #fff;
+        cursor: pointer;
+      }
+      .reply-btn {
+        background-color: #2a2a2a;
+        color: #fff;
+        border: 2px solid #fff;
+        padding: 4px 8px;
+        border-radius: 18px;
+        font-size: 12px;
+        cursor: pointer;
+        bottom: 10px;
+        position: absolute;
+        bottom: -20%;
+        left: 50%;
+      }
+
+      .thumbs-up {
+        position: absolute;
+        bottom: -30%;
+        left: 80%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chat-message">
+        <div class="sender">
+          <div class="avatar"></div>
+          <span>Anna Max</span>
+        </div>
+        <div class="message-container">
+          <div class="message-content">
+            <p>I have updated the document! Now it's ready to go.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-message">
+        <div class="sender">
+          <div class="avatar"></div>
+          <span>Anna Max</span>
+        </div>
+        <div class="message-container">
+          <div class="message-content">
+            <p>Now what to do next?</p>
+            <button class="reply-btn">Reply</button>
+            <div class="thumbs-up">
+              <svg
+                width="26"
+                height="26"
+                viewBox="0 0 34 34"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="17"
+                  cy="17"
+                  r="16"
+                  fill="#2B2829"
+                  stroke="white"
+                  stroke-width="2"
+                />
+                <path
+                  d="M17.386 8.63061L13.0002 13.0164C12.7073 13.3094 12.541 13.7131 12.541 14.1327L12.541 22.0414C12.541 22.9123 13.2535 23.6248 14.1243 23.6248H21.2494C21.8827 23.6248 22.4527 23.2448 22.706 22.6669L25.2869 16.6423C25.9519 15.0748 24.8039 13.3331 23.1019 13.3331L18.6289 13.3331L19.381 9.70727C19.4602 9.31144 19.3414 8.90769 19.0564 8.62269C18.5893 8.16352 17.8452 8.16352 17.386 8.63061ZM9.37435 23.6248C10.2452 23.6248 10.9577 22.9123 10.9577 22.0414L10.9577 15.7081C10.9577 14.8373 10.2452 14.1248 9.37435 14.1248C8.50352 14.1248 7.79102 14.8373 7.79102 15.7081L7.79102 22.0414C7.79102 22.9123 8.50352 23.6248 9.37435 23.6248Z"
+                  fill="white"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-message">
+        <div class="sender">
+          <div class="avatar"></div>
+          <span>Jacob Wonk</span>
+        </div>
+        <div class="message-container">
+          <div class="message-content">
+            <p>Let's clear the backlog first.</p>
+            <div class="reaction"><span>👍2</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="my-message">
+        <div class="message-content">
+          <p>
+            I agree, let's clear the backlog first. Then we will have a meeting.
+          </p>
+          <div class="reaction_2"><span>👍3</span></div>
+        </div>
+      </div>
+        <div class="chat-input">
+            <input id="message-input" type="text" placeholder="Type a message" />
+            <div class="icon-container"> <!-- Moved the icon container inside the input -->
+                <svg width="30" height="30" viewBox="0 0 34 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_237_2295)">
+                        <path d="M21.6111 16.1578C22.7446 16.1578 23.6636 15.2306 23.6636 14.087C23.6636 12.9433 22.7446 12.0161 21.6111 12.0161C20.4775 12.0161 19.5586 12.9433 19.5586 14.087C19.5586 15.2306 20.4775 16.1578 21.6111 16.1578Z" fill="white"/>
+                        <path d="M12.033 16.1578C13.1665 16.1578 14.0854 15.2306 14.0854 14.087C14.0854 12.9433 13.1665 12.0161 12.033 12.0161C10.8994 12.0161 9.98047 12.9433 9.98047 14.087C9.98047 15.2306 10.8994 16.1578 12.033 16.1578Z" fill="white"/>
+                        <path d="M16.8221 25.822C19.9419 25.822 22.5964 23.5303 23.6637 20.2998H9.98047C11.0478 23.5303 13.7023 25.822 16.8221 25.822Z" fill="white"/>
+                        <path d="M16.8082 3.73291C9.25507 3.73291 3.13867 9.91782 3.13867 17.5385C3.13867 25.1592 9.25507 31.3441 16.8082 31.3441C24.375 31.3441 30.5051 25.1592 30.5051 17.5385C30.5051 9.91782 24.375 3.73291 16.8082 3.73291ZM16.8219 28.583C10.7739 28.583 5.87532 23.6406 5.87532 17.5385C5.87532 11.4364 10.7739 6.49403 16.8219 6.49403C22.8699 6.49403 27.7685 11.4364 27.7685 17.5385C27.7685 23.6406 22.8699 28.583 16.8219 28.583Z" fill="white"/>
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_237_2295">
+                            <rect width="32.8397" height="33.1334" fill="white" transform="translate(0.402344 0.97168)"/>
+                        </clipPath>
+                    </defs>
+                </svg>
+                
+                <svg width="30" height="30" viewBox="0 0 34 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.2041 25.8218L11.2041 9.94538C11.2041 6.89434 13.6534 4.42314 16.6773 4.42314C19.7013 4.42314 22.1506 6.89434 22.1506 9.94538L22.1506 27.2024C22.1506 29.1075 20.6181 30.6538 18.7298 30.6538C16.8416 30.6538 15.309 29.1075 15.309 27.2024L15.309 12.7065C15.309 11.9472 15.9248 11.3259 16.6774 11.3259C17.4299 11.3259 18.0457 11.9472 18.0457 12.7065L18.0457 25.8218L20.0982 25.8218L20.0982 12.7065C20.0982 10.8013 18.5656 9.2551 16.6773 9.2551C14.7891 9.2551 13.2565 10.8013 13.2565 12.7065L13.2565 27.2024C13.2565 30.2534 15.7058 32.7246 18.7298 32.7246C21.7538 32.7246 24.2031 30.2534 24.2031 27.2024L24.2031 9.94538C24.2031 5.74848 20.837 2.3523 16.6773 2.3523C12.5176 2.3523 9.15158 5.74848 9.15158 9.94538L9.15158 25.8218L11.2041 25.8218Z" fill="white"/>
+                </svg>
+            </div>
+            <button id="send-btn">Send</button>
+        </div>   
+    
+    
+
+    <script>
+      document
+        .getElementById("send-btn")
+        .addEventListener("click", function () {
+          const messageInput = document.getElementById("message-input");
+          const message = messageInput.value.trim();
+
+          if (message !== "") {
+            const chatContainer = document.querySelector(".chat-container");
+
+            // Create new message element
+            const newMessage = document.createElement("div");
+            newMessage.classList.add("my-message");
+            newMessage.innerHTML = `
+                        <div class="message-content">
+                            <p>${message}</p>
+                            <div class="reaction"><span>👍0</span></div>
+                        </div>
+                    `;
+
+            // Add the new message to the chat container
+            chatContainer.insertBefore(
+              newMessage,
+              document.querySelector(".chat-input")
+            );
+
+            // Clear input field after sending the message
+            messageInput.value = "";
+          }
+        });
+
+      // Add functionality to "Reply" buttons (for future expansion)
+      document.querySelectorAll(".reply-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          const replyMessage = prompt("Enter your reply:");
+          if (replyMessage) {
+            alert(`Reply sent: ${replyMessage}`);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

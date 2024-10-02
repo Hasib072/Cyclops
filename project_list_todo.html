@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic Task Table</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      body {
+        background-color: black;
+        color: #fff;
+      }
+
+      .container {
+        padding: 20px;
+        margin: 20px 0 20px 30px; /* Set left margin but not right */
+        width: calc(100% - 20px); /* Adjust width to account for left margin */
+        overflow-x: auto;
+        height: 100%;
+      }
+
+      .task-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #2b2b2b;
+        margin-bottom: 0px; /* Reduced margin */
+      }
+
+      .task-table th {
+        background-color: #402b5e;
+        color: #fff;
+        padding: 15px;
+        position: sticky;
+        top: 0;
+        border-left: none; /* Remove left border from header */
+        border-right: none; /* Remove right border from header */
+      }
+
+      .task-table td {
+        background-color: #333;
+        padding: 12px 15px;
+        font-size: 14px;
+        border-bottom: 1px solid #6c6c6c; /* Retain bottom border */
+        white-space: nowrap;
+        text-align: left;
+        border-left: 1px solid #6c6c6c; /* Add left border for cells */
+        border-right: 1px solid #6c6c6c; /* Add right border for cells */
+      }
+
+      .task-table th:first-child,
+      .task-table td:first-child {
+        width: 50px;
+        text-align: center;
+        border-left: none;
+      }
+
+      .task-table th:nth-child(3),
+      .task-table td:nth-child(3) {
+        width: 250px;
+      }
+
+      .task-table th:nth-child(4),
+      .task-table td:nth-child(4) {
+        width: 150px;
+      }
+
+      .task-table th:not(:first-child):not(:nth-child(3)):not(:nth-child(4)),
+      .task-table td:not(:first-child):not(:nth-child(3)):not(:nth-child(4)) {
+        width: 120px;
+      }
+
+      .name-icon {
+        display: inline-block;
+        width: 5px;
+        height: 26px;
+        border-radius: 30%;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+
+      .purple {
+        background-color: #9854cb;
+      }
+
+      .blue {
+        background-color: #547ccb;
+      }
+
+      .yellow {
+        background-color: #ff9800;
+      }
+
+      .assignee-icon {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+
+      .avatar-group {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4px;
+      }
+
+      .avatar-group img {
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        margin-left: -6px;
+        border: 2px solid #121212;
+      }
+
+      .avatar-group2 {
+        align-items: center;
+        display: flex;
+      }
+
+      .avatar-group2 img {
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        margin-left: -10px;
+        border: 2px solid #121212;
+      }
+
+      .add-description {
+        color: #a5a5a5;
+      }
+
+      .assign {
+        color: #a5a5a5;
+      }
+
+      .due-container {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .due-text {
+        font-size: 14px;
+        color: #a5a5a5;
+      }
+
+      .opened {
+        color: #9854cb;
+        font-weight: bold;
+      }
+
+      .in-progress {
+        color: #547ccb;
+        font-weight: bold;
+      }
+
+      .rejected {
+        color: #e74c3c;
+        font-weight: bold;
+      }
+
+      .due-tomorrow {
+        color: #f7bb61;
+        font-weight: bold;
+      }
+
+      .due-icon {
+        color: #a5a5a5;
+        margin-right: 5px;
+      }
+
+      .plus-button {
+        background-color: #402b5e;
+        color: #fff;
+        border: none;
+        padding: 15px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-left: 0; /* Remove any left margin */
+      }
+
+      .plus-button:hover {
+        background-color: #945cb7;
+      }
+
+      .header-container {
+        display: flex;
+        justify-content: flex-start;
+        position: relative;
+      }
+
+      .plus-container {
+        position: relative;
+        display: inline-block;
+        margin-left: 0px;
+        vertical-align: middle;
+        color: #a7a7a7;
+      }
+
+      .task-table tbody tr:hover {
+        background-color: #444; /* Add hover effect for rows */
+      }
+
+      .add-task-container {
+        margin-top: 0px; /* Space above the button container */
+        display: flex;
+        padding-top: 0;
+        justify-content: flex-start;
+      }
+
+      .add-task-button {
+        background-color: #2b2b2b;
+        color: #a7a7a7;
+        border: 1px solid #6c6c6c;
+        border-left: none;
+        padding: 15px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        text-align: left;
+        padding-left: 7%;
+        font-weight: bold;
+        width: calc(100% - 37px);
+      }
+
+      .add-task-button:hover {
+        background-color: #232323;
+      }
+
+      .tab-container {
+        display: flex;
+      }
+
+      .tab-item {
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background-color: #9fa2ff;
+        border-top-left-radius: 18px;
+        border-top-right-radius: 18px;
+        cursor: pointer;
+      }
+
+      .tab-item.active {
+        background-color: #402b5e; /* Active tab background */
+        color: #fff; /* Text color for active tab */
+      }
+
+      .tab-item + .tab-item {
+        margin-left: -1px;
+      }
+
+      .tab-item.lower {
+        margin-top: 10px; /* Lower the "My List 01" tab */
+      }
+
+      .tab-item:hover {
+        background-color: #6e3d99; /* Hover effect for inactive tabs */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="tab-container">
+        <div class="tab-item active">All</div>
+        <div class="tab-item">My List 01</div>
+      </div>
+      <div class="header-container">
+        <table class="task-table" id="task-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>NAME</th>
+              <th>DESCRIPTION</th>
+              <th>ASSIGNEE</th>
+              <th>STATUS</th>
+              <th>DUE DATE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><span class="name-icon purple"></span>Task01 Name</td>
+              <td>Some Description about the task.</td>
+              <td>
+                <div class="assignee-icon">
+                  <div class="avatar-group">
+                    <img src="https://via.placeholder.com/30" alt="User 1" />
+                  </div>
+                  <span>Jacob Brown</span>
+                </div>
+              </td>
+              <td class="opened">OPENED</td>
+              <td class="due-tomorrow">TOMORROW</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><span class="name-icon purple"></span>Another Task</td>
+              <td>Some Description about this ......</td>
+              <td>
+                <div class="assignee-icon">
+                  <div class="avatar-group2">
+                    <img src="https://via.placeholder.com/30" alt="User 1" />
+                    <img src="https://via.placeholder.com/30" alt="User 2" />
+                  </div>
+                  <span>Jacob Brown, A...</span>
+                </div>
+              </td>
+              <td class="opened">OPENED</td>
+              <td>AUG 20</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><span class="name-icon blue"></span>More Things to do</td>
+              <td class="add-description">+ Add Description</td>
+              <td class="assign">
+                <div
+                  class="assign-icon"
+                  style="display: flex; align-items: center"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 21 21"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g clip-path="url(#clip0_202_689)">
+                      <path
+                        d="M13.125 10.5C15.0588 10.5 16.625 8.93375 16.625 7C16.625 5.06625 15.0588 3.5 13.125 3.5C11.1912 3.5 9.625 5.06625 9.625 7C9.625 8.93375 11.1912 10.5 13.125 10.5ZM13.125 5.25C14.0875 5.25 14.875 6.0375 14.875 7C14.875 7.9625 14.0875 8.75 13.125 8.75C12.1625 8.75 11.375 7.9625 11.375 7C11.375 6.0375 12.1625 5.25 13.125 5.25ZM13.125 12.25C10.7887 12.25 6.125 13.4225 6.125 15.75V17.5H20.125V15.75C20.125 13.4225 15.4613 12.25 13.125 12.25ZM7.875 15.75C8.0675 15.12 10.7712 14 13.125 14C15.4875 14 18.2 15.1287 18.375 15.75H7.875ZM5.25 13.125V10.5H7.875V8.75H5.25V6.125H3.5V8.75H0.875V10.5H3.5V13.125H5.25Z"
+                        fill="#A5A5A5"
+                      />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_202_689">
+                        <rect width="21" height="21" fill="white" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <span style="margin-left: 5px">Assign</span>
+                </div>
+              </td>
+
+              <td class="in-progress">IN PROGRESS</td>
+              <td class="due_2">
+                <span class="due-container">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 21 21"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g clip-path="url(#clip0_202_690)">
+                      <path
+                        d="M6.125 9.625H7.875V11.375H6.125V9.625ZM18.375 5.25V17.5C18.375 18.4625 17.5875 19.25 16.625 19.25H4.375C3.40375 19.25 2.625 18.4625 2.625 17.5L2.63375 5.25C2.63375 4.2875 3.40375 3.5 4.375 3.5H5.25V1.75H7V3.5H14V1.75H15.75V3.5H16.625C17.5875 3.5 18.375 4.2875 18.375 5.25ZM4.375 7H16.625V5.25H4.375V7ZM16.625 17.5V8.75H4.375V17.5H16.625ZM13.125 11.375H14.875V9.625H13.125V11.375ZM9.625 11.375H11.375V9.625H9.625V11.375Z"
+                        fill="#a5a5a5"
+                      />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_202_690">
+                        <rect width="21" height="21" fill="white" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <span class="due-text">Due</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><span class="name-icon yellow"></span>Extra work</td>
+              <td>Some Description about this ......</td>
+              <td>
+                <div class="assignee-icon">
+                  <div class="avatar-group">
+                    <img src="https://via.placeholder.com/30" alt="User 1" />
+                  </div>
+                  <span>Anna Max</span>
+                </div>
+              </td>
+              <td class="rejected">REJECTED</td>
+              <td>AUG 20</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="plus-container">
+          <button class="plus-button" id="add-column-btn">+</button>
+        </div>
+      </div>
+      <!-- New container for Add Task button -->
+      <div class="add-task-container">
+        <button class="add-task-button" id="add-task-btn">+ Add Task</button>
+      </div>
+    </div>
+
+    <script>
+      // Function to add a new column
+      function addColumn() {
+        const taskTable = document.getElementById("task-table"); // Get the task table
+        const taskTableHead = taskTable.querySelector("thead tr"); // Get the header row
+
+        // Prompt user for new column name
+        const newColumnName = prompt(
+          "Enter the name of the new column:",
+          "New Column"
+        );
+        if (newColumnName) {
+          // Add a new column header
+          const newTh = document.createElement("th");
+          newTh.textContent = newColumnName;
+          taskTableHead.appendChild(newTh);
+
+          // Add new column to each row in the body
+          const tbodyRows = taskTable.querySelectorAll("tbody tr"); // Get all rows
+          tbodyRows.forEach((row, index) => {
+            const newTd = document.createElement("td");
+            const cellData = prompt(
+              `Enter data for row ${index + 1} in "${newColumnName}":`,
+              `Data ${index + 1}`
+            );
+            newTd.textContent = cellData || ""; // Fill the new cell with data or leave blank
+            row.appendChild(newTd); // Append the new cell to the right side
+          });
+        }
+      }
+
+      // Add event listener to the button
+      document
+        .getElementById("add-column-btn")
+        .addEventListener("click", addColumn);
+
+      // Function to handle adding new task
+      document
+        .getElementById("add-task-btn")
+        .addEventListener("click", function () {
+          const taskTableBody = document.querySelector("#task-table tbody"); // Get the task table body
+          const newRow = document.createElement("tr"); // Create a new row
+
+          // Create new cells for the new task
+          const taskNumber = taskTableBody.children.length + 1; // Calculate task number based on current number of rows
+          newRow.innerHTML = `
+                <td>${taskNumber}</td>
+                <td><span class="name-icon grey"></span>New Task</td>
+                <td class="add-description">+ Add Description</td>
+                <td class="assign">⚙ Assign</td>
+                <td class="in-progress">IN PROGRESS</td>
+                <td><span class="due-icon"><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 21 21"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g clip-path="url(#clip0_202_690)">
+                      <path
+                        d="M6.125 9.625H7.875V11.375H6.125V9.625ZM18.375 5.25V17.5C18.375 18.4625 17.5875 19.25 16.625 19.25H4.375C3.40375 19.25 2.625 18.4625 2.625 17.5L2.63375 5.25C2.63375 4.2875 3.40375 3.5 4.375 3.5H5.25V1.75H7V3.5H14V1.75H15.75V3.5H16.625C17.5875 3.5 18.375 4.2875 18.375 5.25ZM4.375 7H16.625V5.25H4.375V7ZM16.625 17.5V8.75H4.375V17.5H16.625ZM13.125 11.375H14.875V9.625H13.125V11.375ZM9.625 11.375H11.375V9.625H9.625V11.375Z"
+                        fill="#a5a5a5"
+                      />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_202_690">
+                        <rect width="21" height="21" fill="white" />
+                      </clipPath>
+                    </defs>
+                  </svg></span> Due</td>
+            `;
+          taskTableBody.appendChild(newRow); // Append the new row to the table
+        });
+    </script>
+  </body>
+</html>
