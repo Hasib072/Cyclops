@@ -70,17 +70,15 @@ export const usersApiSlice = apiSlice.injectEndpoints({
 
     // Profile Endpoints
     getProfile: builder.query({
-      query: () => ({
-        url: `${PROFILE_URL}`, // Use PROFILE_URL
-        method: 'GET',
-      }),
+      query: () => '/profile',
       providesTags: ['Profile'],
     }),
+
     updateProfile: builder.mutation({
-      query: (data) => ({
-        url: `${PROFILE_URL}`, // Use PROFILE_URL
+      query: (formData) => ({
+        url: '/profile',
         method: 'PUT',
-        body: data,
+        body: formData,
       }),
       invalidatesTags: ['Profile'],
     }),

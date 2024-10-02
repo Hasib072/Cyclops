@@ -24,16 +24,21 @@ app.use(cors({
   credentials: true, // Allow credentials (cookies)
 }));
 
-// Determine __dirname for ES modules
+// Define __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Serve static files from the 'uploads' directory
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/profile', profileRoutes); // This should be /api/profile
+
+// Test Route
+app.get('/test-upload', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'uploads', 'test.png'));
+});
 
 // Serve frontend in production (optional)
 if (process.env.NODE_ENV === 'production') {
