@@ -1,10 +1,13 @@
-import { fetchBaseQuery, createApi } from '@reduxjs/toolkit/query/react';
+// frontend/src/slices/apiSlice.js
 
-const baseQuery = fetchBaseQuery({ baseUrl: '' });
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const apiSlice = createApi({
-  baseQuery,
-  tagTypes: ['User'],
-  // eslint-disable-next-line no-unused-vars
-  endpoints: (builder) => ({}),
+  reducerPath: 'api',
+  baseQuery: fetchBaseQuery({
+    baseUrl: '/api', // Relative path; requires proxy setup
+    credentials: 'include', // Include cookies in requests
+  }),
+  tagTypes: ['User', 'Profile'],
+  endpoints: () => ({}),
 });

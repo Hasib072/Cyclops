@@ -1,100 +1,268 @@
-import { useState, useEffect } from 'react';
-import { Form, Button } from 'react-bootstrap';
+// frontend/src/screens/ProfileScreen.jsx
+
+import React, { useState, useEffect } from 'react';
+import { Form, Button, Row, Col, Modal } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import FormContainer from '../components/FormContainer';
 import { toast } from 'react-toastify';
+
+// RTK Query Hooks
+import {
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+} from '../slices/usersApiSlice';
+
+// Custom Components
+import FormContainer from '../components/FormContainer';
 import Loader from '../components/Loader';
-import { useUpdateUserMutation } from '../slices/usersApiSlice';
+
+// Redux Actions
 import { setCredentials } from '../slices/authSlice';
 
 const ProfileScreen = () => {
-   const [email, setEmail] = useState('');
-   const [name, setName] = useState('');
-   const [password, setPassword] = useState('');
-   const [confirmPassword, setConfirmPassword] = useState('');
+  const dispatch = useDispatch();
 
-   const { userInfo } = useSelector((state) => state.auth);
+  // Fetching Profile Data
+  const {
+    data: profile,
+    isLoading: isProfileLoading,
+    error: profileError,
+    refetch,
+  } = useGetProfileQuery();
 
-   const dispatch = useDispatch();
+  // Mutation for Updating Profile
+  const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
 
-   const [updateProfile, { isLoading }] = useUpdateUserMutation();
+  // State for Profile Info
+  const [profileFormData, setProfileFormData] = useState({
+    name: '',
+    email: '',
+    companyName: '',
+    jobRole: '',
+    city: '',
+    country: '',
+    gitHubLink: '',
+    linkedInLink: '',
+  });
 
-   useEffect(() => {
-      setName(userInfo.name);
-      setEmail(userInfo.email);
-   }, [userInfo.email, userInfo.name]);
+  // State for Edit Modal
+  const [showEditModal, setShowEditModal] = useState(false);
 
-   const submitHandler = async (e) => {
-      e.preventDefault();
-      if (password !== confirmPassword) {
-         toast.error('Passwords do not match');
-      } else {
-         try {
-            const res = await updateProfile({
-               _id: userInfo._id,
-               name,
-               email,
-               password,
-            }).unwrap();
-            dispatch(setCredentials({ ...res }));
-            toast.success('Profile updated successfully');
-         } catch (err) {
-            toast.error(err?.data?.message || err.error);
-         }
-      }
-   };
+  const handleCloseModal = () => setShowEditModal(false);
+  const handleShowModal = () => setShowEditModal(true);
 
-   return (
-      <FormContainer>
-         <h1>Update Profile</h1>
+  useEffect(() => {
+    if (profile) {
+      console.log(profile);
+      setProfileFormData({
+        name: profile.user.name || '',
+        email: profile.user.email || '',
+        companyName: profile.companyName || '',
+        jobRole: profile.jobRole || '',
+        city: profile.city || '',
+        country: profile.country || '',
+        gitHubLink: profile.gitHubLink || '',
+        linkedInLink: profile.linkedInLink || '',
+      });
+    }
+  }, [profile]);
 
-         <Form onSubmit={submitHandler}>
-            <Form.Group className='my-2' controlId='name'>
-               <Form.Label>Name</Form.Label>
-               <Form.Control
-                  type='name'
-                  placeholder='Enter name'
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-               ></Form.Control>
-            </Form.Group>
-            <Form.Group className='my-2' controlId='email'>
-               <Form.Label>Email Address</Form.Label>
-               <Form.Control
-                  type='email'
-                  placeholder='Enter email'
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-               ></Form.Control>
-            </Form.Group>
-            <Form.Group className='my-2' controlId='password'>
-               <Form.Label>Password</Form.Label>
-               <Form.Control
-                  type='password'
-                  placeholder='Enter password'
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-               ></Form.Control>
-            </Form.Group>
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProfileFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
-            <Form.Group className='my-2' controlId='confirmPassword'>
-               <Form.Label>Confirm Password</Form.Label>
-               <Form.Control
-                  type='password'
-                  placeholder='Confirm password'
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-               ></Form.Control>
-            </Form.Group>
+  const submitHandler = async (e) => {
+    e.preventDefault();
 
-            {isLoading && <Loader />}
+    try {
+      const updatedProfile = await updateProfile(profileFormData).unwrap();
+      toast.success('Profile updated successfully');
+      handleCloseModal();
+      refetch();
+    } catch (err) {
+      toast.error(err?.data?.message || err.error);
+    }
+  };
 
-            <Button type='submit' variant='primary' className='mt-3'>
-               Update
-            </Button>
-         </Form>
-      </FormContainer>
-   );
+  return (
+    <FormContainer>
+      <h1 style={{color:'white'}}>Your Profile</h1>
+
+      {isProfileLoading ? (
+        <Loader />
+      ) : profileError ? (
+        <p className='text-danger'>{profileError.data.message || profileError.error}</p>
+      ) : (
+        <div style={{color:'white'}}>
+          {/* Display Profile Details */}
+          <Row>
+            <Col md={6}>
+              <p>
+                <strong>Name:</strong> {profileFormData.name}
+              </p>
+              <p>
+                <strong>Email:</strong> {profileFormData.email}
+              </p>
+              <p>
+                <strong>Company Name:</strong> {profileFormData.companyName || 'N/A'}
+              </p>
+              <p>
+                <strong>Job Role:</strong> {profileFormData.jobRole || 'N/A'}
+              </p>
+            </Col>
+            <Col md={6}>
+              <p>
+                <strong>City:</strong> {profileFormData.city || 'N/A'}
+              </p>
+              <p>
+                <strong>Country:</strong> {profileFormData.country || 'N/A'}
+              </p>
+              <p>
+                <strong>GitHub Link:</strong>{' '}
+                {profileFormData.gitHubLink ? (
+                  <a href={profileFormData.gitHubLink} target='_blank' rel='noopener noreferrer'>
+                    {profileFormData.gitHubLink}
+                  </a>
+                ) : (
+                  'N/A'
+                )}
+              </p>
+              <p>
+                <strong>LinkedIn Link:</strong>{' '}
+                {profileFormData.linkedInLink ? (
+                  <a href={profileFormData.linkedInLink} target='_blank' rel='noopener noreferrer'>
+                    {profileFormData.linkedInLink}
+                  </a>
+                ) : (
+                  'N/A'
+                )}
+              </p>
+            </Col>
+          </Row>
+
+          {/* Edit Button */}
+          <Button variant='primary' onClick={handleShowModal}>
+            Edit Profile
+          </Button>
+
+          {/* Edit Profile Modal */}
+          <Modal show={showEditModal} onHide={handleCloseModal} centered>
+            <Modal.Header closeButton>
+              <Modal.Title>Edit Profile</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form onSubmit={submitHandler}>
+                {/* Name and Email */}
+                <Form.Group controlId='name' className='my-2'>
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Enter name'
+                    name='name'
+                    value={profileFormData.name}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+
+                {/* <Form.Group controlId='email' className='my-2'>
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control
+                    type='email'
+                    placeholder='Enter email'
+                    name='email'
+                    value={profileFormData.email}
+                    onChange={handleChange}
+                    disabled // Make the email field read-only
+                  />
+                </Form.Group> */}
+
+                {/* Company Name */}
+                <Form.Group controlId='companyName' className='my-2'>
+                  <Form.Label>Company Name</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Enter company name'
+                    name='companyName'
+                    value={profileFormData.companyName}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+
+                {/* Job Role */}
+                <Form.Group controlId='jobRole' className='my-2'>
+                  <Form.Label>Job Role</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Enter job role'
+                    name='jobRole'
+                    value={profileFormData.jobRole}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+
+                {/* City */}
+                <Form.Group controlId='city' className='my-2'>
+                  <Form.Label>City</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Enter city'
+                    name='city'
+                    value={profileFormData.city}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+
+                {/* Country */}
+                <Form.Group controlId='country' className='my-2'>
+                  <Form.Label>Country</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Enter country'
+                    name='country'
+                    value={profileFormData.country}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+
+                {/* GitHub Link */}
+                <Form.Group controlId='gitHubLink' className='my-2'>
+                  <Form.Label>GitHub Link</Form.Label>
+                  <Form.Control
+                    type='url'
+                    placeholder='Enter GitHub link'
+                    name='gitHubLink'
+                    value={profileFormData.gitHubLink}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+
+                {/* LinkedIn Link */}
+                <Form.Group controlId='linkedInLink' className='my-2'>
+                  <Form.Label>LinkedIn Link</Form.Label>
+                  <Form.Control
+                    type='url'
+                    placeholder='Enter LinkedIn link'
+                    name='linkedInLink'
+                    value={profileFormData.linkedInLink}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+
+                {isUpdatingProfile && <Loader />}
+
+                <Button variant='primary' type='submit' disabled={isUpdatingProfile}>
+                  Update Profile
+                </Button>
+              </Form>
+            </Modal.Body>
+          </Modal>
+        </div>
+      )}
+    </FormContainer>
+  );
 };
 
 export default ProfileScreen;

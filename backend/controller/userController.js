@@ -4,6 +4,7 @@ import User from '../models/userModel.js';
 import sendEmail from '../utils/sendEmail.js';
 import generateToken from '../utils/generateToken.js';
 import bcrypt from 'bcryptjs';
+import Profile from '../models/profileModel.js';
 
 //  @desc   Auth user/set token
 //  @route   POST /api/users/auth
@@ -35,32 +36,43 @@ const authUser = asyncHandler(async (req, res) => {
 // @desc    Register a new user
 // @route   POST /api/users
 // @access  Public
+// @desc    Register a new user
+// @route   POST /api/users
+// @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-   const { name, email, password } = req.body;
- 
-   // Check if user already exists
-   const userExist = await User.findOne({ email });
- 
-   if (userExist) {
-     res.status(400);
-     throw new Error('User already exists');
-   }
- 
-   // Create new user instance
-   const user = new User({
-     name,
-     email,
-     password,
-   });
- 
-   // Save user to the database
-   await user.save();
- 
-   // Respond with success
-   res.status(201).json({
-     message: 'User registered successfully. Please verify your email.',
-   });
- });
+  const { name, email, password } = req.body;
+
+  // Check if user already exists
+  const userExist = await User.findOne({ email });
+
+  if (userExist) {
+    res.status(400);
+    throw new Error('User already exists');
+  }
+
+  // Create new user instance
+  const user = new User({
+    name,
+    email,
+    password,
+  });
+
+  // Save user to the database
+  const savedUser = await user.save();
+
+  // Create an empty profile for the user
+  await Profile.create({ user: savedUser._id });
+
+  // Optionally, generate a verification code and send email
+  // const verificationCode = user.generateVerificationCode();
+  // await user.save();
+  // await sendVerificationEmail(user.email, verificationCode);
+
+  // Respond with success
+  res.status(201).json({
+    message: 'User registered successfully. Please verify your email.',
+  });
+});
 
 // @desc    Verify user's email
 // @route   POST /api/users/verify-email
