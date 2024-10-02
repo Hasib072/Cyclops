@@ -166,10 +166,10 @@ const ProfileScreen = () => {
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
-      height: '350px',
+      height: '400px',
     },
     banner: {
-      height: '200px', // Same as HTML
+      height: '250px', // Same as HTML
       width: '100%',
       borderRadius: '20px',
       position: 'relative',
@@ -220,13 +220,13 @@ const ProfileScreen = () => {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      marginTop: '-7%',
+      marginTop: '-12%',
     },
     photoImage: {
-      width: '100px',
-      height: '100px',
+      width: '150px',
+      height: '150px',
       // cursor: 'pointer',
-      borderRadius: '20px',
+      borderRadius: '24px',
       backgroundColor: '#565656',
       objectFit: 'cover',
     },
