@@ -7,9 +7,10 @@ const Sidebar = ({ user, onToggle }) => { // Add onToggle prop
   const [isExpanded, setIsExpanded] = useState(true);
   const [isHomeExpanded, setIsHomeExpanded] = useState(true);
   const [isTeamsExpanded, setIsTeamsExpanded] = useState(true);
-  const [teams, setTeams] = useState(['Team Name', 'Jasons Crew', 'Times Team']);
+  const [teams, setTeams] = useState(['Team Name', 'Jason\'s Crew', 'Times Team']);
 
   const sidebarRef = useRef(null);
+  const hoverTimeoutRef = useRef(null); // Ref to store the timeout ID
 
   // Handle clicks outside the sidebar to collapse it
   useEffect(() => {
@@ -44,6 +45,35 @@ const Sidebar = ({ user, onToggle }) => { // Add onToggle prop
     }
   };
 
+  // Handle mouse leaving the sidebar
+  const handleMouseLeave = () => {
+    // Start a 2-second timer to collapse the sidebar
+    hoverTimeoutRef.current = setTimeout(() => {
+      if (isExpanded) {
+        setIsExpanded(false);
+        if (onToggle) onToggle(false);
+      }
+    }, 500); // 1000 milliseconds = 1 seconds
+  };
+
+  // Handle mouse entering the sidebar
+  const handleMouseEnter = () => {
+    // Clear the collapse timer if it exists
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+  };
+
+  // Clear the timer on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Inline Styles
   const styles = {
     sidebar: {
@@ -62,7 +92,7 @@ const Sidebar = ({ user, onToggle }) => { // Add onToggle prop
       transition: 'width 0.3s ease',
       zIndex: 1000,
       overflow: 'hidden',
-      cursor: 'pointer', // Indicate that sidebar is clickable
+      // Remove cursor:pointer to prevent confusion, since interactive elements have their own cursors
     },
     profile: {
       display: 'flex',
@@ -178,39 +208,32 @@ const Sidebar = ({ user, onToggle }) => { // Add onToggle prop
       ref={sidebarRef}
       style={styles.sidebar}
       onClick={toggleSidebar} // Toggle sidebar when clicking on the sidebar body
+      onMouseLeave={handleMouseLeave} // Handle mouse leaving the sidebar
+      onMouseEnter={handleMouseEnter} // Handle mouse entering the sidebar
     >
       {/* Sidebar main content */}
       <div>
+
         {/* User Profile Section */}
-        <div style={styles.profile}>
-          <img
-            src={user.profilePicture || 'https://placehold.co/50'}
-            alt="Profile"
-            style={styles.profileImg}
-            onClick={(e) => e.stopPropagation()} // Prevent toggle when clicking on the image
-          />
-          <div style={styles.profileInfo} onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ fontSize: '20px', marginBottom: '5px', color: 'white', marginTop: '20px' }}>{user.name || 'Name Here'}</h2>
-            <p style={{ fontSize: '14px', color: 'white' }}>{user.email || 'usermail@gmail.com'}</p>
+        <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div style={styles.profile}>
+            <img
+              src={user.profilePicture || 'https://placehold.co/50'}
+              alt="Profile"
+              style={styles.profileImg}
+              onClick={(e) => e.stopPropagation()} // Prevent toggle when clicking on the image
+            />
+            <div style={styles.profileInfo} onClick={(e) => e.stopPropagation()}>
+              <h2 style={{ fontSize: '20px', marginBottom: '5px', color: 'white', marginTop: '20px' }}>{user.name || 'Name Here'}</h2>
+              <p style={{ fontSize: '14px', color: 'white' }}>{user.email || 'usermail@gmail.com'}</p>
+            </div>
           </div>
-        </div>
+        </Link>
 
         {/* Home Navigation Group */}
         <div style={styles.menuSection}>
           <div style={styles.menuHeader}>
-            {/* <span style={styles.menuTitle}>Home</span> */}
-            {/* Toggle Home Group with Horizontal Line "-" */}
-            {/* <svg
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent sidebar toggle
-                setIsHomeExpanded(!isHomeExpanded);
-              }}
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              style={styles.horizontalLineIcon}
-            >
-              <line x1="5" y1="10" x2="15" y2="10" stroke="#d1c4e9" strokeWidth="2" />
-            </svg> */}
+            {/* You can add a section title here if needed */}
           </div>
           <ul style={styles.submenu}>
             <li style={styles.menuItem} onClick={(e) => e.stopPropagation()}>
