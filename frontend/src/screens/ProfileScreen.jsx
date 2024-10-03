@@ -316,10 +316,14 @@ const ProfileScreen = () => {
   // Get Backend URL from Environment Variable
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
+  // Construct the full profile image URL
+  const profileImageUrl = profile?.profileImage ? `${BACKEND_URL}/${profile.profileImage}` : null;
+
+
   return (
     <div style={styles.container}>
       {/* Sidebar */}
-      {userInfo && <Sidebar user={userInfo} onToggle={handleSidebarToggle} />}
+      {userInfo && <Sidebar user={userInfo} profileImage={profileImageUrl} onToggle={handleSidebarToggle} />}
 
       {/* Main Content */}
       <div style={styles.mainContent}>
