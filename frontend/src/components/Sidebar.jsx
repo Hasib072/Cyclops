@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
-const Sidebar = ({ user, onToggle }) => { // Add onToggle prop
+const Sidebar = ({ user, profileImage, onToggle }) => { // Added profileImage prop
   const [isExpanded, setIsExpanded] = useState(true);
   const [isHomeExpanded, setIsHomeExpanded] = useState(true);
   const [isTeamsExpanded, setIsTeamsExpanded] = useState(true);
-  const [teams, setTeams] = useState(['Team Name', 'Jason\'s Crew', 'Times Team']);
+  const [teams, setTeams] = useState(['Team Name', "Jason's Crew", 'Times Team']);
 
   const sidebarRef = useRef(null);
   const hoverTimeoutRef = useRef(null); // Ref to store the timeout ID
@@ -47,13 +47,13 @@ const Sidebar = ({ user, onToggle }) => { // Add onToggle prop
 
   // Handle mouse leaving the sidebar
   const handleMouseLeave = () => {
-    // Start a 2-second timer to collapse the sidebar
+    // Start a 0.5-second timer to collapse the sidebar
     hoverTimeoutRef.current = setTimeout(() => {
       if (isExpanded) {
         setIsExpanded(false);
         if (onToggle) onToggle(false);
       }
-    }, 500); // 1000 milliseconds = 1 seconds
+    }, 500); // 500 milliseconds = 0.5 seconds
   };
 
   // Handle mouse entering the sidebar
@@ -218,14 +218,18 @@ const Sidebar = ({ user, onToggle }) => { // Add onToggle prop
         <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>
           <div style={styles.profile}>
             <img
-              src={user.profilePicture || 'https://placehold.co/50'}
+              src={profileImage || user.profilePicture || 'https://placehold.co/50'}
               alt="Profile"
               style={styles.profileImg}
               onClick={(e) => e.stopPropagation()} // Prevent toggle when clicking on the image
             />
             <div style={styles.profileInfo} onClick={(e) => e.stopPropagation()}>
-              <h2 style={{ fontSize: '20px', marginBottom: '5px', color: 'white', marginTop: '20px' }}>{user.name || 'Name Here'}</h2>
-              <p style={{ fontSize: '14px', color: 'white' }}>{user.email || 'usermail@gmail.com'}</p>
+              <h2 style={{ fontSize: '20px', marginBottom: '5px', color: 'white', marginTop: '20px' }}>
+                {user.name || 'Name Here'}
+              </h2>
+              <p style={{ fontSize: '14px', color: 'white' }}>
+                {user.email || 'usermail@gmail.com'}
+              </p>
             </div>
           </div>
         </Link>
@@ -240,19 +244,31 @@ const Sidebar = ({ user, onToggle }) => { // Add onToggle prop
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={styles.svgIcon}>
                 <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3z" />
               </svg>
-              {isExpanded && <Link to="/dashboard" className='FontBody02' style={{ textDecoration: 'none', color: 'inherit' }}>Dashboard</Link>}
-            </li>
-            <li style={styles.menuItem} onClick={(e) => e.stopPropagation()}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={styles.svgIcon}>
-                <path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v2.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-              </svg>
-              {isExpanded && <Link to="/notifications" className='FontBody02' style={{ textDecoration: 'none', color: 'inherit' }}>Notifications</Link>}
+              {isExpanded && (
+                <Link to="/dashboard" className='FontBody02' style={{ textDecoration: 'none', color: 'inherit' }}>
+                  Dashboard
+                </Link>
+              )}
             </li>
             <li style={styles.menuItem} onClick={(e) => e.stopPropagation()}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={styles.svgIcon}>
                 <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1S9.6 1.84 9.18 3H5c-1.1 0-2 .9-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5c0-1.1-.9-2-2-2zm-7 14H8v-2h4v2zm0-4H8V7h4v6zm6 4h-4v-4h4v4zm0-6h-4v-2h4v2z" />
               </svg>
-              {isExpanded && <Link to="/timesheet" className='FontBody02' style={{ textDecoration: 'none', color: 'inherit' }}>Timesheet</Link>}
+              {isExpanded && (
+                <Link to="/notifications" className='FontBody02' style={{ textDecoration: 'none', color: 'inherit' }}>
+                  Notifications
+                </Link>
+              )}
+            </li>
+            <li style={styles.menuItem} onClick={(e) => e.stopPropagation()}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={styles.svgIcon}>
+                <path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v2.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+              </svg>
+              {isExpanded && (
+                <Link to="/timesheet" className='FontBody02' style={{ textDecoration: 'none', color: 'inherit' }}>
+                  Timesheet
+                </Link>
+              )}
             </li>
           </ul>
         </div>
@@ -302,9 +318,7 @@ const Sidebar = ({ user, onToggle }) => { // Add onToggle prop
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={styles.svgIcon}>
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 
               10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 
-              0-8-3.59-8-8s3.59-8 8-8 8 3.59 
-              8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 
-              8h2v2h-2z" />
+              0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
             </svg>
             {isExpanded && <span>About us</span>}
           </li>
