@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calendar</title>
+    <style>
+      body {
+        font-family: "Open Sans", sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: black;
+        overflow: hidden;
+      }
+
+      .calendar-container {
+        margin: 80px 0px 10px 40px;
+      }
+
+      .calendar-header {
+        font-size: 24px;
+        padding-left: 20px;
+        display: flex;
+        align-items: center;
+      }
+
+      .calendar-header button {
+        background-color: #402b5e;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin-left: -20px;
+        font-size: 20px;
+        border-radius: 12px 12px 0px 0px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+      }
+
+      .arrow {
+        font-size: 20px; /* Arrow size */
+        margin: 0 10px; /* Space between arrows and month name */
+      }
+
+      .calendar {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-template-rows: 50px repeat(6, 103px);
+        gap: 0px;
+        background-color: #3d3d3d;
+        position: relative; /* Ensure task bars appear within calendar grid */
+        max-width: 100vw; /* Ensure full viewable width */
+      }
+
+      .calendar div {
+        border-right: 0.5px solid #6c6c6c;
+        border-bottom: 0.5px solid #6c6c6c;
+        color: white;
+        display: flex;
+      }
+
+      .weekdays {
+        background-color: #402b5e;
+        font-weight: bold;
+        text-transform: uppercase;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-right: none !important;
+        border-left: none !important;
+      }
+
+      .date {
+        position: absolute;
+        top: 8px;
+        left: 12px;
+        font-size: 12px;
+        color: #a7a7a7;
+      }
+
+      /* Task bars */
+      .task {
+        font-weight: bold;
+        position: absolute;
+        top: 50%;
+        height: 22px;
+        align-items: center;
+        justify-content: center;
+        padding-left: 8px;
+        padding-right: 8px;
+        font-size: 14px;
+        border-radius: 3px;
+        transform: translateY(-50%);
+      }
+
+      /* Task colors and spans */
+      .task1 {
+        background-color: #9854cb; /* Light blue shade */
+      }
+
+      .task2 {
+        background-color: #9854cb; /* Light orange shade */
+      }
+
+      .task3 {
+        background-color: #ffc19f; /* Light yellow-orange shade */
+      }
+      .calendar div {
+        position: relative;
+        z-index: 1; /* Date cells below task bars */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="calendar-container">
+      <!-- Calendar header with month name as button -->
+      <div class="calendar-header">
+        <button>
+          <span class="arrow">&lt;</span>
+          <!-- Left arrow -->
+          August 2024
+          <span class="arrow">&gt;</span>
+          <!-- Right arrow -->
+        </button>
+      </div>
+
+      <div class="calendar">
+        <!-- Weekday names -->
+        <div class="weekdays">Mon</div>
+        <div class="weekdays">Tue</div>
+        <div class="weekdays">Wed</div>
+        <div class="weekdays">Thu</div>
+        <div class="weekdays">Fri</div>
+        <div class="weekdays">Sat</div>
+        <div class="weekdays">Sun</div>
+
+        <!-- Week Row 1 -->
+        <div><span class="date">29</span></div>
+        <div><span class="date">30</span></div>
+        <div><span class="date">31</span></div>
+        <div><span class="date">1</span></div>
+        <div><span class="date">2</span></div>
+        <div><span class="date">3</span></div>
+        <div><span class="date">4</span></div>
+
+        <!-- Week Row 2 -->
+        <div><span class="date">5</span></div>
+        <div><span class="date">6</span></div>
+        <div><span class="date">7</span></div>
+        <div><span class="date">8</span></div>
+        <div><span class="date">9</span></div>
+        <div>
+          <span class="date">10</span>
+          <div class="task task1">Task01 Name</div>
+        </div>
+        <div><span class="date">11</span></div>
+
+        <!-- Week Row 3 -->
+        <div><span class="date">12</span></div>
+        <div>
+          <span class="date">13</span>
+          <div class="task task2">Another Task</div>
+        </div>
+        <div><span class="date">14</span></div>
+        <div><span class="date">15</span></div>
+        <div>
+          <span class="date">16</span>
+          <div class="task task3">Something</div>
+        </div>
+        <div><span class="date">17</span></div>
+        <div><span class="date">18</span></div>
+
+        <!-- Week Row 4 -->
+        <div>
+          <span class="date">19</span>
+        </div>
+        <div><span class="date">20</span></div>
+        <div><span class="date">21</span></div>
+        <div><span class="date">22</span></div>
+        <div><span class="date">23</span></div>
+        <div><span class="date">24</span></div>
+        <div><span class="date">25</span></div>
+
+        <!-- Week Row 5 -->
+        <div><span class="date">26</span></div>
+        <div><span class="date">27</span></div>
+        <div><span class="date">28</span></div>
+        <div><span class="date">29</span></div>
+        <div><span class="date">30</span></div>
+        <div><span class="date">31</span></div>
+        <div><span class="date">1</span></div>
+      </div>
+    </div>
+  </body>
+</html>
