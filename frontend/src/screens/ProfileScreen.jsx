@@ -522,155 +522,348 @@ const ProfileScreen = () => {
       
 
       {/* Edit Profile Modal */}
-      <Modal show={showEditModal} onHide={handleCloseModal} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Profile</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={submitHandler} encType="multipart/form-data">
-            {/* Name */}
-            <Form.Group controlId='name' className='my-2'>
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter name'
-                name='name'
-                value={profileFormData.name}
-                onChange={handleChange}
-                required
+<Modal
+  show={showEditModal}
+  onHide={handleCloseModal}
+  centered
+  backdrop="static" // Allows closing by clicking outside
+  keyboard={true} // Allows closing with the Esc key
+  contentClassName="bg-transparent" // Makes the modal background transparent
+  dialogClassName="modal-90w" // Optional: Adjusts the width of the modal
+>
+  <Modal.Body
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100%', // Full height of the modal
+      flexDirection: 'column',
+      background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)', // Gradient background
+      padding: '25px 20px', // Padding inside the form container
+      borderRadius: '10px', // Rounded corners
+      width: '100%', // 90% width to match design
+      color: '#fff',
+      position: 'relative',
+    }}
+  >
+    <div
+      style={{
+        width: '100%', // Full width within the modal body
+        color: '#fff',
+      }}
+    >
+      <h1 style={{ fontWeight: 'bold', marginBottom: '16px' }}>Edit Profile Info</h1>
+      <form onSubmit={submitHandler} encType="multipart/form-data">
+        {/* Name and Photo Upload Container */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '15px', // Spacing between sections
+          }}
+        >
+          {/* Name Input */}
+          <div style={{ flex: '1', marginRight: '10px' }}> {/* Flex basis for responsive layout */}
+            <label htmlFor="name" style={{ fontSize: '0.9em', margin: '4px', display: 'block' }}>Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Current Name"
+              value={profileFormData.name}
+              onChange={handleChange}
+              required
+              style={{
+                width: '90%', // Full width
+                padding: '10px', // Padding inside input
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: '#565656',
+                color: '#fff',
+                fontSize: '0.95em',
+              }}
+            />
+          </div>
+          {/* Photo Upload */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', marginTop: '-20px', marginLeft: '-25px' }}>
+            <label htmlFor="profileImage">
+              <img
+                src={
+                  profileImage
+                    ? URL.createObjectURL(profileImage)
+                    : profile?.profileImage
+                    ? `${BACKEND_URL}/${profile.profileImage}`
+                    : 'https://via.placeholder.com/70.png?text=Profile+Image'
+                }
+                alt="Upload Photo"
+                style={{
+                  width: '100px', // Fixed width
+                  height: '100px', // Fixed height
+                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  backgroundColor: '#565656',
+                  objectFit: 'cover',
+                }}
               />
-            </Form.Group>
+            </label>
+            <input
+              type="file"
+              id="profileImage"
+              name="profileImage"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+            />
+          </div>
+        </div>
 
-            {/* Company Name */}
-            <Form.Group controlId='companyName' className='my-2'>
-              <Form.Label>Company Name</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter company name'
-                name='companyName'
-                value={profileFormData.companyName}
-                onChange={handleChange}
-              />
-            </Form.Group>
+        {/* Company and Job Role Container */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '8px', // Spacing between inputs
+          }}
+        >
+          {/* Company Name */}
+          <div style={{ width: '58%' }}>
+            <label htmlFor="companyName" style={{ fontSize: '0.9em', margin: '4px', display: 'block' }}>Company Name</label>
+            <input
+              type="text"
+              id="companyName"
+              name="companyName"
+              placeholder="Current Company Name"
+              value={profileFormData.companyName}
+              onChange={handleChange}
+              style={{
+                width: '100%', // Full width
+                padding: '10px', // Padding inside input
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: '#565656',
+                color: '#fff',
+                fontSize: '0.95em',
+              }}
+            />
+          </div>
+          {/* Job Role */}
+          <div style={{ width: '38%' }}>
+            <label htmlFor="jobRole" style={{ fontSize: '0.9em', margin: '4px', display: 'block' }}>Job Role</label>
+            <input
+              type="text"
+              id="jobRole"
+              name="jobRole"
+              placeholder="Job Role"
+              value={profileFormData.jobRole}
+              onChange={handleChange}
+              style={{
+                width: '100%', // Full width
+                padding: '10px', // Padding inside input
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: '#565656',
+                color: '#fff',
+                fontSize: '0.95em',
+              }}
+            />
+          </div>
+        </div>
 
-            {/* Job Role */}
-            <Form.Group controlId='jobRole' className='my-2'>
-              <Form.Label>Job Role</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter job role'
-                name='jobRole'
-                value={profileFormData.jobRole}
-                onChange={handleChange}
-              />
-            </Form.Group>
+        {/* City and Country Container */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '15px', // Spacing between sections
+          }}
+        >
+          {/* City */}
+          <div style={{ width: '48%' }}>
+            <label htmlFor="city" style={{ fontSize: '0.9em', margin: '4px', display: 'block' }}>City</label>
+            <input
+              type="text"
+              id="city"
+              name="city"
+              placeholder="Current City"
+              value={profileFormData.city}
+              onChange={handleChange}
+              style={{
+                width: '100%', // Full width
+                padding: '10px', // Padding inside input
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: '#565656',
+                color: '#fff',
+                fontSize: '0.95em',
+              }}
+            />
+          </div>
+          {/* Country */}
+          <div style={{ width: '48%' }}>
+            <label htmlFor="country" style={{ fontSize: '0.9em', margin: '4px', display: 'block' }}>Country</label>
+            <input
+              type="text"
+              id="country"
+              name="country"
+              placeholder="Current Country"
+              value={profileFormData.country}
+              onChange={handleChange}
+              style={{
+                width: '100%', // Full width
+                padding: '10px', // Padding inside input
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: '#565656',
+                color: '#fff',
+                fontSize: '0.95em',
+              }}
+            />
+          </div>
+        </div>
 
-            {/* City */}
-            <Form.Group controlId='city' className='my-2'>
-              <Form.Label>City</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter city'
-                name='city'
-                value={profileFormData.city}
-                onChange={handleChange}
-              />
-            </Form.Group>
+        {/* Social Links Section */}
+        {/* <h2 style={{ fontSize: '1.2em', margin: '8px 0px' }}>Social Links</h2> */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '15px', // Spacing between inputs
+          }}
+        >
+          {/* LinkedIn Link */}
+          <div style={{ width: '48%' }}>
+            <label htmlFor="linkedInLink" style={{ fontSize: '0.9em', margin: '4px', display: 'block' }}>LinkedIn</label>
+            <input
+              type="url"
+              id="linkedInLink"
+              name="linkedInLink"
+              placeholder="link"
+              value={profileFormData.linkedInLink}
+              onChange={handleChange}
+              style={{
+                width: '100%', // Full width
+                padding: '10px', // Padding inside input
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: '#565656',
+                color: '#fff',
+                fontSize: '0.95em',
+              }}
+            />
+          </div>
+          {/* GitHub Link */}
+          <div style={{ width: '48%' }}>
+            <label htmlFor="gitHubLink" style={{ fontSize: '0.9em', margin: '4px', display: 'block' }}>GitHub</label>
+            <input
+              type="url"
+              id="gitHubLink"
+              name="gitHubLink"
+              placeholder="link"
+              value={profileFormData.gitHubLink}
+              onChange={handleChange}
+              style={{
+                width: '100%', // Full width
+                padding: '10px', // Padding inside input
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: '#565656',
+                color: '#fff',
+                fontSize: '0.95em',
+              }}
+            />
+          </div>
+        </div>
 
-            {/* Country */}
-            <Form.Group controlId='country' className='my-2'>
-              <Form.Label>Country</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter country'
-                name='country'
-                value={profileFormData.country}
-                onChange={handleChange}
-              />
-            </Form.Group>
+        {/* Profile Banner Section */}
+        {/* Profile Banner Section */}
+<div
+  style={{
+    marginBottom: '70px', // Spacing between sections
+    width: '90%', // 90% width of the form container
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  }}
+>
+  <label
+    htmlFor="profileBanner"
+    style={{
+      fontSize: '0.9em',
+      margin: '4px',
+      display: 'block',
+      marginLeft: '0',
+      alignSelf: 'flex-start', // Left align the label
+      width: '100%', // Ensure the label takes full width for left alignment
+      paddingLeft: '10px', // Optional: Add some padding for better aesthetics
+    }}
+  >
+    Profile Banner
+  </label>
+  <div
+    style={{
+      width: '110%', // Fixed width: 80% of the modal
+      height: '100px', // Fixed height
+      cursor: 'pointer',
+      marginLeft: '46px',
+      borderRadius: '8px',
+      backgroundColor: '#565656',
+      backgroundImage: profileBanner
+        ? `url(${URL.createObjectURL(profileBanner)})`
+        : profile?.profileBanner
+        ? `url(${BACKEND_URL}/${profile.profileBanner})`
+        : 'url(https://via.placeholder.com/300x100.png?text=Banner)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      objectFit: 'cover', // Ensures the image covers the container without stretching
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'relative',
+    }}
+    onClick={() => document.getElementById('profileBannerUpload').click()} // Open file dialog on click
+  >
+    {/* Optional: You can add an overlay icon or text to indicate upload action */}
+    {/* <span style={{ color: '#fff', fontSize: '0.8em' }}>Click to Upload</span> */}
+    <input
+      type="file"
+      id="profileBannerUpload"
+      name="profileBanner"
+      accept="image/*"
+      onChange={handleImageChange}
+      style={{ display: 'none' }}
+    />
+  </div>
+</div>
 
-            {/* GitHub Link */}
-            <Form.Group controlId='gitHubLink' className='my-2'>
-              <Form.Label>GitHub Link</Form.Label>
-              <Form.Control
-                type='url'
-                placeholder='Enter GitHub link'
-                name='gitHubLink'
-                value={profileFormData.gitHubLink}
-                onChange={handleChange}
-              />
-            </Form.Group>
 
-            {/* LinkedIn Link */}
-            <Form.Group controlId='linkedInLink' className='my-2'>
-              <Form.Label>LinkedIn Link</Form.Label>
-              <Form.Control
-                type='url'
-                placeholder='Enter LinkedIn link'
-                name='linkedInLink'
-                value={profileFormData.linkedInLink}
-                onChange={handleChange}
-              />
-            </Form.Group>
+        {/* Update Button */}
+        <button
+          type="submit"
+          style={{
+            background: 'linear-gradient(to right, #2a1a41 0%, #4a2e64 56%, #945cb7 100%)', // Gradient background
+            color: 'white',
+            border: 'none',
+            borderRadius: '14px', // Rounded corners
+            padding: '10px 40px', // Padding inside button
+            fontSize: '18px', // Font size
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            transition: 'opacity 0.3s ease',
+            position: 'absolute', // Positioning at the bottom right
+            bottom: '10px', // Position from bottom
+            right: '20px', // Position from right
+          }}
+          onMouseEnter={(e) => (e.target.style.opacity = '0.9')} // Hover effect
+          onMouseLeave={(e) => (e.target.style.opacity = '1')}
+        >
+          Update
+        </button>
+      </form>
+    </div>
+  </Modal.Body>
+</Modal>
 
-            {/* Profile Image */}
-            <Form.Group controlId='profileImage' className='my-2'>
-              <Form.Label>Profile Image</Form.Label>
-              <Form.Control
-                type='file'
-                name='profileImage'
-                accept='image/*'
-                onChange={handleImageChange}
-              />
-              {profileImage && (
-                <img
-                  src={URL.createObjectURL(profileImage)}
-                  alt='Profile Preview'
-                  style={styles.photoImage}
-                />
-              )}
-              {!profileImage && profile?.profileImage && (
-                <img
-                  src={`${BACKEND_URL}/${profile.profileImage}`}
-                  alt='Current Profile'
-                  style={styles.photoImage}
-                />
-              )}
-            </Form.Group>
-
-            {/* Profile Banner */}
-            <Form.Group controlId='profileBanner' className='my-2'>
-              <Form.Label>Profile Banner</Form.Label>
-              <Form.Control
-                type='file'
-                name='profileBanner'
-                accept='image/*'
-                onChange={handleImageChange}
-              />
-              {profileBanner && (
-                <img
-                  src={URL.createObjectURL(profileBanner)}
-                  alt='Banner Preview'
-                  style={styles.bannerImage}
-                />
-              )}
-              {!profileBanner && profile?.profileBanner && (
-                <img
-                  src={`${BACKEND_URL}/${profile.profileBanner}`}
-                  alt='Current Banner'
-                  style={styles.bannerImage}
-                />
-              )}
-            </Form.Group>
-
-            {isUpdatingProfile && <Loader />}
-
-            <Button variant='primary' type='submit' disabled={isUpdatingProfile} className='mt-3'>
-              Update Profile
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
     </div>
   );
 };
