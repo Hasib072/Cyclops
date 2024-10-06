@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 const Sidebar = ({ user, profileImage, onToggle }) => { // Added profileImage prop
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isHomeExpanded, setIsHomeExpanded] = useState(true);
   const [isTeamsExpanded, setIsTeamsExpanded] = useState(true);
   const [teams, setTeams] = useState(['Team Name', "Jason's Crew", 'Times Team']);
@@ -241,11 +241,13 @@ const Sidebar = ({ user, profileImage, onToggle }) => { // Added profileImage pr
           </div>
           <ul style={styles.submenu}>
             <li style={styles.menuItem} onClick={(e) => e.stopPropagation()}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={styles.svgIcon}>
-                <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3z" />
-              </svg>
+              <Link to="/" >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={styles.svgIcon}>
+                  <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3z" />
+                </svg>
+              </Link>
               {isExpanded && (
-                <Link to="/dashboard" className='FontBody02' style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link to="/" className='FontBody02' style={{ textDecoration: 'none', color: 'inherit' }}>
                   Dashboard
                 </Link>
               )}

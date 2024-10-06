@@ -55,7 +55,7 @@ const ProfileScreen = () => {
   const [showEditModal, setShowEditModal] = useState(false);
 
   // State for Sidebar expansion
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
   const handleCloseModal = () => setShowEditModal(false);
   const handleShowModal = () => setShowEditModal(true);
