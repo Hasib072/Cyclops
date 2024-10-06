@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400&display=swap"
+      rel="stylesheet"
+    />
+    <title>Define Workspace</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body,
+      html {
+        height: 100%;
+        background-color: #000;
+        font-family: "Open Sans", sans-serif;
+      }
+      .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        flex-direction: column;
+      }
+      .form-container {
+        background: linear-gradient(to bottom, #2f263c 0%, #121212 100%);
+        padding: 25px 20px;
+        border-radius: 10px;
+        width: 390px;
+        height: 500px;
+        color: #fff;
+        text-align: left;
+        position: relative;
+      }
+      h2,
+      p,
+      h3 {
+        text-align: left;
+        font-size: 12px;
+      }
+      h2 {
+        margin-bottom: 8px;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      p {
+        margin-bottom: 10px;
+        font-size: 12px;
+        color: #fff;
+      }
+      .boxes {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+      .box {
+        position: relative;
+        width: 49%;
+        height: 60px;
+        background: transparent;
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 5px 10px;
+        color: #fff;
+        z-index: 1;
+        overflow: hidden;
+      }
+
+      .box:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 20px;
+        padding: 2px;
+        background: linear-gradient(90deg, #622985 0%, #945cb7 100%);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask-composite: exclude;
+        z-index: -1;
+      }
+
+      .box h4 {
+        margin: 4px;
+      }
+      .box p {
+        font-size: 12px;
+        margin-left: 4px;
+        color: #999999;
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 8px;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+      .buttons {
+        display: flex;
+        flex-direction: column;
+      }
+      button {
+        background: linear-gradient(
+          90deg,
+          rgba(97, 40, 133, 1) 0%,
+          rgba(146, 105, 186, 1) 100%,
+          rgba(208, 182, 244, 1) 100%
+        );
+        color: #fff;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 10px;
+        border: none;
+        margin-bottom: 10px;
+        font-weight: bold;
+        text-align: left;
+        font-size: 1.1em;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      button:hover,
+      .box:hover {
+        background-color: #333;
+      }
+
+      /* Next button styles */
+      .next-btn {
+        background: linear-gradient(
+          to right,
+          #2a1a41 0%,
+          #4a2e64 56%,
+          #945cb7 100%
+        );
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 10px 60px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+      }
+
+      .next-btn:hover {
+        opacity: 0.9;
+      }
+
+      .next-btn:active {
+        background-color: #007bff;
+        color: white;
+      }
+
+      /* SVG styling */
+      svg {
+        width: 20px; /* Set width for SVG */
+        height: 20px; /* Set height for SVG */
+        margin-right: 4px; /* Adjusted space between SVG and text */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="form-container">
+        <h2>Define Workspace</h2>
+        <p>
+          Choose a pre-configured solution or customize to your liking with
+          advanced ClickApps, required views, and task statuses.
+        </p>
+
+        <div class="boxes">
+          <div class="box">
+            <h4>Starter</h4>
+            <p>For simple and short use</p>
+          </div>
+          <div class="box">
+            <h4>Kanban</h4>
+            <p>For simple and short use</p>
+          </div>
+        </div>
+        <div class="boxes">
+          <div class="box">
+            <h4>Project</h4>
+            <p>For simple and short use</p>
+          </div>
+          <div class="box">
+            <h4>Scrum</h4>
+            <p>For simple and short use</p>
+          </div>
+        </div>
+
+        <h3>Customize</h3>
+
+        <div class="buttons">
+          <button>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
+              <path
+                d="M20.9825 32.445L8.085 22.4175L5.25 24.6225L21 36.8725L36.75 24.6225L33.8975 22.4L20.9825 32.445ZM21 28L33.88 17.9725L36.75 15.75L21 3.5L5.25 15.75L8.1025 17.9725L21 28ZM21 7.9275L31.045 15.75L21 23.5725L10.955 15.75L21 7.9275Z"
+                fill="white"
+              />
+            </svg>
+            Workspace View
+          </button>
+          <button>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+              <path
+                d="M33.25 8.75V33.25H8.75V8.75H33.25ZM35.175 5.25H6.825C5.95 5.25 5.25 5.95 5.25 6.825V35.175C5.25 35.875 5.95 36.75 6.825 36.75H35.175C35.875 36.75 36.75 35.875 36.75 35.175V6.825C36.75 5.95 35.875 5.25 35.175 5.25V5.25ZM19.25 12.25H29.75V15.75H19.25V12.25ZM19.25 19.25H29.75V22.75H19.25V19.25ZM19.25 26.25H29.75V29.75H19.25V26.25ZM12.25 12.25H15.75V15.75H12.25V12.25ZM12.25 19.25H15.75V22.75H12.25V19.25ZM12.25 26.25H15.75V29.75H12.25V26.25Z"
+                fill="white"
+              />
+            </svg>
+            Todo Stages
+          </button>
+        </div>
+
+        <!-- Updated Next button -->
+        <button class="next-btn">Next</button>
+      </div>
+    </div>
+  </body>
+</html>
