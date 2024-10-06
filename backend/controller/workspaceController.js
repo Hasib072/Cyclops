@@ -32,7 +32,7 @@ const createWorkspace = asyncHandler(async (req, res) => {
     // Handle cover image
     let coverImagePath = '';
     if (req.file) {
-      coverImagePath = `uploads/${req.file.filename}`; // Adjust based on your upload directory
+      coverImagePath = `uploads/workspaces/${req.file.filename}`; // Adjust based on your upload directory
     } else {
       // Generate a default cover image based on the workspace title
       coverImagePath = await generateWorkspaceImage(workspaceTitle);
@@ -135,7 +135,7 @@ const updateWorkspace = asyncHandler(async (req, res) => {
             if (err) console.error('Error deleting old cover image:', err);
           });
         }
-        workspace.coverImage = `uploads/${req.file.filename}`;
+        workspace.coverImage = `uploads/workspaces/${req.file.filename}`;
       }
   
       const updatedWorkspace = await workspace.save();

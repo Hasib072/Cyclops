@@ -488,7 +488,7 @@ const handleFormSubmit = async (e) => {
                       ? isDataURL(workspace.coverImage)
                         ? workspace.coverImage // Use data URL directly
                         : `${BACKEND_URL}/${workspace.coverImage}` // Prepend backend URL for server-hosted images
-                      : `${BACKEND_URL}/uploads/workspaces/default.png` // Use default image if coverImage is empty
+                      : `${BACKEND_URL}/uploads/workspaces/defaultCover.png` // Use default image if coverImage is empty
                   }
                   alt={workspace.workspaceTitle}
                   style={{

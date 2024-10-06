@@ -20,15 +20,48 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Configure storage for multer
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      const uploadPath = path.join(__dirname, '..', '..', 'uploads','workspaces');
+      cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+      // Generate a unique filename
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      // Extract the file extension
+      const ext = path.extname(file.originalname);
+      cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+    }
+  });
+  
+  // File filter to accept only specific image types
+  const fileFilter = (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png/;
+    const mime = allowedTypes.test(file.mimetype);
+    const ext = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  
+    if (mime && ext) {
+      return cb(null, true);
+    }
+    cb(new Error('Only .png, .jpg and .jpeg formats are allowed!'));
+  };
+  
+  // Initialize multer
+  const upload = multer({
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  });
+  
+
 const router = express.Router();
 
 // Apply JWT validation to all routes below
 router.use(ValidateJWT);
 
-// @route   POST /api/workspaces
-// @desc    Create a new workspace
-// @access  Private
-router.post('/', workspaceUpload.single('coverImage'), createWorkspace);
+// POST /api/workspaces - Create a new workspace
+router.post('/', upload.single('coverImage'), createWorkspace);
 
 // @route   GET /api/workspaces
 // @desc    List all workspaces accessible to the user
@@ -43,7 +76,7 @@ router.get('/:id', getWorkspaceById);
 // @route   PUT /api/workspaces/:id
 // @desc    Update workspace
 // @access  Private (Only Admins)
-router.put('/:id', workspaceUpload.single('coverImage'), updateWorkspace);
+router.put('/:id', upload.single('coverImage'), updateWorkspace);
 
 // @route   DELETE /api/workspaces/:id
 // @desc    Delete workspace
