@@ -5,6 +5,8 @@ import sendEmail from '../utils/sendEmail.js';
 import generateToken from '../utils/generateToken.js';
 import bcrypt from 'bcryptjs';
 import Profile from '../models/profileModel.js';
+import generateProfileImage from '../utils/imageGenerator.js';
+
 
 //  @desc   Auth user/set token
 //  @route   POST /api/users/auth
@@ -40,6 +42,12 @@ const authUser = asyncHandler(async (req, res) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
+  // Validate input
+  if (!name || !email || !password) {
+    res.status(400);
+    throw new Error('Please provide name, email, and password');
+  }
+
   // Check if user already exists
   const userExist = await User.findOne({ email });
 
@@ -58,8 +66,17 @@ const registerUser = asyncHandler(async (req, res) => {
   // Save user to the database
   const savedUser = await user.save();
 
-  // Create an empty profile for the user
-  await Profile.create({ user: savedUser._id });
+  // Generate default profile image
+  const defaultProfileImagePath = await generateProfileImage(savedUser.name);
+
+  // Create a profile for the user with the default profile image
+  const profile = new Profile({
+    user: savedUser._id,
+    profileImage: defaultProfileImagePath, // Set the generated profile image
+  });
+
+  // Save the profile to the database
+  await profile.save();
 
   // Optionally, generate a verification code and send email
   // const verificationCode = user.generateVerificationCode();

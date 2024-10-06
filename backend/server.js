@@ -35,10 +35,11 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 app.use('/api/users', userRoutes);
 app.use('/api/profile', profileRoutes); // This should be /api/profile
 
-// Test Route
-app.get('/test-upload', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'uploads', 'test.png'));
-});
+// Optional: Remove or verify the Test Route
+// Ensure 'test.png' exists in the uploads directory or remove this route
+// app.get('/test-upload', (req, res) => {
+//   res.sendFile(path.join(__dirname, '..', 'uploads', 'test.png'));
+// });
 
 // Serve frontend in production (optional)
 if (process.env.NODE_ENV === 'production') {
@@ -58,7 +59,11 @@ app.use(errorHandler);
 
 // Connect to DB and Start Server
 const PORT = process.env.PORT || 5000;
-connectDB();
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}).catch(error => {
+  console.error('Failed to connect to the database', error);
+  process.exit(1);
 });
