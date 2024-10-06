@@ -53,6 +53,11 @@
         border-right: 1px solid #6c6c6c; /* Add right border for cells */
       }
 
+      /* Add top border to the first row of the tbody */
+      .task-table tbody tr:first-child td {
+        border-top: 2px solid #6c6c6c;
+      }
+
       .task-table th:first-child,
       .task-table td:first-child {
         width: 50px;
@@ -84,16 +89,12 @@
         vertical-align: middle;
       }
 
-      .purple {
-        background-color: #9854cb;
-      }
-
       .blue {
-        background-color: #547ccb;
+        background-color: #9fa2ff;
       }
 
-      .yellow {
-        background-color: #ff9800;
+      .green {
+        background-color: #e0ff9f;
       }
 
       .assignee-icon {
@@ -287,7 +288,7 @@
           <tbody>
             <tr>
               <td>1</td>
-              <td><span class="name-icon purple"></span>Task01 Name</td>
+              <td><span class="name-icon blue"></span>Task01 Name</td>
               <td>Some Description about the task.</td>
               <td>
                 <div class="assignee-icon">
@@ -302,7 +303,7 @@
             </tr>
             <tr>
               <td>2</td>
-              <td><span class="name-icon purple"></span>Another Task</td>
+              <td><span class="name-icon blue"></span>Another Task</td>
               <td>Some Description about this ......</td>
               <td>
                 <div class="assignee-icon">
@@ -376,7 +377,7 @@
             </tr>
             <tr>
               <td>4</td>
-              <td><span class="name-icon yellow"></span>Extra work</td>
+              <td><span class="name-icon green"></span>Extra work</td>
               <td>Some Description about this ......</td>
               <td>
                 <div class="assignee-icon">
