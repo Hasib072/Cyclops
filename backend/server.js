@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser'; // Import cookie-parser
 import userRoutes from './routes/userRoutes.js';
 import profileRoutes from './routes/profileRoutes.js'; // Ensure you have profile routes
+import workspaceRoutes from './routes/workspaceRoutes.js'; // Import workspace routes
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import connectDB from './config/db.js';
 
@@ -34,6 +35,7 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/profile', profileRoutes); // This should be /api/profile
+app.use('/api/workspaces', workspaceRoutes); // Mount workspace routes
 
 // Optional: Remove or verify the Test Route
 // Ensure 'test.png' exists in the uploads directory or remove this route

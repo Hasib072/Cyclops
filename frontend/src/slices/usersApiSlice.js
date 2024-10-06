@@ -5,6 +5,7 @@ import { setCredentials, logout } from './authSlice';
 
 const USERS_URL = '/users'; // Base endpoint for user-related routes
 const PROFILE_URL = '/profile'; // Correct profile endpoint
+const WORKSPACES_URL = '/workspaces'; // Base endpoint for workspace-related routes
 
 export const usersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -70,18 +71,41 @@ export const usersApiSlice = apiSlice.injectEndpoints({
 
     // Profile Endpoints
     getProfile: builder.query({
-      query: () => '/profile',
+      query: () => `${PROFILE_URL}`,
       providesTags: ['Profile'],
     }),
 
     updateProfile: builder.mutation({
       query: (formData) => ({
-        url: '/profile',
+        url: `${PROFILE_URL}`,
         method: 'PUT',
         body: formData,
       }),
       invalidatesTags: ['Profile'],
     }),
+
+    // Workspace Endpoints
+    createWorkspace: builder.mutation({
+      query: (formData) => ({
+        url: '/workspaces',
+        method: 'POST',
+        body: formData,
+        // Note: Do not set 'Content-Type' header manually
+        // The browser will set 'multipart/form-data' with the correct boundary
+      }),
+    }),
+
+    getWorkspaces: builder.query({
+      query: () => `${WORKSPACES_URL}`,
+      providesTags: ['Workspaces'],
+    }),
+
+    getWorkspaceById: builder.query({
+      query: (workspaceId) => `${WORKSPACES_URL}/${workspaceId}`,
+      providesTags: (result, error, workspaceId) => [{ type: 'Workspace', id: workspaceId }],
+    }),
+
+    // Add more workspace-related endpoints as needed (update, delete, etc.)
   }),
 });
 
@@ -94,4 +118,7 @@ export const {
   useResendVerificationMutation,
   useGetProfileQuery,
   useUpdateProfileMutation,
+  useCreateWorkspaceMutation, // Hook for creating workspace
+  useGetWorkspacesQuery, // Hook for fetching all workspaces
+  useGetWorkspaceByIdQuery, // Hook for fetching workspace by ID
 } = usersApiSlice;
