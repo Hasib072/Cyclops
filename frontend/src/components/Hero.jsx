@@ -1,13 +1,19 @@
 // src/components/Hero.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Card, Container } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useLogoutMutation } from '../slices/usersApiSlice';
 import { logout } from '../slices/authSlice';
-import Sidebar from './Sidebar'; // Import the Sidebar component
+import Sidebar from './Sidebar'; // Import the Sidebar compoent
+
+// RTK Query Hooks
+import {
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+  useLogoutMutation,
+} from '../slices/usersApiSlice';
 
 const Hero = () => {
    const { userInfo } = useSelector((state) => state.auth);
@@ -29,10 +35,58 @@ const Hero = () => {
    const handleSidebarToggle = (expanded) => {
      setIsSidebarExpanded(expanded);
    };
+   // Fetching Profile Data
+  const {
+    data: profile,
+    isLoading: isProfileLoading,
+    error: profileError,
+    refetch,
+  } = useGetProfileQuery();
+
+  // Mutation for Updating Profile
+  const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
+
+  // State for Profile Info
+  const [profileFormData, setProfileFormData] = useState({
+    name: '',
+    email: '',
+    companyName: '',
+    jobRole: '',
+    city: '',
+    country: '',
+    gitHubLink: '',
+    linkedInLink: '',
+  });
+
+  // State for Images
+  const [profileImage, setProfileImage] = useState(null);
+  const [profileBanner, setProfileBanner] = useState(null);
+
+  useEffect(() => {
+    if (profile) {
+      console.log('Profile Data: ', profile); // Debugging line
+      console.log('Profile Image Path: ', profile.profileImage);
+
+      setProfileFormData({
+        name: profile.user?.name || '',
+        email: profile.user?.email || '',
+        companyName: profile.companyName || '',
+        jobRole: profile.jobRole || '',
+        city: profile.city || '',
+        country: profile.country || '',
+        gitHubLink: profile.gitHubLink || '',
+        linkedInLink: profile.linkedInLink || '',
+      });
+    }
+  }, [profile]);
+
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+  const profileImageUrl = profile?.profileImage ? `${BACKEND_URL}/${profile.profileImage}` : null;
  
    return (
      <div style={{ display: 'flex'}}>
-       {userInfo && <Sidebar user={userInfo} onToggle={handleSidebarToggle} />} {/* Pass callback */}
+       {/* {userInfo && <Sidebar user={userInfo} onToggle={handleSidebarToggle} />} Pass callback */}
+       {userInfo && <Sidebar user={userInfo} profileImage={profileImageUrl} onToggle={handleSidebarToggle} />}
  
        {/* Main Content */}
        <div style={{ 
