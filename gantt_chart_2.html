@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic Task Table</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      body {
+        background-color: black;
+        color: #fff;
+      }
+
+      .container {
+        padding: 20px;
+        margin: 20px 0 20px 30px;
+        width: calc(100% - 20px);
+        overflow-x: auto;
+        height: 100%;
+      }
+
+      .task-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #2b2b2b;
+        margin-bottom: 0px;
+      }
+
+      .task-table th {
+        background-color: #402b5e;
+        color: #fff;
+        padding: 15px;
+        position: sticky;
+        top: 0;
+        border-left: none;
+        border-right: none;
+      }
+
+      .task-table td {
+        background-color: #333;
+        padding: 12px 15px;
+        font-size: 14px;
+        border-bottom: 1px solid #6c6c6c;
+        white-space: nowrap;
+        text-align: left;
+        border-left: 1px solid #6c6c6c;
+        border-right: 1px solid #6c6c6c;
+      }
+
+      .name-icon {
+        display: inline-block;
+        width: 5px;
+        height: 26px;
+        border-radius: 30%;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+
+      .blue {
+        background-color: #9fa2ff;
+      }
+
+      .yellow {
+        background-color: #ffc19f;
+      }
+
+      .gantt-chart {
+        display: flex;
+        align-items: right;
+      }
+
+      .bar {
+        padding: 5px 10px;
+        border-radius: 12px;
+        color: white;
+        font-weight: bold;
+        text-align: right;
+        min-width: 80px; /* Set a minimum width for visibility */
+      }
+
+      .opened {
+        background-color: #9fa2ff;
+        width: 32%;
+      }
+
+      .opened_1 {
+        background-color: #9fa2ff;
+        margin-left: 20px;
+        width: 32%;
+      }
+
+      .in-progress_1 {
+        background-color: #9fa2ff;
+        width: 50%;
+        margin-left: -15px;
+        border-radius: 0 12px 12px 0;
+      }
+
+      .in-progress_2 {
+        background-color: #ffc19f;
+        width: 50%;
+        margin-left: -15px;
+        border-radius: 0 12px 12px 0;
+      }
+
+      .header-container {
+        display: flex;
+        justify-content: flex-start;
+        position: relative;
+      }
+
+      .tab-container {
+        display: flex;
+      }
+
+      .tab-item {
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background-color: #9fa2ff;
+        border-top-left-radius: 18px;
+        border-top-right-radius: 18px;
+        cursor: pointer;
+      }
+
+      .tab-item.active {
+        background-color: #402b5e;
+      }
+      .tab-item.second {
+        background-color: #ffc19f;
+      }
+
+      .tab-item + .tab-item {
+        margin-left: -1px;
+      }
+
+      .tab-item.lower {
+        margin-top: 10px;
+      }
+
+      /* Adjusting column widths */
+      .task-table th:nth-child(2),
+      .task-table td:nth-child(2) {
+        width: 200px; /* Set a smaller width for the Name column */
+      }
+
+      .task-table th:nth-child(1),
+      .task-table td:nth-child(1) {
+        width: 50px; /* Set a specific width for the # column */
+      }
+
+      /* Add top border to the first row of the tbody */
+      .task-table tbody tr:first-child td {
+        border-top: 2px solid #6c6c6c;
+      }
+
+      /* Only right borders for columns W11 to W17 */
+      .task-table td:nth-child(n + 3) {
+        border-top: none;
+        border-bottom: none;
+      }
+      .task-table td:nth-child(3),
+      .task-table td:nth-child(4),
+      .task-table td:nth-child(5),
+      .task-table td:nth-child(6),
+      .task-table td:nth-child(7),
+      .task-table td:nth-child(8) {
+        border-right: 2px solid #6c6c6c; /* Right border for W11 to W17 */
+      }
+
+      /* Remove right border from the last column */
+      .task-table td:last-child {
+        border-right: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="tab-container">
+        <div class="tab-item active">All</div>
+        <div class="tab-item">My List 01</div>
+        <div class="tab-item second">My List 01</div>
+      </div>
+      <div class="header-container">
+        <table class="task-table" id="task-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>NAME</th>
+              <th>W11</th>
+              <th>W12</th>
+              <th>W13</th>
+              <th>W14</th>
+              <th>W15</th>
+              <th>W16</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><span class="name-icon blue"></span>Task01 Name</td>
+              <td colspan="7">
+                <div class="gantt-chart">
+                  <div class="bar opened">OPENED</div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><span class="name-icon blue"></span>Another Task</td>
+              <td colspan="7">
+                <div class="gantt-chart">
+                  <div class="bar opened_1">OPENED</div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><span class="name-icon blue"></span>Something to do</td>
+              <td colspan="7">
+                <div class="gantt-chart">
+                  <div class="bar in-progress_1">IN PROGRESS</div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><span class="name-icon yellow"></span>From other list</td>
+              <td colspan="7">
+                <div class="gantt-chart">
+                  <div class="bar in-progress_2">IN PROGRESS</div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
