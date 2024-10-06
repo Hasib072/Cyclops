@@ -343,7 +343,7 @@ const ProfileScreen = () => {
                     style={styles.bannerImage}
                   />
                 ) : (
-                  <label htmlFor="banner-upload" style={styles.uploadBannerButton}>
+                  <label htmlFor="banner-upload" style={styles.uploadBannerButton} onClick={handleShowModal} >
                     <span style={styles.uploadBannerText}>Upload Banner</span>
                     {/* SVG Icon */}
                     <svg
@@ -357,13 +357,13 @@ const ProfileScreen = () => {
                       />
                     </svg>
                     {/* Hidden File Input */}
-                    <input
+                    {/* <input
                       type="file"
                       id="banner-upload"
                       style={{ display: 'none' }}
                       accept="image/*"
                       onChange={handleImageChange}
-                    />
+                    /> */}
                   </label>
                 )}
               </div>
