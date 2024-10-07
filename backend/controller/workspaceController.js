@@ -22,7 +22,7 @@ const createWorkspace = asyncHandler(async (req, res) => {
     }
   
     // Check for duplicate workspace title
-    const workspaceExists = await Workspace.findOne({ workspaceTitle });
+    const workspaceExists = await Workspace.findOne({ workspaceTitle, createdBy: req.user._id });
   
     if (workspaceExists) {
       res.status(400);

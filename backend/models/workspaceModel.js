@@ -10,7 +10,7 @@ const workspaceSchema = new mongoose.Schema(
       required: [true, 'Workspace title is required'],
       trim: true,
       maxlength: [100, 'Workspace title cannot exceed 100 characters'],
-      unique: true, // Ensures workspace titles are unique
+      // unique: true, // Ensures workspace titles are unique
     },
     coverImage: {
       type: String, // URL or file path to the cover image
@@ -37,6 +37,9 @@ const workspaceSchema = new mongoose.Schema(
     timestamps: true, // Adds createdAt and updatedAt fields
   }
 );
+
+// Compound index to enforce uniqueness of workspace titles per user
+workspaceSchema.index({ workspaceTitle: 1, createdBy: 1 }, { unique: true });
 
 // Optional: Add a text index for searching
 workspaceSchema.index({ workspaceTitle: 'text', workspaceDescription: 'text' });
