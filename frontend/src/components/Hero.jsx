@@ -6,6 +6,17 @@ import { useNavigate } from 'react-router-dom';
 import { logout } from '../slices/authSlice';
 import Sidebar from './Sidebar'; // Import the Sidebar component
 import staticImagePath from '../assets/helloIMG.png'; // Ensure this path is correct
+// frontend/src/components/Hero.jsx
+
+// Import SVG icons as React components
+import ListsIcon from '../assets/icons/Lists.svg';
+import CalendarIcon from '../assets/icons/Calendar.svg';
+import TableIcon  from '../assets/icons/Table.svg';
+import ChatIcon from '../assets/icons/Chat.svg';
+import GanttIcon from '../assets/icons/Gantt.svg';
+import BoardIcon from '../assets/icons/Board.svg';
+import TimelineIcon from '../assets/icons/timeline.svg';
+
 
 // RTK Query Hooks
 import {
@@ -35,6 +46,18 @@ const Hero = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false); // Sidebar state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // Create Workspace Modal visibility
   const [isDefineModalOpen, setIsDefineModalOpen] = useState(false); // Define Workspace Modal visibility
+  const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+  const [selectedViews, setSelectedViews] = useState([]);
+
+    // Add this function inside the Hero component
+  const handleViewSelection = (view) => {
+    setSelectedViews((prevSelected) =>
+      prevSelected.includes(view)
+        ? prevSelected.filter((v) => v !== view)
+        : [...prevSelected, view]
+    );
+  };
+
 
   // Create Workspace Mutation
   const [createWorkspace, { isLoading: isCreatingWorkspace }] = useCreateWorkspaceMutation();
@@ -48,7 +71,7 @@ const Hero = () => {
     } catch (err) {
       console.error(err);
       toast.error(err.data?.message || 'Failed to logout', {
-        position: toast.POSITION.TOP_RIGHT,
+        // position: toast.POSITION.TOP_RIGHT,
         autoClose: 5000,
       });
     }
@@ -156,7 +179,7 @@ const Hero = () => {
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
       if (!allowedTypes.includes(file.type)) {
         toast.error('Only .png, .jpg and .jpeg formats are allowed!', {
-          position: toast.POSITION.TOP_RIGHT,
+          //position: toast.POSITION.TOP_RIGHT,
           autoClose: 5000,
         });
         return;
@@ -165,7 +188,7 @@ const Hero = () => {
       const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
         toast.error('File size exceeds 5MB!', {
-          position: toast.POSITION.TOP_RIGHT,
+          //position: toast.POSITION.TOP_RIGHT,
           autoClose: 5000,
         });
         return;
@@ -184,7 +207,7 @@ const Hero = () => {
     // Client-side validation
     if (!workspaceFormStep1.workspaceTitle) {
       toast.error('Workspace title is required!', {
-        position: toast.POSITION.TOP_RIGHT,
+        //position: toast.POSITION.TOP_RIGHT,
         autoClose: 5000,
       });
       return;
@@ -199,23 +222,40 @@ const Hero = () => {
     setWorkspaceType(type);
   };
 
-  // Handle Final Submission (Step 2 - Create Workspace)
-  const handleFinalSubmit = async () => {
-    if (!workspaceType) {
-      toast.error('Please select a workspace type!', {
-        position: toast.POSITION.TOP_RIGHT,
+  
+  const handleSaveViews = () => {
+    if (selectedViews.length === 0) {
+      toast.error('Please select at least one view!', {
+        //position: toast.POSITION.TOP_RIGHT,
         autoClose: 5000,
       });
       return;
     }
 
+    // Optionally, you can perform additional actions here, such as saving the selected views to state or making an API call.
+
+    // Close the Customize Modal and reopen the Define Workspace Modal
+    setIsCustomizeModalOpen(false);
+    setIsDefineModalOpen(true);
+  };
+
+  // Update the handleFinalSubmit function inside the Hero component
+  const handleFinalSubmit = async () => {
+    if (!workspaceType) {
+      toast.error('Please select a workspace type!', {
+        //position: toast.POSITION.TOP_RIGHT,
+        autoClose: 5000,
+      });
+      return;
+    }
+  
     try {
       // Prepare invitePeople as an array of emails (split by commas)
       const inviteEmails = workspaceFormStep1.invitePeople
         .split(',')
         .map((email) => email.trim())
         .filter((email) => email);
-
+  
       // Create FormData
       const formData = new FormData();
       formData.append('workspaceTitle', workspaceFormStep1.workspaceTitle);
@@ -225,10 +265,18 @@ const Hero = () => {
       }
       formData.append('workspaceDescription', workspaceFormStep1.workspaceDescription);
       inviteEmails.forEach((email) => formData.append('invitePeople', email));
-
+      formData.append('selectedViews', JSON.stringify(selectedViews)); // Add selected views
+  
       // Send the form data via RTK Query mutation
       await createWorkspace(formData).unwrap();
-
+  
+      // **Console Logs for Workspace Details**
+      console.log('Workspace Title:', workspaceFormStep1.workspaceTitle);
+      console.log('Description:', workspaceFormStep1.workspaceDescription);
+      console.log('Cover Image Filename:', workspaceFormStep1.coverImage ? workspaceFormStep1.coverImage.name : 'No cover image');
+      console.log('Workspace Type:', workspaceType);
+      console.log('Selected Views:', selectedViews);
+  
       // Reset forms and close modals
       setWorkspaceFormStep1({
         workspaceTitle: '',
@@ -237,22 +285,25 @@ const Hero = () => {
         invitePeople: '',
       });
       setWorkspaceType('');
+      setSelectedViews([]);
+      setIsCustomizeModalOpen(false);
       setIsDefineModalOpen(false);
       refetchWorkspaces(); // Refresh workspace list
-
+  
       // Show success notification
       toast.success('Workspace created successfully!', {
-        position: toast.POSITION.TOP_RIGHT,
+        //position: toast.POSITION.TOP_RIGHT,
         autoClose: 5000,
       });
     } catch (err) {
       console.error('Failed to create workspace:', err);
       toast.error(err.data?.message || 'Failed to create workspace', {
-        position: toast.POSITION.TOP_RIGHT,
+        //position: toast.POSITION.TOP_RIGHT,
         autoClose: 5000,
       });
     }
   };
+
 
   return (
     <div
@@ -642,7 +693,7 @@ const Hero = () => {
               </label>
               <input
                 type="text"
-                autocomplete="off"
+                autoComplete="off"
                 id="workspaceTitle"
                 name="workspaceTitle"
                 placeholder="Workspace Name"
@@ -738,7 +789,7 @@ const Hero = () => {
               </label>
               <input
                 type="text"
-                autocomplete="off"
+                autoComplete="off"
                 id="invitePeople"
                 name="invitePeople"
                 placeholder="user1@mail.com, user2@mail.com"
@@ -834,303 +885,6 @@ const Hero = () => {
                     height: '60px',
                     background: workspaceType === type ? '#4a2e64' : 'transparent',
                     borderRadius: '20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'flex-start',
-                    padding: '5px 10px',
-                    color: '#fff',
-                    zIndex: 1,
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'background 0.3s ease',
-                  }}
-                >
-                  <h4 style={{ margin: '4px 0' }}>{type}</h4>
-                  <p style={{ fontSize: '12px', marginLeft: '4px', color: '#999999', marginBottom: '0' }}>
-                    For simple and short use
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <h3 style={{ marginTop: '8px', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>Customize</h3>
-
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <button
-                onClick={() => alert('Workspace View Clicked')}
-                style={{
-                  background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  marginBottom: '10px',
-                  fontWeight: 'bold',
-                  textAlign: 'left',
-                  fontSize: '1.1em',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  transition: 'background 0.3s ease',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#333')}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background =
-                    'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)')
-                }
-              >
-                {/* SVG Icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" style={{ width: '20px', height: '20px', marginRight: '4px' }}>
-                  <path
-                    d="M20.9825 32.445L8.085 22.4175L5.25 24.6225L21 36.8725L36.75 24.6225L33.8975 22.4L20.9825 32.445ZM21 28L33.88 17.9725L36.75 15.75L21 3.5L5.25 15.75L8.1025 17.9725L21 28ZM21 7.9275L31.045 15.75L21 23.5725L10.955 15.75L21 7.9275Z"
-                    fill="white"
-                  />
-                </svg>
-                Workspace View
-              </button>
-              <button
-                onClick={() => alert('Todo Stages Clicked')}
-                style={{
-                  background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  marginBottom: '10px',
-                  fontWeight: 'bold',
-                  textAlign: 'left',
-                  fontSize: '1.1em',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  transition: 'background 0.3s ease',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#333')}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background =
-                    'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)')
-                }
-              >
-                {/* SVG Icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" style={{ width: '20px', height: '20px', marginRight: '4px' }}>
-                  <path
-                    d="M33.25 8.75V33.25H8.75V8.75H33.25ZM35.175 5.25H6.825C5.95 5.25 5.25 5.95 5.25 6.825V35.175C5.25 35.875 5.95 36.75 6.825 36.75H35.175C35.875 36.75 36.75 35.875 36.75 35.175V6.825C36.75 5.95 35.875 5.25 35.175 5.25V5.25ZM19.25 12.25H29.75V15.75H19.25V12.25ZM19.25 19.25H29.75V22.75H19.25V19.25ZM19.25 26.25H29.75V29.75H19.25V26.25ZM12.25 12.25H15.75V15.75H12.25V12.25ZM12.25 19.25H15.75V22.75H12.25V19.25ZM12.25 26.25H15.75V29.75H12.25V26.25Z"
-                    fill="white"
-                  />
-                </svg>
-                Todo Stages
-              </button>
-            </div>
-          </div>
-
-          {/* Final Submit Button */}
-          {/* Removed from here to place inside DefineWorkspaceModal */}
-        </div>
-      )}
-
-      {/* Define Workspace Modal (Step 2) */}
-      {isDefineModalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000,
-          }}
-          onClick={() => {
-            setIsDefineModalOpen(false);
-            // Clear Step 2 Form Data
-            setWorkspaceType('');
-          }} // Close modal and clear inputs when clicking outside
-        >
-          <div
-            style={{
-              background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)',
-              padding: '25px 20px',
-              borderRadius: '10px',
-              width: '390px',
-              color: '#fff',
-              height: 'auto',
-              textAlign: 'left',
-              position: 'relative',
-            }}
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
-          >
-            <h2 style={{ marginBottom: '8px', fontWeight: 'bold' }}>Define Workspace</h2>
-            <p style={{ marginBottom: '10px', fontSize: '12px', color: '#fff' }}>
-              Choose a pre-configured solution or customize to your liking with advanced ClickApps, required views, and task statuses.
-            </p>
-
-            {/* Workspace Type Selection */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
-              {['Starter', 'Kanban', 'Project', 'Scrum'].map((type) => (
-                <div
-                  key={type}
-                  onClick={() => handleWorkspaceTypeSelect(type)}
-                  style={{
-                    position: 'relative',
-                    width: '100%',
-                    height: '60px',
-                    background: workspaceType === type ? '#4a2e64' : 'transparent',
-                    borderRadius: '20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'flex-start',
-                    padding: '5px 10px',
-                    color: '#fff',
-                    zIndex: 1,
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'background 0.3s ease',
-                  }}
-                >
-                  <h4 style={{ margin: '4px 0' }}>{type}</h4>
-                  <p style={{ fontSize: '12px', marginLeft: '4px', color: '#999999', marginBottom: '0' }}>
-                    For simple and short use
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <h3 style={{ marginTop: '8px', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>Customize</h3>
-
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <button
-                onClick={() => alert('Workspace View Clicked')}
-                style={{
-                  background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  marginBottom: '10px',
-                  fontWeight: 'bold',
-                  textAlign: 'left',
-                  fontSize: '1.1em',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  transition: 'background 0.3s ease',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#333')}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background =
-                    'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)')
-                }
-              >
-                {/* SVG Icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" style={{ width: '20px', height: '20px', marginRight: '4px' }}>
-                  <path
-                    d="M20.9825 32.445L8.085 22.4175L5.25 24.6225L21 36.8725L36.75 24.6225L33.8975 22.4L20.9825 32.445ZM21 28L33.88 17.9725L36.75 15.75L21 3.5L5.25 15.75L8.1025 17.9725L21 28ZM21 7.9275L31.045 15.75L21 23.5725L10.955 15.75L21 7.9275Z"
-                    fill="white"
-                  />
-                </svg>
-                Workspace View
-              </button>
-              <button
-                onClick={() => alert('Todo Stages Clicked')}
-                style={{
-                  background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  marginBottom: '10px',
-                  fontWeight: 'bold',
-                  textAlign: 'left',
-                  fontSize: '1.1em',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  transition: 'background 0.3s ease',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#333')}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background =
-                    'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)')
-                }
-              >
-                {/* SVG Icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" style={{ width: '20px', height: '20px', marginRight: '4px' }}>
-                  <path
-                    d="M33.25 8.75V33.25H8.75V8.75H33.25ZM35.175 5.25H6.825C5.95 5.25 5.25 5.95 5.25 6.825V35.175C5.25 35.875 5.95 36.75 6.825 36.75H35.175C35.875 36.75 36.75 35.875 36.75 35.175V6.825C36.75 5.95 35.875 5.25 35.175 5.25V5.25ZM19.25 12.25H29.75V15.75H19.25V12.25ZM19.25 19.25H29.75V22.75H19.25V19.25ZM19.25 26.25H29.75V29.75H19.25V26.25ZM12.25 12.25H15.75V15.75H12.25V12.25ZM12.25 19.25H15.75V22.75H12.25V19.25ZM12.25 26.25H15.75V29.75H12.25V26.25Z"
-                    fill="white"
-                  />
-                </svg>
-                Todo Stages
-              </button>
-            </div>
-          </div>
-
-          {/* Final Submit Button */}
-          {/* Moved inside DefineWorkspaceModal */}
-        </div>
-      )}
-
-      {/* Define Workspace Modal (Step 2) */}
-      {isDefineModalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000,
-          }}
-          onClick={() => {
-            setIsDefineModalOpen(false);
-            // Clear Step 2 Form Data
-            setWorkspaceType('');
-          }} // Close modal and clear inputs when clicking outside
-        >
-          <div
-            style={{
-              background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)',
-              padding: '25px 20px',
-              borderRadius: '10px',
-              width: '390px',
-              color: '#fff',
-              height: 'auto',
-              textAlign: 'left',
-              position: 'relative',
-            }}
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
-          >
-            <h2 style={{ marginBottom: '8px', fontWeight: 'bold' }}>Define Workspace</h2>
-            <p style={{ marginBottom: '10px', fontSize: '12px', color: '#fff' }}>
-              Choose a pre-configured solution or customize to your liking with advanced ClickApps, required views, and task statuses.
-            </p>
-
-            {/* Workspace Type Selection */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
-              {['Starter', 'Kanban', 'Project', 'Scrum'].map((type) => (
-                <div
-                  key={type}
-                  onClick={() => handleWorkspaceTypeSelect(type)}
-                  style={{
-
-                    position: 'relative',
-                    width: '100%',
-                    height: '60px',
-                    background: workspaceType === type ? '#4a2e64' : 'transparent',
-                    borderRadius: '20px',
                     border: '2px, solid, #4a2e64',
                     display: 'flex',
                     flexDirection: 'column',
@@ -1156,7 +910,10 @@ const Hero = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <button
-                onClick={() => alert('Workspace View Clicked')}
+                onClick={() => {
+                  setIsDefineModalOpen(false);
+                  setIsCustomizeModalOpen(true);
+                }}
                 style={{
                   background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
                   color: '#fff',
@@ -1250,6 +1007,156 @@ const Hero = () => {
           </div>
         </div>
       )}
+      {/* Customize Workspace Views Modal */}
+{isCustomizeModalOpen && (
+  <div
+    style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000,
+    }}
+    onClick={() => {
+      setIsCustomizeModalOpen(false);
+      setSelectedViews([]);
+    }} // Close modal and clear inputs when clicking outside
+  >
+    <div
+      style={{
+        background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)',
+        borderRadius: '10px',
+        padding: '20px 40px',
+        maxWidth: '450px',
+        width: '100%',
+        height: '500px',
+        textAlign: 'left',
+        position: 'relative',
+        overflowY: 'auto', // Add scroll if content overflows
+      }}
+      onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
+    >
+      <h1 style={{ fontSize: '28px', margin: '10px 0' }}>Define Workspace Views</h1>
+      <p style={{ margin: '5px 0 20px 0', fontSize: '14px' }}>
+        Choose a pre-configured solution or customize to your liking with
+        advanced ClickApps, required views, and task statuses.
+      </p>
+    
+      <div
+        className="options"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '10px',
+          marginBottom: '20px',
+        }}
+      >
+        {[
+          { name: 'Lists', icon: ListsIcon },
+          { name: 'Calendar', icon: CalendarIcon },
+          { name: 'Table', icon: TableIcon },
+          { name: 'Chat', icon: ChatIcon },
+          { name: 'Gantt', icon: GanttIcon },
+          { name: 'Board', icon: BoardIcon },
+          { name: 'Timeline', icon: TimelineIcon },
+        ].map((view) => (
+          <label
+            className="option"
+            key={view.name}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              position: 'relative',
+              background: selectedViews.includes(view.name) ? '#4a2e64' : 'transparent', // Purple background when selected
+              border: selectedViews.includes(view.name) ? '2px solid #945cb7' : '2px solid #622985', // Purple border when selected
+              borderRadius: '10px',
+              padding: '8px 12px', // Increased padding for better touch area
+              fontSize: '17px',
+              fontWeight: 'bold',
+              textAlign: 'left',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s ease, border-color 0.3s ease',
+            }}
+          >
+            {/* Render the SVG icon using <img> */}
+            <img
+              src={view.icon}
+              alt={`${view.name} Icon`}
+              style={{ width: '20px', height: '20px', marginRight: '8px' }}
+            />
+            <span>{view.name}</span>
+            <input
+              type="checkbox"
+              checked={selectedViews.includes(view.name)}
+              onChange={() => handleViewSelection(view.name)}
+              style={{
+                position: 'absolute',
+                opacity: 0,
+                cursor: 'pointer',
+                height: 0,
+                width: 0,
+              }}
+            />
+            {/* Custom Toggle */}
+            <div
+              style={{
+                position: 'absolute',
+                right: '12px',
+                width: '32px',
+                height: '18px',
+                backgroundColor: selectedViews.includes(view.name) ? '#945cb7' : '#b0b0b0',
+                borderRadius: '15px',
+                transition: 'background-color 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '2px',
+              }}
+            >
+              <span
+                style={{
+                  width: '14px',
+                  height: '14px',
+                  backgroundColor: 'white',
+                  borderRadius: '50%',
+                  transform: selectedViews.includes(view.name) ? 'translateX(14px)' : 'translateX(0)',
+                  transition: 'transform 0.3s ease',
+                }}
+              ></span>
+            </div>
+          </label>
+        ))}
+      </div>
+      
+      {/* Save Button */}
+      <button
+        className="save-btn"
+        onClick={handleSaveViews}
+        style={{
+          background: 'linear-gradient(to right, #2a1a41 0%, #4a2e64 56%, #945cb7 100%)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '14px',
+          padding: '10px 60px',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          transition: 'background-color 0.3s ease',
+          position: 'absolute',
+          bottom: '20px',
+          right: '20px',
+        }}
+        disabled={isCreatingWorkspace || selectedViews.length === 0}
+      >
+        Save
+      </button>
+    </div>
+  </div>
+)}
 
       {/* Toast Container for Notifications */}
       <ToastContainer />
