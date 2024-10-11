@@ -30,14 +30,14 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: function (req, file, cb) {
-    const filetypes = /jpeg|jpg|png/;
+    const filetypes = /jpeg|jpg|png|gif/;
     const mimetype = filetypes.test(file.mimetype);
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 
     if (mimetype && extname) {
       return cb(null, true);
     }
-    cb(new Error('Only .png, .jpg and .jpeg formats are allowed!'));
+    cb(new Error('Only .png, .jpg, .gif and .jpeg formats are allowed!'));
   }
 }).fields([
   { name: 'profileImage', maxCount: 1 },

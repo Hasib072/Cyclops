@@ -16,8 +16,8 @@ import {
   useGetWorkspacesQuery, // Import the getWorkspaces query hook
 } from '../slices/usersApiSlice';
 
-// Optional: Import toast notifications for user feedback
-import { toast } from 'react-toastify';
+// Toast Notifications
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Helper function to determine if a string is a data URL
@@ -33,7 +33,8 @@ const Hero = () => {
 
   // Sidebar and Modal States
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false); // Sidebar state
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // Create Workspace Modal visibility
+  const [isDefineModalOpen, setIsDefineModalOpen] = useState(false); // Define Workspace Modal visibility
 
   // Create Workspace Mutation
   const [createWorkspace, { isLoading: isCreatingWorkspace }] = useCreateWorkspaceMutation();
@@ -127,95 +128,131 @@ const Hero = () => {
       : `${BACKEND_URL}/${profile.profileImage}` // Prepend backend URL for server-hosted images
     : null;
 
-  // State for Workspace Form
-  const [workspaceForm, setWorkspaceForm] = useState({
+  // State for Workspace Form (Step 1)
+  const [workspaceFormStep1, setWorkspaceFormStep1] = useState({
     workspaceTitle: '',
     coverImage: null, // Changed from '' to null to store File object
     workspaceDescription: '',
     invitePeople: '',
   });
 
-  // Handle Form Input Changes
-  const handleInputChange = (e) => {
+  // State for Workspace Type (Step 2)
+  const [workspaceType, setWorkspaceType] = useState('');
+
+  // Handle Form Input Changes (Step 1)
+  const handleInputChangeStep1 = (e) => {
     const { name, value } = e.target;
-    setWorkspaceForm((prevState) => ({
+    setWorkspaceFormStep1((prevState) => ({
       ...prevState,
       [name]: value,
     }));
   };
 
-  // Handle Cover Image Upload
-  const handleCoverImageUpload = (e) => {
+  // Handle Cover Image Upload (Step 1)
+  const handleCoverImageUploadStep1 = (e) => {
     const file = e.target.files[0];
     if (file) {
       // Client-side validation for file type and size
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
       if (!allowedTypes.includes(file.type)) {
-        toast.error('Only .png, .jpg and .jpeg formats are allowed!');
+        toast.error('Only .png, .jpg and .jpeg formats are allowed!', {
+          position: toast.POSITION.TOP_RIGHT,
+          autoClose: 5000,
+        });
         return;
       }
 
       const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
-        toast.error('File size exceeds 5MB!');
+        toast.error('File size exceeds 5MB!', {
+          position: toast.POSITION.TOP_RIGHT,
+          autoClose: 5000,
+        });
         return;
       }
 
-      setWorkspaceForm((prevState) => ({
+      setWorkspaceFormStep1((prevState) => ({
         ...prevState,
         coverImage: file,
       }));
     }
   };
 
-  // Handle Form Submission
-const handleFormSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const { workspaceTitle, coverImage, workspaceDescription, invitePeople } = workspaceForm;
-
+  // Handle Form Submission (Step 1 - Navigate to Step 2)
+  const handleFormSubmitStep1 = (e) => {
+    e.preventDefault();
     // Client-side validation
-    if (!workspaceTitle) {
-      toast.error('Workspace title is required!', { /* ... */ });
+    if (!workspaceFormStep1.workspaceTitle) {
+      toast.error('Workspace title is required!', {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 5000,
+      });
+      return;
+    }
+    // Proceed to Step 2
+    setIsCreateModalOpen(false);
+    setIsDefineModalOpen(true);
+  };
+
+  // Handle Workspace Type Selection (Step 2)
+  const handleWorkspaceTypeSelect = (type) => {
+    setWorkspaceType(type);
+  };
+
+  // Handle Final Submission (Step 2 - Create Workspace)
+  const handleFinalSubmit = async () => {
+    if (!workspaceType) {
+      toast.error('Please select a workspace type!', {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 5000,
+      });
       return;
     }
 
-    // Prepare invitePeople as an array of emails (split by commas)
-    const inviteEmails = invitePeople
-      .split(',')
-      .map((email) => email.trim())
-      .filter((email) => email);
+    try {
+      // Prepare invitePeople as an array of emails (split by commas)
+      const inviteEmails = workspaceFormStep1.invitePeople
+        .split(',')
+        .map((email) => email.trim())
+        .filter((email) => email);
 
-    // Create FormData
-    const formData = new FormData();
-    formData.append('workspaceTitle', workspaceTitle);
-    if (coverImage) {
-      formData.append('coverImage', coverImage);
+      // Create FormData
+      const formData = new FormData();
+      formData.append('workspaceTitle', workspaceFormStep1.workspaceTitle);
+      formData.append('workspaceType', workspaceType); // Add workspace type
+      if (workspaceFormStep1.coverImage) {
+        formData.append('coverImage', workspaceFormStep1.coverImage);
+      }
+      formData.append('workspaceDescription', workspaceFormStep1.workspaceDescription);
+      inviteEmails.forEach((email) => formData.append('invitePeople', email));
+
+      // Send the form data via RTK Query mutation
+      await createWorkspace(formData).unwrap();
+
+      // Reset forms and close modals
+      setWorkspaceFormStep1({
+        workspaceTitle: '',
+        coverImage: null,
+        workspaceDescription: '',
+        invitePeople: '',
+      });
+      setWorkspaceType('');
+      setIsDefineModalOpen(false);
+      refetchWorkspaces(); // Refresh workspace list
+
+      // Show success notification
+      toast.success('Workspace created successfully!', {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 5000,
+      });
+    } catch (err) {
+      console.error('Failed to create workspace:', err);
+      toast.error(err.data?.message || 'Failed to create workspace', {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 5000,
+      });
     }
-    formData.append('workspaceDescription', workspaceDescription);
-    inviteEmails.forEach((email) => formData.append('invitePeople', email));
-
-    // Send the form data via RTK Query mutation
-    await createWorkspace(formData).unwrap();
-
-    // Reset form and close modal
-    setWorkspaceForm({
-      workspaceTitle: '',
-      coverImage: null,
-      workspaceDescription: '',
-      invitePeople: '',
-    });
-    setIsModalOpen(false);
-    refetchWorkspaces(); // Refresh workspace list
-
-    // Show success notification
-    toast.success('Workspace created successfully!', { /* ... */ });
-  } catch (err) {
-    console.error('Failed to create workspace:', err);
-    toast.error(err.data?.message || 'Failed to create workspace', { /* ... */ });
-  }
-};
-
+  };
 
   return (
     <div
@@ -331,7 +368,7 @@ const handleFormSubmit = async (e) => {
                 textAlign: 'left',
                 width: '300px',
               }}
-              onClick={() => setIsModalOpen(true)} // Open modal on click
+              onClick={() => setIsCreateModalOpen(true)} // Open modal on click
             >
               {/* SVG Icon */}
               <svg
@@ -555,8 +592,8 @@ const handleFormSubmit = async (e) => {
         </div>
       </div>
 
-      {/* Create Workspace Modal */}
-      {isModalOpen && (
+      {/* Create Workspace Modal (Step 1) */}
+      {isCreateModalOpen && (
         <div
           style={{
             position: 'fixed',
@@ -570,7 +607,16 @@ const handleFormSubmit = async (e) => {
             alignItems: 'center',
             zIndex: 1000,
           }}
-          onClick={() => setIsModalOpen(false)} // Close modal when clicking outside the form
+          onClick={() => {
+            setIsCreateModalOpen(false);
+            // Clear Step 1 Form Data
+            setWorkspaceFormStep1({
+              workspaceTitle: '',
+              coverImage: null,
+              workspaceDescription: '',
+              invitePeople: '',
+            });
+          }} // Close modal and clear inputs when clicking outside
         >
           <div
             style={{
@@ -589,67 +635,96 @@ const handleFormSubmit = async (e) => {
             <p style={{ marginBottom: '10px', fontSize: '12px', color: '#fff' }}>
               A Space represents teams, departments, or groups,<br />each with its own Lists, workflows, and settings.
             </p>
-            <form onSubmit={handleFormSubmit}>
-              {/* Workspace Title & Cover Image */}
-              <label htmlFor="workspaceTitle" style={{ display: 'flex', alignItems: 'center', margin: '10px 5px', fontSize: '1.1em', color: 'white' }}>
+            <form onSubmit={handleFormSubmitStep1}>
+              {/* Workspace Title */}
+              <label htmlFor="workspaceTitle" style={{ display: 'block', margin: '10px 0 5px', fontSize: '1.1em', color: 'white' }}>
                 Name your workspace
               </label>
-              <div style={{ display: 'flex', alignItems: 'center', margin: '10px 5px' }}>
-                <input
-                  type="text"
-                  id="workspaceTitle"
-                  name="workspaceTitle"
-                  placeholder="Workspace Name"
-                  value={workspaceForm.workspaceTitle}
-                  onChange={handleInputChange}
-                  required
-                  style={{
-                    width: '70%',
-                    padding: '8px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    outline: 'none',
-                    color: '#999999',
-                    backgroundColor: 'white',
-                  }}
-                />
-                <input
-                  type="file"
-                  id="coverImage"
-                  name="coverImage"
-                  accept="image/*"
-                  onChange={handleCoverImageUpload}
-                  style={{
-                    width: '30%',
-                    padding: '8px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    outline: 'none',
-                    color: '#999999',
-                    backgroundColor: 'white',
-                    cursor: 'pointer',
-                  }}
-                />
-              </div>
-
-              {/* Workspace Description */}
-              <label htmlFor="workspaceDescription" style={{ display: 'flex', alignItems: 'center', margin: '10px 5px', fontSize: '1.1em', color: 'white' }}>
-                Description
-                <span style={{ fontSize: '10px', color: 'white', marginLeft: '4px' }}>(Optional)</span>
-              </label>
-              <textarea
-                id="workspaceDescription"
-                name="workspaceDescription"
-                placeholder="Provide a short description of the workspace!"
-                value={workspaceForm.workspaceDescription}
-                onChange={handleInputChange}
+              <input
+                type="text"
+                autocomplete="off"
+                id="workspaceTitle"
+                name="workspaceTitle"
+                placeholder="Workspace Name"
+                value={workspaceFormStep1.workspaceTitle}
+                onChange={handleInputChangeStep1}
+                required
                 style={{
                   width: '100%',
                   padding: '8px',
                   borderRadius: '10px',
                   border: 'none',
                   outline: 'none',
-                  color: '#999999',
+                  color: '#333',
+                  backgroundColor: 'white',
+                  marginBottom: '15px',
+                }}
+              />
+
+              {/* Cover Image Upload */}
+              <label
+                htmlFor="coverImageUploadStep1"
+                style={{
+                  display: 'block',
+                  margin: '10px 0 5px',
+                  fontSize: '1.1em',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}
+              >
+                Cover Image
+              </label>
+              <div
+                style={{
+                  width: '100%',
+                  height: '150px',
+                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  backgroundColor: '#565656',
+                  backgroundImage: workspaceFormStep1.coverImage
+                    ? `url(${URL.createObjectURL(workspaceFormStep1.coverImage)})`
+                    : 'url(https://via.placeholder.com/390x150.png?text=Cover+Image)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  position: 'relative',
+                  marginBottom: '20px',
+                }}
+                onClick={() => document.getElementById('coverImageUploadStep1').click()} // Open file dialog on click
+              >
+                {/* Optional: Overlay text */}
+                {!workspaceFormStep1.coverImage && (
+                  <span style={{ color: '#fff', fontSize: '14px' }}>Click to Upload Cover Image</span>
+                )}
+                <input
+                  type="file"
+                  id="coverImageUploadStep1"
+                  name="coverImage"
+                  accept="image/*"
+                  onChange={handleCoverImageUploadStep1}
+                  style={{ display: 'none' }}
+                />
+              </div>
+
+              {/* Workspace Description */}
+              <label htmlFor="workspaceDescription" style={{ display: 'block', margin: '10px 0 5px', fontSize: '1.1em', color: 'white' }}>
+                Description <span style={{ fontSize: '10px', color: 'white' }}>(Optional)</span>
+              </label>
+              <textarea
+                id="workspaceDescription"
+                name="workspaceDescription"
+                placeholder="Provide a short description of the workspace!"
+                value={workspaceFormStep1.workspaceDescription}
+                onChange={handleInputChangeStep1}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#333',
                   backgroundColor: 'white',
                   height: '80px',
                   resize: 'none',
@@ -658,30 +733,30 @@ const handleFormSubmit = async (e) => {
               ></textarea>
 
               {/* Invite People */}
-              <label htmlFor="invitePeople" style={{ display: 'flex', alignItems: 'center', margin: '10px 5px', fontSize: '1.1em', color: 'white' }}>
-                Invite People
-                <span style={{ fontSize: '10px', color: 'white', marginLeft: '4px' }}>(Optional)</span>
+              <label htmlFor="invitePeople" style={{ display: 'block', margin: '10px 0 5px', fontSize: '1.1em', color: 'white' }}>
+                Invite People <span style={{ fontSize: '10px', color: 'white' }}>(Optional)</span>
               </label>
               <input
                 type="text"
+                autocomplete="off"
                 id="invitePeople"
                 name="invitePeople"
                 placeholder="user1@mail.com, user2@mail.com"
-                value={workspaceForm.invitePeople}
-                onChange={handleInputChange}
+                value={workspaceFormStep1.invitePeople}
+                onChange={handleInputChangeStep1}
                 style={{
                   width: '100%',
                   padding: '8px',
                   borderRadius: '10px',
                   border: 'none',
                   outline: 'none',
-                  color: '#999999',
+                  color: '#333',
                   backgroundColor: 'white',
                   marginBottom: '20px',
                 }}
               />
 
-              {/* Submit Button */}
+              {/* Next Button */}
               <button
                 type="submit"
                 className="next-btn"
@@ -690,7 +765,7 @@ const handleFormSubmit = async (e) => {
                   color: 'white',
                   border: 'none',
                   borderRadius: '14px',
-                  padding: '10px 60px',
+                  padding: '10px 0',
                   fontSize: '18px',
                   fontWeight: 'bold',
                   cursor: 'pointer',
@@ -700,28 +775,484 @@ const handleFormSubmit = async (e) => {
                 }}
                 disabled={isCreatingWorkspace}
               >
-                {isCreatingWorkspace ? 'Creating...' : 'Create Workspace'}
+                Next
               </button>
             </form>
-            {/* Close Button */}
-            <button
-              onClick={() => setIsModalOpen(false)}
-              style={{
-                position: 'absolute',
-                top: '10px',
-                right: '15px',
-                background: 'none',
-                border: 'none',
-                color: '#fff',
-                fontSize: '24px',
-                cursor: 'pointer',
-              }}
-            >
-              &times;
-            </button>
+            {/* Note: Removed Close Button */}
           </div>
         </div>
       )}
+
+      {/* Define Workspace Modal (Step 2) */}
+      {isDefineModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setIsDefineModalOpen(false);
+            // Clear Step 2 Form Data
+            setWorkspaceType('');
+          }} // Close modal and clear inputs when clicking outside
+        >
+          <div
+            style={{
+              background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)',
+              padding: '25px 20px',
+              borderRadius: '10px',
+              width: '390px',
+              color: '#fff',
+              height: 'auto',
+              textAlign: 'left',
+              position: 'relative',
+            }}
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
+          >
+            <h2 style={{ marginBottom: '8px', fontWeight: 'bold' }}>Define Workspace</h2>
+            <p style={{ marginBottom: '10px', fontSize: '12px', color: '#fff' }}>
+              Choose a pre-configured solution or customize to your liking with advanced ClickApps, required views, and task statuses.
+            </p>
+
+            {/* Workspace Type Selection */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
+              {['Starter', 'Kanban', 'Project', 'Scrum'].map((type) => (
+                <div
+                  key={type}
+                  onClick={() => handleWorkspaceTypeSelect(type)}
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '60px',
+                    background: workspaceType === type ? '#4a2e64' : 'transparent',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'flex-start',
+                    padding: '5px 10px',
+                    color: '#fff',
+                    zIndex: 1,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'background 0.3s ease',
+                  }}
+                >
+                  <h4 style={{ margin: '4px 0' }}>{type}</h4>
+                  <p style={{ fontSize: '12px', marginLeft: '4px', color: '#999999', marginBottom: '0' }}>
+                    For simple and short use
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <h3 style={{ marginTop: '8px', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>Customize</h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <button
+                onClick={() => alert('Workspace View Clicked')}
+                style={{
+                  background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  marginBottom: '10px',
+                  fontWeight: 'bold',
+                  textAlign: 'left',
+                  fontSize: '1.1em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  transition: 'background 0.3s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#333')}
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background =
+                    'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)')
+                }
+              >
+                {/* SVG Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" style={{ width: '20px', height: '20px', marginRight: '4px' }}>
+                  <path
+                    d="M20.9825 32.445L8.085 22.4175L5.25 24.6225L21 36.8725L36.75 24.6225L33.8975 22.4L20.9825 32.445ZM21 28L33.88 17.9725L36.75 15.75L21 3.5L5.25 15.75L8.1025 17.9725L21 28ZM21 7.9275L31.045 15.75L21 23.5725L10.955 15.75L21 7.9275Z"
+                    fill="white"
+                  />
+                </svg>
+                Workspace View
+              </button>
+              <button
+                onClick={() => alert('Todo Stages Clicked')}
+                style={{
+                  background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  marginBottom: '10px',
+                  fontWeight: 'bold',
+                  textAlign: 'left',
+                  fontSize: '1.1em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  transition: 'background 0.3s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#333')}
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background =
+                    'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)')
+                }
+              >
+                {/* SVG Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" style={{ width: '20px', height: '20px', marginRight: '4px' }}>
+                  <path
+                    d="M33.25 8.75V33.25H8.75V8.75H33.25ZM35.175 5.25H6.825C5.95 5.25 5.25 5.95 5.25 6.825V35.175C5.25 35.875 5.95 36.75 6.825 36.75H35.175C35.875 36.75 36.75 35.875 36.75 35.175V6.825C36.75 5.95 35.875 5.25 35.175 5.25V5.25ZM19.25 12.25H29.75V15.75H19.25V12.25ZM19.25 19.25H29.75V22.75H19.25V19.25ZM19.25 26.25H29.75V29.75H19.25V26.25ZM12.25 12.25H15.75V15.75H12.25V12.25ZM12.25 19.25H15.75V22.75H12.25V19.25ZM12.25 26.25H15.75V29.75H12.25V26.25Z"
+                    fill="white"
+                  />
+                </svg>
+                Todo Stages
+              </button>
+            </div>
+          </div>
+
+          {/* Final Submit Button */}
+          {/* Removed from here to place inside DefineWorkspaceModal */}
+        </div>
+      )}
+
+      {/* Define Workspace Modal (Step 2) */}
+      {isDefineModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setIsDefineModalOpen(false);
+            // Clear Step 2 Form Data
+            setWorkspaceType('');
+          }} // Close modal and clear inputs when clicking outside
+        >
+          <div
+            style={{
+              background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)',
+              padding: '25px 20px',
+              borderRadius: '10px',
+              width: '390px',
+              color: '#fff',
+              height: 'auto',
+              textAlign: 'left',
+              position: 'relative',
+            }}
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
+          >
+            <h2 style={{ marginBottom: '8px', fontWeight: 'bold' }}>Define Workspace</h2>
+            <p style={{ marginBottom: '10px', fontSize: '12px', color: '#fff' }}>
+              Choose a pre-configured solution or customize to your liking with advanced ClickApps, required views, and task statuses.
+            </p>
+
+            {/* Workspace Type Selection */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
+              {['Starter', 'Kanban', 'Project', 'Scrum'].map((type) => (
+                <div
+                  key={type}
+                  onClick={() => handleWorkspaceTypeSelect(type)}
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '60px',
+                    background: workspaceType === type ? '#4a2e64' : 'transparent',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'flex-start',
+                    padding: '5px 10px',
+                    color: '#fff',
+                    zIndex: 1,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'background 0.3s ease',
+                  }}
+                >
+                  <h4 style={{ margin: '4px 0' }}>{type}</h4>
+                  <p style={{ fontSize: '12px', marginLeft: '4px', color: '#999999', marginBottom: '0' }}>
+                    For simple and short use
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <h3 style={{ marginTop: '8px', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>Customize</h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <button
+                onClick={() => alert('Workspace View Clicked')}
+                style={{
+                  background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  marginBottom: '10px',
+                  fontWeight: 'bold',
+                  textAlign: 'left',
+                  fontSize: '1.1em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  transition: 'background 0.3s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#333')}
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background =
+                    'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)')
+                }
+              >
+                {/* SVG Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" style={{ width: '20px', height: '20px', marginRight: '4px' }}>
+                  <path
+                    d="M20.9825 32.445L8.085 22.4175L5.25 24.6225L21 36.8725L36.75 24.6225L33.8975 22.4L20.9825 32.445ZM21 28L33.88 17.9725L36.75 15.75L21 3.5L5.25 15.75L8.1025 17.9725L21 28ZM21 7.9275L31.045 15.75L21 23.5725L10.955 15.75L21 7.9275Z"
+                    fill="white"
+                  />
+                </svg>
+                Workspace View
+              </button>
+              <button
+                onClick={() => alert('Todo Stages Clicked')}
+                style={{
+                  background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  marginBottom: '10px',
+                  fontWeight: 'bold',
+                  textAlign: 'left',
+                  fontSize: '1.1em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  transition: 'background 0.3s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#333')}
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background =
+                    'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)')
+                }
+              >
+                {/* SVG Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" style={{ width: '20px', height: '20px', marginRight: '4px' }}>
+                  <path
+                    d="M33.25 8.75V33.25H8.75V8.75H33.25ZM35.175 5.25H6.825C5.95 5.25 5.25 5.95 5.25 6.825V35.175C5.25 35.875 5.95 36.75 6.825 36.75H35.175C35.875 36.75 36.75 35.875 36.75 35.175V6.825C36.75 5.95 35.875 5.25 35.175 5.25V5.25ZM19.25 12.25H29.75V15.75H19.25V12.25ZM19.25 19.25H29.75V22.75H19.25V19.25ZM19.25 26.25H29.75V29.75H19.25V26.25ZM12.25 12.25H15.75V15.75H12.25V12.25ZM12.25 19.25H15.75V22.75H12.25V19.25ZM12.25 26.25H15.75V29.75H12.25V26.25Z"
+                    fill="white"
+                  />
+                </svg>
+                Todo Stages
+              </button>
+            </div>
+          </div>
+
+          {/* Final Submit Button */}
+          {/* Moved inside DefineWorkspaceModal */}
+        </div>
+      )}
+
+      {/* Define Workspace Modal (Step 2) */}
+      {isDefineModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setIsDefineModalOpen(false);
+            // Clear Step 2 Form Data
+            setWorkspaceType('');
+          }} // Close modal and clear inputs when clicking outside
+        >
+          <div
+            style={{
+              background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)',
+              padding: '25px 20px',
+              borderRadius: '10px',
+              width: '390px',
+              color: '#fff',
+              height: 'auto',
+              textAlign: 'left',
+              position: 'relative',
+            }}
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
+          >
+            <h2 style={{ marginBottom: '8px', fontWeight: 'bold' }}>Define Workspace</h2>
+            <p style={{ marginBottom: '10px', fontSize: '12px', color: '#fff' }}>
+              Choose a pre-configured solution or customize to your liking with advanced ClickApps, required views, and task statuses.
+            </p>
+
+            {/* Workspace Type Selection */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
+              {['Starter', 'Kanban', 'Project', 'Scrum'].map((type) => (
+                <div
+                  key={type}
+                  onClick={() => handleWorkspaceTypeSelect(type)}
+                  style={{
+
+                    position: 'relative',
+                    width: '100%',
+                    height: '60px',
+                    background: workspaceType === type ? '#4a2e64' : 'transparent',
+                    borderRadius: '20px',
+                    border: '2px, solid, #4a2e64',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'flex-start',
+                    padding: '5px 10px',
+                    color: '#fff',
+                    zIndex: 1,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'background 0.3s ease',
+                  }}
+                >
+                  <h4 style={{ margin: '4px 0' }}>{type}</h4>
+                  <p style={{ fontSize: '12px', marginLeft: '4px', color: '#999999', marginBottom: '0' }}>
+                    For simple and short use
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <h3 style={{ marginTop: '8px', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>Customize</h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <button
+                onClick={() => alert('Workspace View Clicked')}
+                style={{
+                  background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  marginBottom: '10px',
+                  fontWeight: 'bold',
+                  textAlign: 'left',
+                  fontSize: '1.1em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  transition: 'background 0.3s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#333')}
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background =
+                    'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)')
+                }
+              >
+                {/* SVG Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" style={{ width: '20px', height: '20px', marginRight: '4px' }}>
+                  <path
+                    d="M20.9825 32.445L8.085 22.4175L5.25 24.6225L21 36.8725L36.75 24.6225L33.8975 22.4L20.9825 32.445ZM21 28L33.88 17.9725L36.75 15.75L21 3.5L5.25 15.75L8.1025 17.9725L21 28ZM21 7.9275L31.045 15.75L21 23.5725L10.955 15.75L21 7.9275Z"
+                    fill="white"
+                  />
+                </svg>
+                Workspace View
+              </button>
+              <button
+                onClick={() => alert('Todo Stages Clicked')}
+                style={{
+                  background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  marginBottom: '10px',
+                  fontWeight: 'bold',
+                  textAlign: 'left',
+                  fontSize: '1.1em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  transition: 'background 0.3s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#333')}
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background =
+                    'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)')
+                }
+              >
+                {/* SVG Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" style={{ width: '20px', height: '20px', marginRight: '4px' }}>
+                  <path
+                    d="M33.25 8.75V33.25H8.75V8.75H33.25ZM35.175 5.25H6.825C5.95 5.25 5.25 5.95 5.25 6.825V35.175C5.25 35.875 5.95 36.75 6.825 36.75H35.175C35.875 36.75 36.75 35.875 36.75 35.175V6.825C36.75 5.95 35.875 5.25 35.175 5.25V5.25ZM19.25 12.25H29.75V15.75H19.25V12.25ZM19.25 19.25H29.75V22.75H19.25V19.25ZM19.25 26.25H29.75V29.75H19.25V26.25ZM12.25 12.25H15.75V15.75H12.25V12.25ZM12.25 19.25H15.75V22.75H12.25V19.25ZM12.25 26.25H15.75V29.75H12.25V26.25Z"
+                    fill="white"
+                  />
+                </svg>
+                Todo Stages
+              </button>
+              {/* Create Workspace Button inside DefineWorkspaceModal */}
+          <button
+            onClick={handleFinalSubmit}
+            className="next-btn"
+            style={{
+              background: 'linear-gradient(to right, #2a1a41 0%, #4a2e64 56%, #945cb7 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '14px',
+              padding: '10px',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s ease',
+              display: 'flex',
+              alignSelf: 'end',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '70%',
+              margin: '25px 0px 10px',
+            }}
+            disabled={isCreatingWorkspace || !workspaceType}
+          >
+            {isCreatingWorkspace ? 'Creating...' : 'Create Workspace'}
+          </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Container for Notifications */}
+      <ToastContainer />
     </div>
   );
 };

@@ -10,10 +10,12 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
   const [formData, setFormData] = useState({
     workspaceTitle: '',
     workspaceDescription: '',
-    coverImage: '', // Optional
+    coverImage: '', // This will store the URL or the uploaded file
   });
 
   const [inviteEmail, setInviteEmail] = useState('');
+  const [coverImageFile, setCoverImageFile] = useState(null); // To store the selected image file
+  const [coverImagePreview, setCoverImagePreview] = useState(''); // To store the preview URL
 
   const handleChange = (e) => {
     setFormData({
@@ -26,14 +28,36 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
     setInviteEmail(e.target.value);
   };
 
+  const handleCoverImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCoverImageFile(file);
+      setCoverImagePreview(URL.createObjectURL(file));
+      // Optionally, you can upload the image immediately here and set the URL to formData.coverImage
+      // For example:
+      // uploadImage(file).then(url => setFormData({...formData, coverImage: url}));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      let coverImageURL = formData.coverImage;
+
+      // If a new cover image is uploaded, handle the upload to get the URL
+      if (coverImageFile) {
+        // Example: Upload the image to the server and get the URL
+        // This assumes you have an API endpoint to handle image uploads
+        // You need to implement uploadImage on your backend
+        const uploadResponse = await uploadImage(coverImageFile);
+        coverImageURL = uploadResponse.url; // Adjust based on your API response
+      }
+
       // Prepare workspace data
       const workspaceData = {
         workspaceTitle: formData.workspaceTitle,
         workspaceDescription: formData.workspaceDescription,
-        coverImage: formData.coverImage, // Can be empty
+        coverImage: coverImageURL, // Use the uploaded image URL or existing URL
       };
 
       // Create workspace
@@ -51,6 +75,27 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
       console.error('Failed to create workspace:', err);
       // Optionally, display error messages to the user
     }
+  };
+
+  // Placeholder function for image upload
+  // Replace this with your actual image upload implementation
+  const uploadImage = async (file) => {
+    // Example using FormData
+    const formData = new FormData();
+    formData.append('image', file);
+
+    // Replace with your actual upload endpoint
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Image upload failed');
+    }
+
+    const data = await response.json();
+    return data; // Assume the response contains the URL in data.url
   };
 
   if (!isOpen) return null;
@@ -95,38 +140,37 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
           </div>
 
           {/* Cover Image */}
-          <label htmlFor="coverImage" style={styles.label}>
+          <label
+            htmlFor="coverImageUpload"
+            style={{
+              ...styles.label,
+              marginTop: '20px', // Add some spacing above the cover image section
+            }}
+          >
             Cover Image (Optional)
           </label>
-          <div style={styles.inputGroup}>
+          <div
+            style={{
+              ...styles.coverImageContainer,
+              backgroundImage: coverImagePreview
+                ? `url(${coverImagePreview})`
+                : formData.coverImage
+                ? `url(${formData.coverImage})`
+                : 'url(https://via.placeholder.com/390x150.png?text=Cover+Image)',
+            }}
+            onClick={() => document.getElementById('coverImageUpload').click()}
+          >
             <input
-              type="text"
-              id="coverImage"
+              type="file"
+              id="coverImageUpload"
               name="coverImage"
-              placeholder="Cover Image URL"
-              value={formData.coverImage}
-              onChange={handleChange}
-              style={styles.input}
+              accept="image/*"
+              onChange={handleCoverImageChange}
+              style={{ display: 'none' }}
             />
-            <div style={styles.svgBox}>
-              {/* SVG Icon for Cover Image */}
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={styles.svgIcon}>
-                <path
-                  d="M15.75 2.25H6.75C5.5125 2.25 4.51125 3.2625 4.51125 4.5L4.5 22.5C4.5 23.7375 5.50125 24.75 6.73875 24.75H20.25C21.4875 24.75 22.5 23.7375 22.5 22.5V9L15.75 2.25ZM20.25 22.5H6.75V4.5H14.625V10.125H20.25V22.5ZM9 16.8863L10.5862 18.4725L12.375 16.695V21.375H14.625V16.695L16.4137 18.4837L18 16.8863L13.5113 12.375L9 16.8863Z"
-                  fill="#A7A7A7"
-                />
-              </svg>
-              <input
-                type="text"
-                id="banner"
-                name="banner" // Changed name to 'banner' for clarity
-                placeholder="Banner URL (Optional)"
-                className="custom-placeholder"
-                style={styles.input}
-                value={inviteEmail} // It seems 'inviteEmail' was incorrectly used here; should be 'coverImage'
-                onChange={handleInviteChange} // Should be handleChange for 'coverImage'
-              />
-            </div>
+            {!coverImagePreview && !formData.coverImage && (
+              <span style={styles.uploadText}>Click to Upload Cover Image</span>
+            )}
           </div>
 
           {/* Description */}
@@ -198,7 +242,7 @@ const styles = {
     borderRadius: '10px',
     width: '390px',
     color: '#fff',
-    height: '500px',
+    maxHeight: '90vh',
     textAlign: 'left',
     position: 'relative',
     overflowY: 'auto',
@@ -209,9 +253,8 @@ const styles = {
     gap: '15px',
   },
   label: {
-    display: 'flex',
-    alignItems: 'center',
-    margin: '10px 5px',
+    display: 'block',
+    margin: '10px 0 5px 0',
     fontSize: '1.1em',
     color: 'white',
   },
@@ -271,9 +314,8 @@ const styles = {
     fontWeight: 'bold',
     cursor: 'pointer',
     transition: 'background-color 0.3s ease',
-    position: 'absolute',
-    bottom: '20px',
-    right: '20px',
+    alignSelf: 'center',
+    marginTop: '20px',
   },
   closeBtn: {
     position: 'absolute',
@@ -284,6 +326,28 @@ const styles = {
     color: '#fff',
     fontSize: '24px',
     cursor: 'pointer',
+  },
+  coverImageContainer: {
+    width: '100%',
+    height: '150px',
+    cursor: 'pointer',
+    borderRadius: '8px',
+    backgroundColor: '#565656',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    objectFit: 'cover',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    border: '2px dashed #999999',
+  },
+  uploadText: {
+    color: '#ffffff',
+    fontSize: '0.9em',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: '5px 10px',
+    borderRadius: '5px',
   },
 };
 
