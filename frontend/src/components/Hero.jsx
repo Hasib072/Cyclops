@@ -10,6 +10,8 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import Category from './Category';
 import EditableText from './EditableText'; // Adjust the path as necessary
+import { defaultStages } from '../constants/defaultStages'; // Import default stages
+import { defaultStagesByType } from '../constants/defaultStagesByType'; // Import default stages by type
 
 // Import SVG icons as React components
 import ListsIcon from '../assets/icons/Lists.svg';
@@ -39,9 +41,9 @@ const ItemTypes = {
 };
 
 const Categories = {
-  NOT_STARTED: 'Not started',
+  PENDING: 'Pending',
   ACTIVE: 'Active',
-  DONE: 'Done / Finished',
+  DONE: 'Done',
 };
 
 // Helper function to determine if a string is a data URL
@@ -233,6 +235,8 @@ const Hero = () => {
   // Handle Workspace Type Selection (Step 2)
   const handleWorkspaceTypeSelect = (type) => {
     setWorkspaceType(type);
+    setStagesByType(type);
+
   };
 
   
@@ -264,10 +268,18 @@ const Hero = () => {
   
     try {
       // Prepare invitePeople as an array of emails (split by commas)
-      const inviteEmails = workspaceFormStep1.invitePeople
-        .split(',')
-        .map((email) => email.trim())
-        .filter((email) => email);
+    const inviteEmails = workspaceFormStep1.invitePeople
+    .split(',')
+    .map((email) => email.trim())
+    .filter((email) => email);
+
+  // Prepare stages as an array of objects
+  const preparedStages = stages.map((stage) => ({
+    id: stage.id,
+    name: stage.name,
+    color: stage.color,
+    category: stage.category,
+  }));
   
       // Create FormData
       const formData = new FormData();
@@ -279,6 +291,7 @@ const Hero = () => {
       formData.append('workspaceDescription', workspaceFormStep1.workspaceDescription);
       inviteEmails.forEach((email) => formData.append('invitePeople', email));
       formData.append('selectedViews', JSON.stringify(selectedViews)); // Add selected views
+      formData.append('stages', JSON.stringify(preparedStages));
   
       // Send the form data via RTK Query mutation
       await createWorkspace(formData).unwrap();
@@ -286,9 +299,11 @@ const Hero = () => {
       // **Console Logs for Workspace Details**
       console.log('Workspace Title:', workspaceFormStep1.workspaceTitle);
       console.log('Description:', workspaceFormStep1.workspaceDescription);
+      console.log('Invited People:', inviteEmails);
       console.log('Cover Image Filename:', workspaceFormStep1.coverImage ? workspaceFormStep1.coverImage.name : 'No cover image');
       console.log('Workspace Type:', workspaceType);
       console.log('Selected Views:', selectedViews);
+      console.log('Stages:', preparedStages);
   
       // Reset forms and close modals
       setWorkspaceFormStep1({
@@ -299,6 +314,8 @@ const Hero = () => {
       });
       setWorkspaceType('');
       setSelectedViews([]);
+      resetStagesToDefault();
+      setStages([]);
       setIsCustomizeModalOpen(false);
       setIsDefineModalOpen(false);
       refetchWorkspaces(); // Refresh workspace list
@@ -329,12 +346,7 @@ const Hero = () => {
 
   // State Variables
   const [isTodoStagesModalOpen, setIsTodoStagesModalOpen] = useState(false);
-  const [stages, setStages] = useState([
-    { id: 'stage-1', name: 'Open', color: '#7e57c2', category: Categories.NOT_STARTED },
-    { id: 'stage-2', name: 'In Progress', color: '#42a5f5', category: Categories.ACTIVE },
-    { id: 'stage-3', name: 'Review', color: '#fdd835', category: Categories.ACTIVE },
-    { id: 'stage-4', name: 'Done', color: '#d4d4d4', category: Categories.DONE },
-  ]);
+  const [stages, setStages] = useState(defaultStages); // Initialize with default stages
   const [newStageCounter, setNewStageCounter] = useState(1);
 
   // Event Handlers
@@ -355,11 +367,37 @@ const Hero = () => {
     };
     setStages([...stages, newStage]);
     setNewStageCounter(newStageCounter + 1);
-    toast.success(`Stage "${newStage.name}" added to "${category}"!`, {
-      position: toast.POSITION.TOP_RIGHT,
-      autoClose: 3000,
-    });
+    // toast.success(`Stage "${newStage.name}" added to "${category}"!`, {
+    //   //position: toast.POSITION.TOP_RIGHT,
+    //   autoClose: 3000,
+    // });
   };
+
+  const resetStagesToDefault = () => {
+    setStages(defaultStages);
+    //toast.info('Stages have been reset to default.', {
+      //position: toast.POSITION.TOP_RIGHT,
+      //autoClose: 3000,
+    //});
+  };
+
+  const setStagesByType = (type) => {
+    if (defaultStagesByType[type]) {
+      setStages(defaultStagesByType[type]);
+      // toast.success(`Stages set for workspace type "${type}".`, {
+      //   //position: toast.POSITION.TOP_RIGHT,
+      //   autoClose: 3000,
+      // });
+    } else {
+      setStages(defaultStages); // Fallback to default stages
+      // toast.warning(`No predefined stages for "${type}". Using default stages.`, {
+      //   //position: toast.POSITION.TOP_RIGHT,
+      //   autoClose: 3000,
+      // });
+    }
+  };
+  
+  
 
   const handleEditStageName = (id, newName) => {
     // Prevent duplicate stage names
@@ -385,10 +423,10 @@ const Hero = () => {
     // if (!confirmDelete) return;
 
     setStages(stages.filter((stage) => stage.id !== id));
-    // toast.success('Stage deleted successfully!', {
+     //toast.success('Stage deleted successfully!', {
     //   //position: toast.POSITION.TOP_RIGHT,
     //   autoClose: 3000,
-    // });
+     //});
   };
 
   const moveStage = (id, fromCategory, toCategory) => {
@@ -1310,7 +1348,7 @@ const Hero = () => {
                 background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)',
                 borderRadius: '10px',
                 padding: '20px 40px',
-                maxWidth: '500px', // Maintain original width
+                maxWidth: '450px', // Maintain original width
                 width: '100%',
                 height: '600px', // Maintain original height
                 textAlign: 'left',
@@ -1336,10 +1374,10 @@ const Hero = () => {
                 }}
               >
                 <div className="right" style={{ width: '80%', padding: 'auto' }}>
-                  {/* "Not Started" Category */}
+                  {/* "Pending" Category */}
                   <Category
-                    categoryName={Categories.NOT_STARTED}
-                    stages={stages.filter(stage => stage.category === Categories.NOT_STARTED)}
+                    categoryName={Categories.PENDING}
+                    stages={stages.filter(stage => stage.category === Categories.PENDING)}
                     moveStage={moveStage}
                     onEditName={handleEditStageName}
                     onChangeColor={handleChangeStageColor}
@@ -1368,41 +1406,6 @@ const Hero = () => {
                     onDelete={handleDeleteStage}
                     onAddStage={addStage} 
                   />
-
-                  {/* Add Stage Button */}
-                  <button
-                    onClick={addStage}
-                    style={{
-                      background: 'none',
-                      border: '2px dashed #fff',
-                      color: '#fff',
-                      borderRadius: '8px',
-                      padding: '2px 8px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginTop: '10px',
-                      width: '100%',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="16"
-                      height="16"
-                      style={{ marginRight: '8px' }}
-                    >
-                      <path
-                        d="M12 5v14m7-7H5"
-                        stroke="white"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    ADD STAGE
-                  </button>
                 </div>
               </div>
 
