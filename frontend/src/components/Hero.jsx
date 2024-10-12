@@ -6,7 +6,10 @@ import { useNavigate } from 'react-router-dom';
 import { logout } from '../slices/authSlice';
 import Sidebar from './Sidebar'; // Import the Sidebar component
 import staticImagePath from '../assets/helloIMG.png'; // Ensure this path is correct
-// frontend/src/components/Hero.jsx
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import Category from './Category';
+import EditableText from './EditableText'; // Adjust the path as necessary
 
 // Import SVG icons as React components
 import ListsIcon from '../assets/icons/Lists.svg';
@@ -30,6 +33,16 @@ import {
 // Toast Notifications
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+const ItemTypes = {
+  STAGE: 'stage',
+};
+
+const Categories = {
+  NOT_STARTED: 'Not started',
+  ACTIVE: 'Active',
+  DONE: 'Done / Finished',
+};
 
 // Helper function to determine if a string is a data URL
 const isDataURL = (str) => /^data:image\/[a-z]+;base64,/.test(str);
@@ -303,6 +316,112 @@ const Hero = () => {
       });
     }
   };
+
+  // Define default views for each workspace type
+  const defaultViewsByType = {
+    Starter: ['Lists', 'Board','Table','Chat', 'Timeline'],
+    Kanban: ['Board', 'Calendar', 'Timeline', 'Chat'],
+    Project: ['Gantt', 'Timeline','Chat'],
+    Scrum: ['Gantt', 'Board','Chat'],
+    // Add other types and their default views as needed
+  };
+
+
+  // State Variables
+  const [isTodoStagesModalOpen, setIsTodoStagesModalOpen] = useState(false);
+  const [stages, setStages] = useState([
+    { id: 'stage-1', name: 'Open', color: '#7e57c2', category: Categories.NOT_STARTED },
+    { id: 'stage-2', name: 'In Progress', color: '#42a5f5', category: Categories.ACTIVE },
+    { id: 'stage-3', name: 'Review', color: '#fdd835', category: Categories.ACTIVE },
+    { id: 'stage-4', name: 'Done', color: '#d4d4d4', category: Categories.DONE },
+  ]);
+  const [newStageCounter, setNewStageCounter] = useState(1);
+
+  // Event Handlers
+  const openTodoStagesModal = () => {
+    setIsTodoStagesModalOpen(true);
+  };
+
+  const closeTodoStagesModal = () => {
+    setIsTodoStagesModalOpen(false);
+  };
+
+  const addStage = (category) => {
+    const newStage = {
+      id: `stage-${Date.now()}`, // Unique string ID
+      name: `New Stage ${newStageCounter}`,
+      color: '#7e57c2', // Default color (purple)
+      category: category,
+    };
+    setStages([...stages, newStage]);
+    setNewStageCounter(newStageCounter + 1);
+    toast.success(`Stage "${newStage.name}" added to "${category}"!`, {
+      position: toast.POSITION.TOP_RIGHT,
+      autoClose: 3000,
+    });
+  };
+
+  const handleEditStageName = (id, newName) => {
+    // Prevent duplicate stage names
+    if (stages.some(stage => stage.name.toLowerCase() === newName.trim().toLowerCase() && stage.id !== id)) {
+      toast.error('Stage name already exists!', {
+        //position: toast.POSITION.TOP_RIGHT,
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    setStages(stages.map(stage => stage.id === id ? { ...stage, name: newName } : stage));
+  };
+
+  const handleChangeStageColor = (id, newColor) => {
+    setStages(stages.map(stage => stage.id === id ? { ...stage, color: newColor } : stage));
+  };
+
+  const handleDeleteStage = (id) => {
+    // Optional: Confirm deletion with the user
+    // Commenting out the confirmation as deletion is now handled via drag
+    // const confirmDelete = window.confirm('Are you sure you want to delete this stage?');
+    // if (!confirmDelete) return;
+
+    setStages(stages.filter((stage) => stage.id !== id));
+    // toast.success('Stage deleted successfully!', {
+    //   //position: toast.POSITION.TOP_RIGHT,
+    //   autoClose: 3000,
+    // });
+  };
+
+  const moveStage = (id, fromCategory, toCategory) => {
+    setStages(stages.map(stage => {
+      if (stage.id === id) {
+        return { ...stage, category: toCategory };
+      }
+      return stage;
+    }));
+  };
+
+  const handleSaveTodoStages = () => {
+    // Optional: Validate stages before proceeding
+    if (stages.length === 0) {
+      toast.error('Please add at least one stage!', {
+        //position: toast.POSITION.TOP_RIGHT,
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    // Log the stages for debugging
+    console.log('Defined Stages:', stages);
+
+    // Close the Todo Stages Modal
+    setIsTodoStagesModalOpen(false);
+
+    // Proceed to finalize workspace creation or navigate as needed
+    // For example, you might want to call handleFinalSubmit here or another function
+  };
+
+  
+
 
 
   return (
@@ -911,9 +1030,17 @@ const Hero = () => {
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <button
                 onClick={() => {
-                  setIsDefineModalOpen(false);
-                  setIsCustomizeModalOpen(true);
-                }}
+          if (!workspaceType) {
+            toast.error('Please select a workspace type!', {
+              //position: toast.POSITION.TOP_RIGHT,
+              autoClose: 5000,
+            });
+            return;
+          }
+          setIsDefineModalOpen(false);
+          setSelectedViews(defaultViewsByType[workspaceType] || []); // Set default views based on type
+          setIsCustomizeModalOpen(true);
+        }}
                 style={{
                   background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
                   color: '#fff',
@@ -946,7 +1073,7 @@ const Hero = () => {
                 Workspace View
               </button>
               <button
-                onClick={() => alert('Todo Stages Clicked')}
+                onClick={openTodoStagesModal}
                 style={{
                   background: 'linear-gradient(90deg, rgba(97, 40, 133, 1) 0%, rgba(146, 105, 186, 1) 100%, rgba(208, 182, 244, 1) 100%)',
                   color: '#fff',
@@ -1008,155 +1135,306 @@ const Hero = () => {
         </div>
       )}
       {/* Customize Workspace Views Modal */}
-{isCustomizeModalOpen && (
-  <div
-    style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000,
-    }}
-    onClick={() => {
-      setIsCustomizeModalOpen(false);
-      setSelectedViews([]);
-    }} // Close modal and clear inputs when clicking outside
-  >
-    <div
-      style={{
-        background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)',
-        borderRadius: '10px',
-        padding: '20px 40px',
-        maxWidth: '450px',
-        width: '100%',
-        height: '500px',
-        textAlign: 'left',
-        position: 'relative',
-        overflowY: 'auto', // Add scroll if content overflows
-      }}
-      onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
-    >
-      <h1 style={{ fontSize: '28px', margin: '10px 0' }}>Define Workspace Views</h1>
-      <p style={{ margin: '5px 0 20px 0', fontSize: '14px' }}>
-        Choose a pre-configured solution or customize to your liking with
-        advanced ClickApps, required views, and task statuses.
-      </p>
-    
-      <div
-        className="options"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '10px',
-          marginBottom: '20px',
-        }}
-      >
-        {[
-          { name: 'Lists', icon: ListsIcon },
-          { name: 'Calendar', icon: CalendarIcon },
-          { name: 'Table', icon: TableIcon },
-          { name: 'Chat', icon: ChatIcon },
-          { name: 'Gantt', icon: GanttIcon },
-          { name: 'Board', icon: BoardIcon },
-          { name: 'Timeline', icon: TimelineIcon },
-        ].map((view) => (
-          <label
-            className="option"
-            key={view.name}
+      {isCustomizeModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setIsCustomizeModalOpen(false);
+            setSelectedViews([]);
+          }} // Close modal and clear inputs when clicking outside
+        >
+          <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              position: 'relative',
-              background: selectedViews.includes(view.name) ? '#4a2e64' : 'transparent', // Purple background when selected
-              border: selectedViews.includes(view.name) ? '2px solid #945cb7' : '2px solid #622985', // Purple border when selected
+              background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)',
               borderRadius: '10px',
-              padding: '8px 12px', // Increased padding for better touch area
-              fontSize: '17px',
-              fontWeight: 'bold',
+              padding: '20px 40px',
+              maxWidth: '450px',
+              width: '100%',
+              height: '500px',
               textAlign: 'left',
-              cursor: 'pointer',
-              transition: 'background-color 0.3s ease, border-color 0.3s ease',
+              position: 'relative',
+              // overflowY: 'auto', // Add scroll if content overflows
             }}
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
           >
-            {/* Render the SVG icon using <img> */}
-            <img
-              src={view.icon}
-              alt={`${view.name} Icon`}
-              style={{ width: '20px', height: '20px', marginRight: '8px' }}
-            />
-            <span>{view.name}</span>
-            <input
-              type="checkbox"
-              checked={selectedViews.includes(view.name)}
-              onChange={() => handleViewSelection(view.name)}
-              style={{
-                position: 'absolute',
-                opacity: 0,
-                cursor: 'pointer',
-                height: 0,
-                width: 0,
-              }}
-            />
-            {/* Custom Toggle */}
+            <h1 style={{ fontSize: '28px', margin: '10px 0' }}>Define Workspace Views</h1>
+            <p style={{ margin: '5px 0 20px 0', fontSize: '14px' }}>
+              Choose a pre-configured solution or customize to your liking with
+              advanced ClickApps, required views, and task statuses.
+            </p>
+          
             <div
+              className="options"
               style={{
-                position: 'absolute',
-                right: '12px',
-                width: '32px',
-                height: '18px',
-                backgroundColor: selectedViews.includes(view.name) ? '#945cb7' : '#b0b0b0',
-                borderRadius: '15px',
-                transition: 'background-color 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                padding: '2px',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '10px',
+                marginBottom: '20px',
               }}
             >
-              <span
-                style={{
-                  width: '14px',
-                  height: '14px',
-                  backgroundColor: 'white',
-                  borderRadius: '50%',
-                  transform: selectedViews.includes(view.name) ? 'translateX(14px)' : 'translateX(0)',
-                  transition: 'transform 0.3s ease',
-                }}
-              ></span>
+              {[
+                { name: 'Lists', icon: ListsIcon },
+                { name: 'Calendar', icon: CalendarIcon },
+                { name: 'Table', icon: TableIcon },
+                { name: 'Chat', icon: ChatIcon },
+                { name: 'Gantt', icon: GanttIcon },
+                { name: 'Board', icon: BoardIcon },
+                { name: 'Timeline', icon: TimelineIcon },
+              ].map((view) => (
+                <label
+                  className="option"
+                  key={view.name}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    position: 'relative',
+                    background: selectedViews.includes(view.name) ? '#4a2e64' : 'transparent', // Purple background when selected
+                    border: selectedViews.includes(view.name) ? '2px solid #945cb7' : '2px solid #622985', // Purple border when selected
+                    borderRadius: '10px',
+                    padding: '8px 12px', // Increased padding for better touch area
+                    fontSize: '17px',
+                    fontWeight: 'bold',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s ease, border-color 0.3s ease',
+                  }}
+                >
+                  {/* Render the SVG icon using <img> */}
+                  <img
+                    src={view.icon}
+                    alt={`${view.name} Icon`}
+                    style={{ width: '20px', height: '20px', marginRight: '8px' }}
+                  />
+                  <span>{view.name}</span>
+                  <input
+                    type="checkbox"
+                    checked={selectedViews.includes(view.name)}
+                    onChange={() => handleViewSelection(view.name)}
+                    style={{
+                      position: 'absolute',
+                      opacity: 0,
+                      cursor: 'pointer',
+                      height: 0,
+                      width: 0,
+                    }}
+                  />
+                  {/* Custom Toggle */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      width: '32px',
+                      height: '18px',
+                      backgroundColor: selectedViews.includes(view.name) ? '#945cb7' : '#b0b0b0',
+                      borderRadius: '15px',
+                      transition: 'background-color 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '2px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                        transform: selectedViews.includes(view.name) ? 'translateX(14px)' : 'translateX(0)',
+                        transition: 'transform 0.3s ease',
+                      }}
+                    ></span>
+                  </div>
+                </label>
+              ))}
             </div>
-          </label>
-        ))}
-      </div>
+            
+            {/* Save Button */}
+            <button
+              className="save-btn"
+              onClick={handleSaveViews}
+              style={{
+                background: 'linear-gradient(to right, #2a1a41 0%, #4a2e64 56%, #945cb7 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '14px',
+                padding: '10px 60px',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'background-color 0.3s ease',
+                position: 'absolute',
+                bottom: '20px',
+                right: '20px',
+              }}
+              disabled={isCreatingWorkspace || selectedViews.length === 0}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      )}
       
-      {/* Save Button */}
-      <button
-        className="save-btn"
-        onClick={handleSaveViews}
-        style={{
-          background: 'linear-gradient(to right, #2a1a41 0%, #4a2e64 56%, #945cb7 100%)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '14px',
-          padding: '10px 60px',
-          fontSize: '18px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          transition: 'background-color 0.3s ease',
-          position: 'absolute',
-          bottom: '20px',
-          right: '20px',
-        }}
-        disabled={isCreatingWorkspace || selectedViews.length === 0}
-      >
-        Save
-      </button>
-    </div>
-  </div>
-)}
+      <DndProvider backend={HTML5Backend}>
+      <div>
+      {/* Define Todo Stages Modal */}
+      {isTodoStagesModalOpen && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1000,
+            }}
+            onClick={closeTodoStagesModal} // Close modal when clicking outside
+          >
+            <div
+              className="container"
+              style={{
+                background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)',
+                borderRadius: '10px',
+                padding: '20px 40px',
+                maxWidth: '500px', // Maintain original width
+                width: '100%',
+                height: '600px', // Maintain original height
+                textAlign: 'left',
+                position: 'relative',
+                //overflowY: 'auto',
+              }}
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
+            >
+              <h1>Define Todo Stage</h1>
+              <p>
+                Customize your Todo Stages. You can add, edit, and rearrange stages as needed.
+              </p>
+
+              {/* Removed the Stages Template Section */}
+
+              <div className="content" style={{
+                  flex: 1, // Allow the content to grow and fill available space
+                  overflowY: 'auto', // Enable vertical scrolling within the content
+                  display: 'flex',
+                  gap: '30px',
+                  position: 'relative',
+                  maxHeight: '300px'
+                }}
+              >
+                <div className="right" style={{ width: '80%', padding: 'auto' }}>
+                  {/* "Not Started" Category */}
+                  <Category
+                    categoryName={Categories.NOT_STARTED}
+                    stages={stages.filter(stage => stage.category === Categories.NOT_STARTED)}
+                    moveStage={moveStage}
+                    onEditName={handleEditStageName}
+                    onChangeColor={handleChangeStageColor}
+                    onDelete={handleDeleteStage}
+                    onAddStage={addStage} 
+                  />
+
+                  {/* "Active" Category */}
+                  <Category
+                    categoryName={Categories.ACTIVE}
+                    stages={stages.filter(stage => stage.category === Categories.ACTIVE)}
+                    moveStage={moveStage}
+                    onEditName={handleEditStageName}
+                    onChangeColor={handleChangeStageColor}
+                    onDelete={handleDeleteStage}
+                    onAddStage={addStage} 
+                  />
+
+                  {/* "Done / Finished" Category */}
+                  <Category
+                    categoryName={Categories.DONE}
+                    stages={stages.filter(stage => stage.category === Categories.DONE)}
+                    moveStage={moveStage}
+                    onEditName={handleEditStageName}
+                    onChangeColor={handleChangeStageColor}
+                    onDelete={handleDeleteStage}
+                    onAddStage={addStage} 
+                  />
+
+                  {/* Add Stage Button */}
+                  <button
+                    onClick={addStage}
+                    style={{
+                      background: 'none',
+                      border: '2px dashed #fff',
+                      color: '#fff',
+                      borderRadius: '8px',
+                      padding: '2px 8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginTop: '10px',
+                      width: '100%',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      style={{ marginRight: '8px' }}
+                    >
+                      <path
+                        d="M12 5v14m7-7H5"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    ADD STAGE
+                  </button>
+                </div>
+              </div>
+
+              {/* Next Button */}
+              <button
+                className="next-btn"
+                onClick={handleSaveTodoStages}
+                style={{
+                  background: 'linear-gradient(to right, #2a1a41 0%, #4a2e64 56%, #945cb7 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '14px',
+                  padding: '10px 60px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.3s ease',
+                  position: 'absolute',
+                  bottom: '20px',
+                  right: '20px',
+                  alignSelf: 'flex-end', // Align the button to the bottom right
+                  marginBottom: '10px',
+                }}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </DndProvider>
+
 
       {/* Toast Container for Notifications */}
       <ToastContainer />
