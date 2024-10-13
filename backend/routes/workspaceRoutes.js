@@ -9,6 +9,12 @@ import {
   addMember,
   removeMember,
   listWorkspaces,
+  addListToWorkspace,
+  addTaskToList,
+  updateListInWorkspace,
+  deleteListFromWorkspace,
+  updateTaskInList,
+  deleteTaskFromList,
 } from '../controller/workspaceController.js';
 import { ValidateJWT } from '../controller/authMiddleware.js';
 import workspaceUpload from '../middleware/workspaceUpload.js';
@@ -92,5 +98,35 @@ router.post('/:id/members', addMember);
 // @desc    Remove member from workspace
 // @access  Private (Only Admins)
 router.delete('/:id/members/:memberId', removeMember);
+
+// @route   POST /api/workspaces/:workspaceId/lists
+// @desc    Add a new list to a workspace
+// @access  Private
+router.post('/:workspaceId/lists', addListToWorkspace);
+
+// @route   POST /api/workspaces/:workspaceId/lists/:listId/tasks
+// @desc    Add a new task to a list within a workspace
+// @access  Private
+router.post('/:workspaceId/lists/:listId/tasks', addTaskToList);
+
+// @route   PUT /api/workspaces/:workspaceId/lists/:listId
+// @desc    Update a list within a workspace
+// @access  Private
+router.put('/:workspaceId/lists/:listId', updateListInWorkspace);
+
+// @route   DELETE /api/workspaces/:workspaceId/lists/:listId
+// @desc    Delete a list within a workspace
+// @access  Private
+router.delete('/:workspaceId/lists/:listId', deleteListFromWorkspace);
+
+// @route   PUT /api/workspaces/:workspaceId/lists/:listId/tasks/:taskId
+// @desc    Update a task within a list in a workspace
+// @access  Private
+router.put('/:workspaceId/lists/:listId/tasks/:taskId', updateTaskInList);
+
+// @route   DELETE /api/workspaces/:workspaceId/lists/:listId/tasks/:taskId
+// @desc    Delete a task within a list in a workspace
+// @access  Private
+router.delete('/:workspaceId/lists/:listId/tasks/:taskId', deleteTaskFromList);
 
 export default router;

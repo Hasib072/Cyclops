@@ -1,6 +1,77 @@
 // backend/models/workspaceModel.js
 
 import mongoose from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
+
+// Define the Task Subdocument Schema
+const taskSchema = new mongoose.Schema(
+  {
+    _id: {
+      type: String,
+      default: () => uuidv4(), // Generates a unique identifier
+    },
+    name: {
+      type: String,
+      required: [true, 'Task name is required'],
+      trim: true,
+      maxlength: [100, 'Task name cannot exceed 100 characters'],
+    },
+    description: {
+      type: String,
+      required: false,
+      trim: true,
+      maxlength: [500, 'Task description cannot exceed 500 characters'],
+    },
+    priority: {
+      type: String,
+      required: [true, 'Priority is required'],
+      enum: ['High', 'Moderate', 'Low'],
+      default: 'Low',
+    },
+    dueDate: {
+      type: Date,
+      required: [true, 'Due date is required'],
+    },
+    assignee: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User', // Assuming you have a User model
+      required: false, // Made optional
+    },
+    creationTime: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    _id: false, // Prevents automatic _id generation as we're using a custom _id
+  }
+);
+
+// Define the List Subdocument Schema
+const listSchema = new mongoose.Schema(
+  {
+    _id: {
+      type: String,
+      default: () => uuidv4(), // Generates a unique identifier
+    },
+    name: {
+      type: String,
+      required: [true, 'List name is required'],
+      trim: true,
+      maxlength: [100, 'List name cannot exceed 100 characters'],
+    },
+    description: {
+      type: String,
+      required: false,
+      trim: true,
+      maxlength: [500, 'List description cannot exceed 500 characters'],
+    },
+    tasks: [taskSchema], // Embedding Task subdocuments
+  },
+  {
+    _id: false, // Prevents automatic _id generation as we're using a custom _id
+  }
+);
 
 // Define the Stage Subdocument Schema
 const stageSchema = new mongoose.Schema(
@@ -8,7 +79,7 @@ const stageSchema = new mongoose.Schema(
     id: {
       type: String,
       required: [true, 'Stage ID is required'],
-      //unique: true, // Ensures each stage has a unique ID
+      unique: true,
     },
     name: {
       type: String,
@@ -32,17 +103,17 @@ const stageSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Stage category is required'],
       enum: {
-        values: ['Not Started', 'Active', 'Done', 'Pending'], // Extend as needed
+        values: ['Not Started', 'Active', 'Done', 'Pending'],
         message: '{VALUE} is not a valid category',
       },
     },
   },
   {
-    _id: false, // Prevents creation of an automatic _id for subdocuments
+    _id: false, // Prevents automatic _id generation for subdocuments
   }
 );
 
-// Define the Workspace Schema
+// Define the Workspace Schema with Embedded Lists and Tasks
 const workspaceSchema = new mongoose.Schema(
   {
     workspaceTitle: {
@@ -50,12 +121,10 @@ const workspaceSchema = new mongoose.Schema(
       required: [true, 'Workspace title is required'],
       trim: true,
       maxlength: [100, 'Workspace title cannot exceed 100 characters'],
-      // unique: true, // Removed to enforce uniqueness per user via compound index
     },
     coverImage: {
       type: String, // URL or file path to the cover image
       required: false, // Made optional
-      // trim: true,
     },
     workspaceDescription: {
       type: String,
@@ -76,7 +145,7 @@ const workspaceSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Workspace type is required'],
       enum: {
-        values: ['Starter', 'Kanban', 'Project', 'Scrum'], // Extend as needed
+        values: ['Starter', 'Kanban', 'Project', 'Scrum'],
         message: '{VALUE} is not a valid workspace type',
       },
     },
@@ -115,6 +184,7 @@ const workspaceSchema = new mongoose.Schema(
         message: 'Stage names must be unique within the workspace',
       },
     },
+    lists: [listSchema], // Embedding List subdocuments
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields

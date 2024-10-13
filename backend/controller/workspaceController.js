@@ -31,6 +31,7 @@ const createWorkspace = asyncHandler(async (req, res) => {
     selectedViews,
     invitePeople, // Expecting a JSON stringified array of emails
     stages, // Expecting a JSON stringified array of stage objects
+    lists, // Optional: JSON stringified array of lists with tasks
   } = req.body;
 
   // Validation: Required fields
@@ -70,18 +71,6 @@ const createWorkspace = asyncHandler(async (req, res) => {
     throw new Error('Selected views must be a non-empty array of strings');
   }
 
-  // Validate selectedViews against defaultViewsByType
-  // Ensure selectedViews is a non-empty array of strings
-  if (
-    !Array.isArray(parsedSelectedViews) ||
-    parsedSelectedViews.length === 0 ||
-    !parsedSelectedViews.every((view) => typeof view === 'string' && view.trim() !== '')
-  ) {
-    throw new Error('Selected views must be a non-empty array of non-empty strings');
-  }
-
-
-  
   // Parse invitePeople and validate emails
   let parsedInvitePeople = [];
   if (invitePeople) {
@@ -110,7 +99,6 @@ const createWorkspace = asyncHandler(async (req, res) => {
       throw new Error('Invite People must be a JSON array of valid email strings');
     }
   }
-
 
   // Parse stages and validate
   let parsedStages = [];
@@ -161,6 +149,55 @@ const createWorkspace = asyncHandler(async (req, res) => {
     throw new Error('Stages are required');
   }
 
+  // Parse lists and tasks (optional)
+  let parsedLists = [];
+  if (lists) {
+    try {
+      parsedLists = JSON.parse(lists);
+      if (!Array.isArray(parsedLists)) {
+        throw new Error();
+      }
+
+      // Validate each list
+      parsedLists.forEach((list, listIndex) => {
+        if (!list.name || typeof list.name !== 'string' || list.name.trim() === '') {
+          throw new Error(`List at index ${listIndex} must have a valid name`);
+        }
+        if (list.description && typeof list.description !== 'string') {
+          throw new Error(`List "${list.name}" has an invalid description`);
+        }
+
+        // Validate tasks within each list
+        if (list.tasks) {
+          if (!Array.isArray(list.tasks)) {
+            throw new Error(`Tasks in list "${list.name}" must be an array`);
+          }
+
+          list.tasks.forEach((task, taskIndex) => {
+            if (!task.name || typeof task.name !== 'string' || task.name.trim() === '') {
+              throw new Error(`Task at index ${taskIndex} in list "${list.name}" must have a valid name`);
+            }
+            if (task.priority && !['High', 'Moderate', 'Low'].includes(task.priority)) {
+              throw new Error(`Task "${task.name}" in list "${list.name}" has an invalid priority`);
+            }
+            if (!task.dueDate || isNaN(Date.parse(task.dueDate))) {
+              throw new Error(`Task "${task.name}" in list "${list.name}" must have a valid due date`);
+            }
+            // Assign a unique ID if not present
+            if (!task._id) {
+              task._id = uuidv4();
+            }
+          });
+        } else {
+          list.tasks = []; // Initialize with empty tasks array if not provided
+        }
+      });
+    } catch (error) {
+      res.status(400);
+      throw new Error(error.message || 'Lists must be a valid JSON array of list objects with tasks');
+    }
+  }
+
   // Check for duplicate workspace title per user
   const workspaceExists = await Workspace.findOne({
     workspaceTitle: workspaceTitle.trim(),
@@ -182,7 +219,7 @@ const createWorkspace = asyncHandler(async (req, res) => {
     // generateWorkspaceImage should return the relative path to the generated image
   }
 
-  // Create the workspace
+  // Create the workspace with embedded lists and tasks
   const workspace = await Workspace.create({
     workspaceTitle: workspaceTitle.trim(),
     coverImage: coverImagePath,
@@ -192,6 +229,7 @@ const createWorkspace = asyncHandler(async (req, res) => {
     selectedViews: parsedSelectedViews,
     invitePeople: parsedInvitePeople,
     stages: parsedStages,
+    lists: parsedLists, // Embedding lists with tasks
   });
 
   if (workspace) {
@@ -217,11 +255,303 @@ const createWorkspace = asyncHandler(async (req, res) => {
       selectedViews: workspace.selectedViews,
       invitePeople: workspace.invitePeople,
       stages: workspace.stages,
+      lists: workspace.lists,
     });
   } else {
     res.status(400);
     throw new Error('Invalid workspace data');
   }
+});
+
+// @desc    Add a new list to a workspace
+// @route   POST /api/workspaces/:workspaceId/lists
+// @access  Private
+const addListToWorkspace = asyncHandler(async (req, res) => {
+  const { workspaceId } = req.params;
+  const { name, description } = req.body;
+
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    res.status(400);
+    throw new Error('List name is required and must be a non-empty string');
+  }
+
+  // Find the workspace
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  // Check for duplicate list name
+  const duplicate = workspace.lists.find(
+    (list) => list.name.toLowerCase() === name.trim().toLowerCase()
+  );
+  if (duplicate) {
+    res.status(400);
+    throw new Error('List with this name already exists in the workspace');
+  }
+
+  // Create the new list
+  const newList = {
+    _id: uuidv4(),
+    name: name.trim(),
+    description: description ? description.trim() : '',
+    tasks: [],
+  };
+
+  // Add the list to the workspace
+  workspace.lists.push(newList);
+  await workspace.save();
+
+  res.status(201).json(newList);
+});
+
+// @desc    Add a new task to a list within a workspace
+// @route   POST /api/workspaces/:workspaceId/lists/:listId/tasks
+// @access  Private
+const addTaskToList = asyncHandler(async (req, res) => {
+  const { workspaceId, listId } = req.params;
+  const { name, description, priority, dueDate, assignee } = req.body;
+
+  // Validate input
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    res.status(400);
+    throw new Error('Task name is required and must be a non-empty string');
+  }
+
+  if (!priority || !['High', 'Moderate', 'Low'].includes(priority)) {
+    res.status(400);
+    throw new Error('Priority must be one of High, Moderate, Low');
+  }
+
+  if (!dueDate || isNaN(Date.parse(dueDate))) {
+    res.status(400);
+    throw new Error('Valid due date is required');
+  }
+
+  // Find the workspace
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  // Find the list
+  const list = workspace.lists.id(listId);
+  if (!list) {
+    res.status(404);
+    throw new Error('List not found in the workspace');
+  }
+
+  // Create the new task
+  const newTask = {
+    _id: uuidv4(),
+    name: name.trim(),
+    description: description ? description.trim() : '',
+    priority,
+    dueDate: new Date(dueDate),
+    assignee: assignee || null, // Assuming assignee is a valid User ID
+    creationTime: Date.now(),
+  };
+
+  // Add the task to the list
+  list.tasks.push(newTask);
+  await workspace.save();
+
+  res.status(201).json(newTask);
+});
+
+// @desc    Update a list within a workspace
+// @route   PUT /api/workspaces/:workspaceId/lists/:listId
+// @access  Private
+const updateListInWorkspace = asyncHandler(async (req, res) => {
+  const { workspaceId, listId } = req.params;
+  const { name, description } = req.body;
+
+  // Find the workspace
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  // Find the list
+  const list = workspace.lists.id(listId);
+  if (!list) {
+    res.status(404);
+    throw new Error('List not found in the workspace');
+  }
+
+  // Update fields if provided
+  if (name) {
+    if (typeof name !== 'string' || name.trim() === '') {
+      res.status(400);
+      throw new Error('List name must be a non-empty string');
+    }
+    // Check for duplicate list name
+    const duplicate = workspace.lists.find(
+      (l) => l.name.toLowerCase() === name.trim().toLowerCase() && l._id !== listId
+    );
+    if (duplicate) {
+      res.status(400);
+      throw new Error('Another list with this name already exists in the workspace');
+    }
+    list.name = name.trim();
+  }
+
+  if (description) {
+    if (typeof description !== 'string') {
+      res.status(400);
+      throw new Error('List description must be a string');
+    }
+    list.description = description.trim();
+  }
+
+  await workspace.save();
+
+  res.json(list);
+});
+
+// @desc    Delete a list within a workspace
+// @route   DELETE /api/workspaces/:workspaceId/lists/:listId
+// @access  Private
+const deleteListFromWorkspace = asyncHandler(async (req, res) => {
+  const { workspaceId, listId } = req.params;
+
+  // Find the workspace
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  // Find the list
+  const list = workspace.lists.id(listId);
+  if (!list) {
+    res.status(404);
+    throw new Error('List not found in the workspace');
+  }
+
+  // Remove the list
+  list.remove();
+  await workspace.save();
+
+  res.json({ message: 'List deleted successfully' });
+});
+
+// @desc    Update a task within a list in a workspace
+// @route   PUT /api/workspaces/:workspaceId/lists/:listId/tasks/:taskId
+// @access  Private
+const updateTaskInList = asyncHandler(async (req, res) => {
+  const { workspaceId, listId, taskId } = req.params;
+  const { name, description, priority, dueDate, assignee, stageId } = req.body;
+
+  // Find the workspace
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  // Find the list
+  const list = workspace.lists.id(listId);
+  if (!list) {
+    res.status(404);
+    throw new Error('List not found in the workspace');
+  }
+
+  // Find the task
+  const task = list.tasks.id(taskId);
+  if (!task) {
+    res.status(404);
+    throw new Error('Task not found in the list');
+  }
+
+  // Update fields if provided
+  if (name) {
+    if (typeof name !== 'string' || name.trim() === '') {
+      res.status(400);
+      throw new Error('Task name must be a non-empty string');
+    }
+    task.name = name.trim();
+  }
+
+  if (description) {
+    if (typeof description !== 'string') {
+      res.status(400);
+      throw new Error('Task description must be a string');
+    }
+    task.description = description.trim();
+  }
+
+  if (priority) {
+    if (!['High', 'Moderate', 'Low'].includes(priority)) {
+      res.status(400);
+      throw new Error('Priority must be one of High, Moderate, Low');
+    }
+    task.priority = priority;
+  }
+
+  if (dueDate) {
+    if (isNaN(Date.parse(dueDate))) {
+      res.status(400);
+      throw new Error('Valid due date is required');
+    }
+    task.dueDate = new Date(dueDate);
+  }
+
+  if (assignee !== undefined) {
+    task.assignee = assignee; // Can be null or a valid User ID
+  }
+
+  if (stageId) {
+    // Optionally, validate stageId against existing stages
+    const stageExists = workspace.stages.some((stage) => stage.id === stageId);
+    if (!stageExists) {
+      res.status(400);
+      throw new Error('Invalid stage ID');
+    }
+    task.stageId = stageId;
+  }
+
+  await workspace.save();
+
+  res.json(task);
+});
+
+
+// @desc    Delete a task within a list in a workspace
+// @route   DELETE /api/workspaces/:workspaceId/lists/:listId/tasks/:taskId
+// @access  Private
+const deleteTaskFromList = asyncHandler(async (req, res) => {
+  const { workspaceId, listId, taskId } = req.params;
+
+  // Find the workspace
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  // Find the list
+  const list = workspace.lists.id(listId);
+  if (!list) {
+    res.status(404);
+    throw new Error('List not found in the workspace');
+  }
+
+  // Find the task
+  const task = list.tasks.id(taskId);
+  if (!task) {
+    res.status(404);
+    throw new Error('Task not found in the list');
+  }
+
+  // Remove the task
+  task.remove();
+  await workspace.save();
+
+  res.json({ message: 'Task deleted successfully' });
 });
 
 // @desc    Get workspace by ID
@@ -677,4 +1007,10 @@ export {
   addMember,
   removeMember,
   listWorkspaces,
+  addListToWorkspace,
+  addTaskToList,
+  updateListInWorkspace,
+  deleteListFromWorkspace,
+  updateTaskInList,
+  deleteTaskFromList,
 };
