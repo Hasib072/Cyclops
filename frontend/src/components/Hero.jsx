@@ -12,6 +12,7 @@ import Category from './Category';
 import EditableText from './EditableText'; // Adjust the path as necessary
 import { defaultStages } from '../constants/defaultStages'; // Import default stages
 import { defaultStagesByType } from '../constants/defaultStagesByType'; // Import default stages by type
+import { v4 as uuidv4 } from 'uuid';
 
 // Import SVG icons as React components
 import ListsIcon from '../assets/icons/Lists.svg';
@@ -289,7 +290,7 @@ const Hero = () => {
         formData.append('coverImage', workspaceFormStep1.coverImage);
       }
       formData.append('workspaceDescription', workspaceFormStep1.workspaceDescription);
-      inviteEmails.forEach((email) => formData.append('invitePeople', email));
+      formData.append('invitePeople', JSON.stringify(inviteEmails)); // Send as JSON string
       formData.append('selectedViews', JSON.stringify(selectedViews)); // Add selected views
       formData.append('stages', JSON.stringify(preparedStages));
   
@@ -449,7 +450,7 @@ const Hero = () => {
     }
 
     // Log the stages for debugging
-    console.log('Defined Stages:', stages);
+    //console.log('Defined Stages:', stages);
 
     // Close the Todo Stages Modal
     setIsTodoStagesModalOpen(false);
