@@ -1,0 +1,155 @@
+/* frontend/src/components/TodoListView.css */
+
+.todo-list-view {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .list-container {
+    display: flex;
+    background-color: #2b2b2b; /* Background color of the list */
+    border-radius: 8px;
+    overflow: hidden;
+    width: 300px; /* Adjust width as needed */
+    flex-direction: column;
+  }
+  
+  .listsidebar {
+    width: 10px; /* Adjust width for the sidebar */
+    background-color: #9fa2ff; /* Default sidebar color */
+  }
+  
+  .list-content {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  
+  .list-header {
+    margin-bottom: 10px;
+  }
+  
+  .list-header h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+  
+  .stages-container {
+    flex: 1;
+  }
+  
+  .stage-section {
+    margin-bottom: 15px;
+  }
+  
+  .stage-header {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .toggle-arrow {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+    margin-right: 5px;
+  }
+  
+  .toggle-arrow.open {
+    transform: rotate(0deg);
+  }
+  
+  .toggle-arrow.closed {
+    transform: rotate(-90deg);
+  }
+  
+  .tasks-container {
+    margin-left: 25px;
+    margin-top: 5px;
+  }
+  
+  .task-item {
+    background-color: #3a3a3a;
+    padding: 8px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .task-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .task-priority {
+    font-weight: bold;
+    margin-bottom: 3px;
+  }
+  
+  .task-priority.high {
+    color: #fb8282;
+  }
+  
+  .task-priority.moderate {
+    color: #f7bb61;
+  }
+  
+  .task-priority.low {
+    color: #8dde90;
+  }
+  
+  .task-title {
+    color: #fff;
+  }
+  
+  .task-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .task-due-date {
+    font-size: 12px;
+    color: #ccc;
+  }
+  
+  .task-assignees img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+  }
+  
+  .add-task-button {
+    background-color: transparent;
+    border: none;
+    color: #9fa2ff;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .add-task-button:hover {
+    background-color: rgba(159, 162, 255, 0.2);
+  }
+  
+  .add-new-list-button {
+    background-color: #9fa2ff;
+    border: none;
+    color: #2b2b2b;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .add-new-list-button:hover {
+    background-color: #7f81d0;
+  }
+  
