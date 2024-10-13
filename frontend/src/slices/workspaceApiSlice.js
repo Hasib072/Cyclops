@@ -2,6 +2,7 @@
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+// Define the workspace API slice
 export const workspaceApi = createApi({
   reducerPath: 'workspaceApi',
   baseQuery: fetchBaseQuery({
@@ -18,10 +19,10 @@ export const workspaceApi = createApi({
   endpoints: (builder) => ({
     // Workspace Endpoints
     createWorkspace: builder.mutation({
-      query: (workspaceData) => ({
+      query: (formData) => ({
         url: '/workspaces',
         method: 'POST',
-        body: workspaceData,
+        body: formData,
       }),
       invalidatesTags: [{ type: 'Workspace', id: 'LIST' }],
     }),
@@ -29,6 +30,8 @@ export const workspaceApi = createApi({
       query: (workspaceId) => `/workspaces/${workspaceId}`,
       providesTags: (result, error, workspaceId) => [{ type: 'Workspace', id: workspaceId }],
     }),
+
+    // List Endpoints
     addListToWorkspace: builder.mutation({
       query: ({ workspaceId, name, description }) => ({
         url: `/workspaces/${workspaceId}/lists`,
@@ -62,11 +65,11 @@ export const workspaceApi = createApi({
       }),
       invalidatesTags: (result, error, { workspaceId }) => [{ type: 'Workspace', id: workspaceId }],
     }),
-    updateTaskInList: builder.mutation({
-      query: ({ workspaceId, listId, taskId, taskData }) => ({
+    editTaskInList: builder.mutation({
+      query: ({ workspaceId, listId, taskId, updatedTask }) => ({
         url: `/workspaces/${workspaceId}/lists/${listId}/tasks/${taskId}`,
         method: 'PUT',
-        body: taskData,
+        body: updatedTask,
       }),
       invalidatesTags: (result, error, { workspaceId }) => [{ type: 'Workspace', id: workspaceId }],
     }),
@@ -80,18 +83,14 @@ export const workspaceApi = createApi({
   }),
 });
 
+// Export hooks for usage in functional components
 export const {
-  // Workspace Hooks
   useCreateWorkspaceMutation,
   useGetWorkspaceByIdQuery,
-
-  // List Hooks
   useAddListToWorkspaceMutation,
   useUpdateListInWorkspaceMutation,
   useDeleteListFromWorkspaceMutation,
-
-  // Task Hooks
   useAddTaskToListMutation,
-  useUpdateTaskInListMutation,
+  useEditTaskInListMutation,
   useDeleteTaskFromListMutation,
 } = workspaceApi;

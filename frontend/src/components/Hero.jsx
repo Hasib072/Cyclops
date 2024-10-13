@@ -261,7 +261,6 @@ const Hero = () => {
   const handleFinalSubmit = async () => {
     if (!workspaceType) {
       toast.error('Please select a workspace type!', {
-        //position: toast.POSITION.TOP_RIGHT,
         autoClose: 5000,
       });
       return;
@@ -269,18 +268,40 @@ const Hero = () => {
   
     try {
       // Prepare invitePeople as an array of emails (split by commas)
-    const inviteEmails = workspaceFormStep1.invitePeople
-    .split(',')
-    .map((email) => email.trim())
-    .filter((email) => email);
-
-  // Prepare stages as an array of objects
-  const preparedStages = stages.map((stage) => ({
-    id: stage.id,
-    name: stage.name,
-    color: stage.color,
-    category: stage.category,
-  }));
+      const inviteEmails = workspaceFormStep1.invitePeople
+        .split(',')
+        .map((email) => email.trim())
+        .filter((email) => email);
+  
+      // Prepare stages as an array of objects
+      const preparedStages = stages.map((stage) => ({
+        id: stage.id,
+        name: stage.name,
+        color: stage.color,
+        category: stage.category,
+      }));
+  
+      // Prepare lists with optional initial tasks
+      const defaultLists = [
+        {
+          _id: uuidv4(),
+          name: 'To Do',
+          description: 'Tasks to be done',
+          tasks: [], // Initialize with empty tasks or include predefined tasks
+        },
+        {
+          _id: uuidv4(),
+          name: 'In Progress',
+          description: 'Tasks currently in progress',
+          tasks: [],
+        },
+        {
+          _id: uuidv4(),
+          name: 'Done',
+          description: 'Completed tasks',
+          tasks: [],
+        },
+      ];
   
       // Create FormData
       const formData = new FormData();
@@ -293,6 +314,7 @@ const Hero = () => {
       formData.append('invitePeople', JSON.stringify(inviteEmails)); // Send as JSON string
       formData.append('selectedViews', JSON.stringify(selectedViews)); // Add selected views
       formData.append('stages', JSON.stringify(preparedStages));
+      formData.append('lists', JSON.stringify(defaultLists)); // Include embedded lists
   
       // Send the form data via RTK Query mutation
       await createWorkspace(formData).unwrap();
@@ -305,6 +327,7 @@ const Hero = () => {
       console.log('Workspace Type:', workspaceType);
       console.log('Selected Views:', selectedViews);
       console.log('Stages:', preparedStages);
+      console.log('Lists:', defaultLists);
   
       // Reset forms and close modals
       setWorkspaceFormStep1({
@@ -323,13 +346,11 @@ const Hero = () => {
   
       // Show success notification
       toast.success('Workspace created successfully!', {
-        //position: toast.POSITION.TOP_RIGHT,
         autoClose: 5000,
       });
     } catch (err) {
       console.error('Failed to create workspace:', err);
       toast.error(err.data?.message || 'Failed to create workspace', {
-        //position: toast.POSITION.TOP_RIGHT,
         autoClose: 5000,
       });
     }

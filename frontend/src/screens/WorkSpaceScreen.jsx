@@ -11,7 +11,7 @@ import TodoListView from '../components/TodoListView'; // Import the TodoListVie
 import {
   useGetProfileQuery,
   useGetWorkspaceByIdQuery,
-} from '../slices/usersApiSlice';
+} from '../slices/usersApiSlice'; // Update to workspaceApiSlice
 
 // Import SVG Icons
 import ListsIcon from '../assets/icons/Lists.svg';
@@ -77,6 +77,7 @@ const WorkSpaceScreen = () => {
     data: workspace,
     isLoading: isWorkspaceLoading,
     error: workspaceError,
+    refetch: refetchWorkspace,
   } = useGetWorkspaceByIdQuery(workspaceId, {
     skip: !workspaceId, // Skip the query if workspaceId is not present
   });
@@ -321,7 +322,7 @@ const WorkSpaceScreen = () => {
             <div style={styles.lineBelow}></div>
 
             {/* Render TodoListView Component and pass necessary props */}
-            <TodoListView stages={workspace.stages} lists={workspace.lists} />
+            <TodoListView stages={workspace.stages || []} lists={workspace.lists || []} workspaceId={workspace._id} />
           </div>
         ) : (
           <p>No workspace data available.</p>
