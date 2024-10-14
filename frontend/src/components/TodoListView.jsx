@@ -10,6 +10,7 @@ import {
 } from '../slices/workspaceApiSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-toastify';
+import { SketchPicker } from 'react-color';
 
 const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   // Sort stages based on predefined order
@@ -45,6 +46,13 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
 
   // State for local list colors
   const [listColors, setListColors] = useState({}); // Key: listId, Value: color
+
+  // State for color picker
+  const [colorPicker, setColorPicker] = useState({
+    isOpen: false,
+    listId: null,
+    position: { x: 0, y: 0 },
+  });
 
   // Handler to toggle stage visibility
   const toggleStage = (listId, stageId) => {
@@ -168,32 +176,73 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
     }
   };
 
-  // Handler for local color change
-  const handleLocalColorChange = (listId, newColor) => {
+  // Handler to show color picker
+  const handleShowColorPicker = (e, listId) => {
+    e.stopPropagation(); // Prevent event bubbling
+
+    // Get mouse position
+    const posX = e.clientX;
+    const posY = e.clientY;
+
+    setColorPicker({
+      isOpen: true,
+      listId,
+      position: { x: posX, y: posY },
+    });
+  };
+
+  // Handler to hide color picker
+  const handleHideColorPicker = async () => {
+    const { listId } = colorPicker;
+    const newColor = listColors[listId];
+  
+    if (newColor) {
+      try {
+        await updateListColor({
+          workspaceId,
+          listId,
+          color: newColor,
+        }).unwrap();
+  
+        toast.success('List color updated successfully!');
+      } catch (error) {
+        console.error('Failed to update list color:', error);
+        toast.error(error.data?.message || 'Failed to update list color');
+      }
+    }
+  
+    // Hide the color picker
+    setColorPicker({
+      isOpen: false,
+      listId: null,
+      position: { x: 0, y: 0 },
+    });
+  };
+
+  // Handler for color change
+  const handleColorChange = (color) => {
+    const { listId } = colorPicker;
+    const newColor = color.hex;
+
+    // Update local color
     setListColors((prevColors) => ({
       ...prevColors,
       [listId]: newColor,
     }));
   };
 
-  // Handler for changing list color onBlur
-  const handleChangeListColor = async (listId) => {
-    const newColor = listColors[listId];
-    if (!newColor) return; // No new color to update
-
-    try {
-      await updateListColor({
-        workspaceId,
-        listId,
-        color: newColor,
-      }).unwrap();
-
-      toast.success('List color updated successfully!');
-    } catch (error) {
-      console.error('Failed to update list color:', error);
-      toast.error(error.data?.message || 'Failed to update list color');
-    }
-    // Do not remove the color from local state here
+  // Handler for color change complete (when user selects a color)
+  const handleColorChangeComplete = (color) => {
+    const { listId } = colorPicker;
+    const newColor = color.hex;
+  
+    // Update local color
+    setListColors((prevColors) => ({
+      ...prevColors,
+      [listId]: newColor,
+    }));
+  
+    // We no longer hide the color picker here
   };
 
   // useEffect to clean up local colors when backend update is reflected
@@ -211,7 +260,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   }, [lists, listColors]);
 
   return (
-    <div className="todo-list-view">
+    <div className="todo-list-view" onClick={handleHideColorPicker}>
 
       {/* Render all lists */}
       {lists.map((list) => (
@@ -219,25 +268,12 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
           {/* List Sidebar */}
           <div
             className="list-sidebar"
-            style={{ backgroundColor: listColors[list._id] || list.color || '#9fa2ff', position: 'relative' }}
-          >
-            <input
-              type="color"
-              value={listColors[list._id] || list.color}
-              onChange={(e) => handleLocalColorChange(list._id, e.target.value)}
-              onBlur={() => handleChangeListColor(list._id)}
-              style={{
-                position: 'absolute',
-                top: '0',
-                left: '0',
-                width: '100%',
-                height: '100%',
-                opacity: '0',
-                cursor: 'pointer',
-              }}
-              title="Select List Color"
-            />
-          </div>
+            style={{
+              backgroundColor: listColors[list._id] || list.color || '#9fa2ff',
+              position: 'relative',
+            }}
+            onClick={(e) => handleShowColorPicker(e, list._id)}
+          ></div>
 
           {/* Task List Content */}
           <div className="task-list-content">
@@ -258,12 +294,13 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
                 {/* Stage Header */}
                 <div
                   className="svg-button-wrapper"
-                  onClick={() => toggleStage(list._id, stage.id)}
+                  // onClick={() => toggleStage(list._id, stage.id)}
                 >
                   {/* Toggle Arrow */}
                   <svg
                     width="27"
                     height="27"
+                    onClick={() => toggleStage(list._id, stage.id)}
                     viewBox="0 0 27 27"
                     fill="none"
                     className={`toggle-arrow ${
@@ -279,6 +316,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
                   </svg>
                   <div
                     className="task-status-header"
+                    onClick={() => toggleStage(list._id, stage.id)}
                     style={{ backgroundColor: stage.color }}
                   >
                     {stage.name.toUpperCase()}
@@ -353,6 +391,28 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
           </div>
         </div>
       ))}
+
+      {/* Color Picker */}
+      {colorPicker.isOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: colorPicker.position.y,
+            left: colorPicker.position.x,
+            zIndex: 1000,
+          }}
+          onClick={(e) => e.stopPropagation()} // Prevent click inside color picker from closing it
+        >
+          <SketchPicker
+            color={
+              listColors[colorPicker.listId] ||
+              lists.find((list) => list._id === colorPicker.listId)?.color ||
+              '#9fa2ff'
+            }
+            onChange={handleColorChange}
+          />
+        </div>
+      )}
 
       {/* Task Modal */}
       {isModalOpen && (

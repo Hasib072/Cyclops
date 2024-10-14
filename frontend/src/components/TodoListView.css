@@ -81,8 +81,8 @@
   display: flex;
   align-items: center;
   margin-bottom: 8px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
+  /* transition: transform 0.3s ease, box-shadow 0.3s ease; */
+  /* cursor: pointer; */
 }
 
 .svg-button-wrapper svg {
@@ -121,6 +121,7 @@
   align-items: center;
   color: #fff;
   /* width: 120px; */
+  cursor: pointer;
   transition: background 0.3s;
 }
 
@@ -204,11 +205,13 @@
 svg.rotate-closed {
   transform: rotate(0deg);
   transition: transform 0.3s ease;
+  cursor: pointer;
 }
 
 svg.rotate-open {
   transform: rotate(-90deg);
   transition: transform 0.3s ease;
+  cursor: pointer;
 }
 
 /* Task Heading */
