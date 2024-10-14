@@ -1,22 +1,9 @@
 // frontend/src/slices/workspaceApiSlice.js
 
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { apiSlice } from './apiSlice';
 
-// Define the workspace API slice
-export const workspaceApi = apiSlice.injectEndpoints({
-  reducerPath: 'workspaceApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api',
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token; // Assuming you have an auth slice
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
-  tagTypes: ['Workspace', 'List', 'Task'],
+// Inject workspace endpoints into the existing apiSlice
+export const workspaceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Workspace Endpoints
     createWorkspace: builder.mutation({
@@ -29,7 +16,7 @@ export const workspaceApi = apiSlice.injectEndpoints({
     }),
     getWorkspaceById: builder.query({
       query: (workspaceId) => `/workspaces/${workspaceId}`,
-      providesTags: (result, error, workspaceId) => [{ type: 'Workspace', id: workspaceId }],
+      providesTags: (result, error, arg) => [{ type: 'Workspace', id: arg }],
     }),
 
     // List Endpoints
@@ -39,7 +26,7 @@ export const workspaceApi = apiSlice.injectEndpoints({
         method: 'POST',
         body: { name, description },
       }),
-      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'Workspace', id: workspaceId }],
+      invalidatesTags: (result, error, arg) => [{ type: 'Workspace', id: arg.workspaceId }],
     }),
     updateListInWorkspace: builder.mutation({
       query: ({ workspaceId, listId, name, description }) => ({
@@ -47,14 +34,22 @@ export const workspaceApi = apiSlice.injectEndpoints({
         method: 'PUT',
         body: { name, description },
       }),
-      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'Workspace', id: workspaceId }],
+      invalidatesTags: (result, error, arg) => [{ type: 'Workspace', id: arg.workspaceId }],
     }),
     deleteListFromWorkspace: builder.mutation({
       query: ({ workspaceId, listId }) => ({
         url: `/workspaces/${workspaceId}/lists/${listId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'Workspace', id: workspaceId }],
+      invalidatesTags: (result, error, arg) => [{ type: 'Workspace', id: arg.workspaceId }],
+    }),
+    updateListColor: builder.mutation({
+      query: ({ workspaceId, listId, color }) => ({
+        url: `/workspaces/${workspaceId}/lists/${listId}/color`,
+        method: 'PUT',
+        body: { color },
+      }),
+      invalidatesTags: (result, error, arg) => [{ type: 'Workspace', id: arg.workspaceId }],
     }),
 
     // Task Endpoints
@@ -64,7 +59,7 @@ export const workspaceApi = apiSlice.injectEndpoints({
         method: 'POST',
         body: taskData,
       }),
-      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'Workspace', id: workspaceId }],
+      invalidatesTags: (result, error, arg) => [{ type: 'Workspace', id: arg.workspaceId }],
     }),
     editTaskInList: builder.mutation({
       query: ({ workspaceId, listId, taskId, updatedTask }) => ({
@@ -72,16 +67,17 @@ export const workspaceApi = apiSlice.injectEndpoints({
         method: 'PUT',
         body: updatedTask,
       }),
-      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'Workspace', id: workspaceId }],
+      invalidatesTags: (result, error, arg) => [{ type: 'Workspace', id: arg.workspaceId }],
     }),
     deleteTaskFromList: builder.mutation({
       query: ({ workspaceId, listId, taskId }) => ({
         url: `/workspaces/${workspaceId}/lists/${listId}/tasks/${taskId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'Workspace', id: workspaceId }],
+      invalidatesTags: (result, error, arg) => [{ type: 'Workspace', id: arg.workspaceId }],
     }),
   }),
+  overrideExisting: false,
 });
 
 // Export hooks for usage in functional components
@@ -94,4 +90,5 @@ export const {
   useAddTaskToListMutation,
   useEditTaskInListMutation,
   useDeleteTaskFromListMutation,
-} = workspaceApi;
+  useUpdateListColorMutation,
+} = workspaceApiSlice;

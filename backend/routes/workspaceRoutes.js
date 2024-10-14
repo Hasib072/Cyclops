@@ -15,6 +15,7 @@ import {
   deleteListFromWorkspace,
   updateTaskInList,
   deleteTaskFromList,
+  updateListColor,
 } from '../controller/workspaceController.js';
 import { ValidateJWT } from '../controller/authMiddleware.js';
 import workspaceUpload from '../middleware/workspaceUpload.js';
@@ -113,6 +114,11 @@ router.post('/:workspaceId/lists/:listId/tasks', addTaskToList);
 // @desc    Update a list within a workspace
 // @access  Private
 router.put('/:workspaceId/lists/:listId', updateListInWorkspace);
+
+// @route   PUT /api/workspaces/:workspaceId/lists/:listId.color
+// @desc    Update a list color within a workspace
+// @access  Private
+router.put('/:workspaceId/lists/:listId/color', updateListColor);
 
 // @route   DELETE /api/workspaces/:workspaceId/lists/:listId
 // @desc    Delete a list within a workspace

@@ -268,7 +268,7 @@ const createWorkspace = asyncHandler(async (req, res) => {
 // @access  Private
 const addListToWorkspace = asyncHandler(async (req, res) => {
   const { workspaceId } = req.params;
-  const { name, description } = req.body;
+  const { name, description, color } = req.body;
 
   if (!name || typeof name !== 'string' || name.trim() === '') {
     res.status(400);
@@ -296,6 +296,7 @@ const addListToWorkspace = asyncHandler(async (req, res) => {
     _id: uuidv4(),
     name: name.trim(),
     description: description ? description.trim() : '',
+    color: color || '#9fa2ff', // Use provided color or default
     tasks: [],
   };
 
@@ -306,59 +307,105 @@ const addListToWorkspace = asyncHandler(async (req, res) => {
   res.status(201).json(newList);
 });
 
-// @desc    Add a new task to a list within a workspace
-// @route   POST /api/workspaces/:workspaceId/lists/:listId/tasks
-// @access  Private
-const addTaskToList = asyncHandler(async (req, res) => {
+const updateListColor = asyncHandler(async (req, res) => {
   const { workspaceId, listId } = req.params;
-  const { name, description, priority, dueDate, assignee } = req.body;
+  const { color } = req.body;
 
-  // Validate input
-  if (!name || typeof name !== 'string' || name.trim() === '') {
-    res.status(400);
-    throw new Error('Task name is required and must be a non-empty string');
-  }
-
-  if (!priority || !['High', 'Moderate', 'Low'].includes(priority)) {
-    res.status(400);
-    throw new Error('Priority must be one of High, Moderate, Low');
-  }
-
-  if (!dueDate || isNaN(Date.parse(dueDate))) {
-    res.status(400);
-    throw new Error('Valid due date is required');
-  }
-
-  // Find the workspace
   const workspace = await Workspace.findById(workspaceId);
   if (!workspace) {
     res.status(404);
     throw new Error('Workspace not found');
   }
 
-  // Find the list
   const list = workspace.lists.id(listId);
   if (!list) {
     res.status(404);
-    throw new Error('List not found in the workspace');
+    throw new Error('List not found');
   }
 
-  // Create the new task
+  list.color = color || list.color;
+
+  await workspace.save();
+
+  res.status(200).json(list);
+});
+
+// @desc    Add a new task to a list within a workspace
+// @route   POST /api/workspaces/:workspaceId/lists/:listId/tasks
+// @access  Private
+const addTaskToList = asyncHandler(async (req, res) => {
+  const { workspaceId, listId } = req.params;
+  const { name, description, priority, dueDate, assignee, stageId } = req.body;
+
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  const list = workspace.lists.id(listId);
+  if (!list) {
+    res.status(404);
+    throw new Error('List not found');
+  }
+
+  // Validate that the stage exists
+  const stageExists = workspace.stages.some((stage) => stage.id === stageId);
+  if (!stageExists) {
+    res.status(400);
+    throw new Error('Invalid stage ID');
+  }
+
   const newTask = {
     _id: uuidv4(),
-    name: name.trim(),
-    description: description ? description.trim() : '',
+    name,
+    description,
     priority,
-    dueDate: new Date(dueDate),
-    assignee: assignee || null, // Assuming assignee is a valid User ID
-    creationTime: Date.now(),
+    dueDate,
+    assignee,
+    stageId,
   };
 
-  // Add the task to the list
   list.tasks.push(newTask);
   await workspace.save();
 
   res.status(201).json(newTask);
+});
+
+
+const editTaskInList = asyncHandler(async (req, res) => {
+  const { workspaceId, listId, taskId } = req.params;
+  const { name, description, priority, dueDate, assignee, stageId } = req.body;
+
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  const list = workspace.lists.id(listId);
+  if (!list) {
+    res.status(404);
+    throw new Error('List not found');
+  }
+
+  const task = list.tasks.id(taskId);
+  if (!task) {
+    res.status(404);
+    throw new Error('Task not found');
+  }
+
+  // Update task fields
+  task.name = name || task.name;
+  task.description = description || task.description;
+  task.priority = priority || task.priority;
+  task.dueDate = dueDate || task.dueDate;
+  task.assignee = assignee || task.assignee;
+  task.stageId = stageId || task.stageId;
+
+  await workspace.save();
+
+  res.status(200).json(task);
 });
 
 // @desc    Update a list within a workspace
@@ -568,24 +615,16 @@ const getWorkspaceById = asyncHandler(async (req, res) => {
       .populate('members.user', 'name email')
       .lean();
 
-    res.json({
-      _id: workspace._id,
-      workspaceTitle: workspace.workspaceTitle,
-      coverImage: workspace.coverImage,
-      workspaceDescription: workspace.workspaceDescription,
-      createdBy: workspace.createdBy,
-      creationDateTime: workspace.creationDateTime,
-      workspaceType: workspace.workspaceType,
-      selectedViews: workspace.selectedViews,
-      invitePeople: workspace.invitePeople,
-      stages: workspace.stages,
-      members: workspaceMembers ? workspaceMembers.members : [],
-    });
+    // Add the members to the workspace object
+    workspace.members = workspaceMembers ? workspaceMembers.members : [];
+
+    res.json(workspace);
   } else {
     res.status(404);
     throw new Error('Workspace not found');
   }
 });
+
 
 // @desc    Update workspace
 // @route   PUT /api/workspaces/:id
@@ -1009,8 +1048,10 @@ export {
   listWorkspaces,
   addListToWorkspace,
   addTaskToList,
+  editTaskInList,
   updateListInWorkspace,
   deleteListFromWorkspace,
   updateTaskInList,
   deleteTaskFromList,
+  updateListColor,
 };

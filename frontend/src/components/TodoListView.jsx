@@ -1,21 +1,19 @@
-// frontend/src/components/TodoListView.jsx
-
 import React, { useState, useEffect } from 'react';
-import './TodoListView.css'; // Import the CSS for styling
-import arrowDropDown from '../assets/icons/arrow_drop_down.svg'; // Import the down arrow icon
-import TaskModal from './TaskModal'; // Corrected import path
+import './TodoListView.css';
+import TaskModal from './TaskModal';
 import {
   useAddListToWorkspaceMutation,
   useAddTaskToListMutation,
   useEditTaskInListMutation,
   useDeleteTaskFromListMutation,
-} from '../slices/workspaceApiSlice'; // Ensure workspaceApiSlice is correctly set up
+  useUpdateListColorMutation,
+} from '../slices/workspaceApiSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-toastify';
 
 const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   // Sort stages based on predefined order
-  const stageOrder = ['Not Started', 'Active', 'Done', 'Pending'];
+  const stageOrder = ['Pending', 'Active', 'Done'];
   const sortedStages = [...stages].sort(
     (a, b) => stageOrder.indexOf(a.category) - stageOrder.indexOf(b.category)
   );
@@ -26,7 +24,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
     lists.forEach((list) => {
       initialState[list._id] = {};
       sortedStages.forEach((stage) => {
-        initialState[list._id][stage._id] = true; // Ensure consistent ID naming
+        initialState[list._id][stage.id] = true;
       });
     });
     return initialState;
@@ -37,12 +35,16 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   const [addTaskMutation] = useAddTaskToListMutation();
   const [editTaskMutation] = useEditTaskInListMutation();
   const [deleteTaskMutation] = useDeleteTaskFromListMutation();
+  const [updateListColor] = useUpdateListColorMutation();
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
   const [currentListId, setCurrentListId] = useState(null);
   const [currentStageId, setCurrentStageId] = useState(null);
+
+  // State for local list colors
+  const [listColors, setListColors] = useState({}); // Key: listId, Value: color
 
   // Handler to toggle stage visibility
   const toggleStage = (listId, stageId) => {
@@ -59,15 +61,15 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   const handleAddTask = (listId, stageId) => {
     setCurrentListId(listId);
     setCurrentStageId(stageId);
-    setModalData(null); // No initial data for new task
+    setModalData(null);
     setIsModalOpen(true);
   };
 
   // Handler to edit a task
   const handleEditTask = (listId, task) => {
     setCurrentListId(listId);
-    setCurrentStageId(task.stageId); // Ensure 'stageId' exists in task
-    setModalData(task); // Pass existing task data
+    setCurrentStageId(task.stageId);
+    setModalData(task);
     setIsModalOpen(true);
   };
 
@@ -76,11 +78,14 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
     if (modalData) {
       // Editing existing task
       try {
-        const updatedTask = await editTaskMutation({
+        await editTaskMutation({
           workspaceId,
           listId: currentListId,
           taskId: modalData._id,
-          updatedTask: taskData,
+          updatedTask: {
+            ...taskData,
+            stageId: currentStageId,
+          },
         }).unwrap();
 
         toast.success('Task updated successfully!');
@@ -91,13 +96,13 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
     } else {
       // Adding new task
       try {
-        const newTask = await addTaskMutation({
+        await addTaskMutation({
           workspaceId,
           listId: currentListId,
           taskData: {
             ...taskData,
             stageId: currentStageId,
-            _id: uuidv4(), // Assign unique ID if not handled by backend
+            _id: uuidv4(),
           },
         }).unwrap();
 
@@ -108,6 +113,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
       }
     }
 
+    // Reset modal state
     setIsModalOpen(false);
     setModalData(null);
     setCurrentListId(null);
@@ -150,7 +156,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
           ...prevState,
           [newList._id]: {
             ...prevState[newList._id],
-            [stage._id]: true,
+            [stage.id]: true,
           },
         }));
       });
@@ -162,110 +168,191 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
     }
   };
 
+  // Handler for local color change
+  const handleLocalColorChange = (listId, newColor) => {
+    setListColors((prevColors) => ({
+      ...prevColors,
+      [listId]: newColor,
+    }));
+  };
+
+  // Handler for changing list color onBlur
+  const handleChangeListColor = async (listId) => {
+    const newColor = listColors[listId];
+    if (!newColor) return; // No new color to update
+
+    try {
+      await updateListColor({
+        workspaceId,
+        listId,
+        color: newColor,
+      }).unwrap();
+
+      toast.success('List color updated successfully!');
+    } catch (error) {
+      console.error('Failed to update list color:', error);
+      toast.error(error.data?.message || 'Failed to update list color');
+    }
+    // Do not remove the color from local state here
+  };
+
+  // useEffect to clean up local colors when backend update is reflected
+  useEffect(() => {
+    lists.forEach((list) => {
+      const localColor = listColors[list._id];
+      if (localColor && list.color === localColor) {
+        setListColors((prevColors) => {
+          const updatedColors = { ...prevColors };
+          delete updatedColors[list._id];
+          return updatedColors;
+        });
+      }
+    });
+  }, [lists, listColors]);
+
   return (
     <div className="todo-list-view">
-      {/* Add New List Button */}
-      <div className="add-list-container">
-        <button className="add-list-button" onClick={handleAddList}>
-          + Add New List
-        </button>
-      </div>
 
       {/* Render all lists */}
-      <div className="lists-container">
-        {lists.map((list) => (
-          <div key={list._id} className="list-container">
+      {lists.map((list) => (
+        <div key={list._id} className="task-list-wrapper">
+          {/* List Sidebar */}
+          <div
+            className="list-sidebar"
+            style={{ backgroundColor: listColors[list._id] || list.color || '#9fa2ff', position: 'relative' }}
+          >
+            <input
+              type="color"
+              value={listColors[list._id] || list.color}
+              onChange={(e) => handleLocalColorChange(list._id, e.target.value)}
+              onBlur={() => handleChangeListColor(list._id)}
+              style={{
+                position: 'absolute',
+                top: '0',
+                left: '0',
+                width: '100%',
+                height: '100%',
+                opacity: '0',
+                cursor: 'pointer',
+              }}
+              title="Select List Color"
+            />
+          </div>
+
+          {/* Task List Content */}
+          <div className="task-list-content">
             {/* List Header */}
-            <div className="list-header">
-              <h2>{list.name}</h2>
+            <div className="task-list-header">
+              <h2>
+                {list.name}
+                <span className="icons">
+                  {/* Icons can be added here */}
+                </span>
+              </h2>
             </div>
+            <p>{list.description}</p>
 
             {/* Stages */}
-            <div className="stages-container">
-              {sortedStages.map((stage) => (
-                <div key={stage._id} className="stage-section">
-                  {/* Stage Header */}
-                  <div
-                    className="stage-header"
-                    onClick={() => toggleStage(list._id, stage._id)}
-                    style={{
-                      backgroundColor: stage.color,
-                      color: '#fff', // Ensures text is readable on colored background
-                    }}
+            {sortedStages.map((stage) => (
+              <div key={stage.id}>
+                {/* Stage Header */}
+                <div
+                  className="svg-button-wrapper"
+                  onClick={() => toggleStage(list._id, stage.id)}
+                >
+                  {/* Toggle Arrow */}
+                  <svg
+                    width="27"
+                    height="27"
+                    viewBox="0 0 27 27"
+                    fill="none"
+                    className={`toggle-arrow ${
+                      openStages[list._id][stage.id] ? 'rotate-open' : 'rotate-closed'
+                    }`}
                   >
-                    <img
-                      src={arrowDropDown}
-                      alt="Toggle Arrow"
-                      className={`toggle-arrow ${
-                        openStages[list._id][stage._id] ? 'open' : 'closed'
-                      }`}
-                    />
-                    <span>{stage.name}</span>
+                    <g clipPath="url(#clip0_202_634)">
+                      <path
+                        d="M9.79887 13.1738L12.7126 16.0875C13.1514 16.5263 13.8601 16.5263 14.2989 16.0875L17.2126 13.1738C17.9214 12.465 17.4151 11.25 16.4139 11.25H10.5864C9.58512 11.25 9.09012 12.465 9.79887 13.1738Z"
+                        fill="#A5A5A5"
+                      />
+                    </g>
+                  </svg>
+                  <div
+                    className="task-status-header"
+                    style={{ backgroundColor: stage.color }}
+                  >
+                    {stage.name.toUpperCase()}
                   </div>
 
-                  {/* Tasks under the stage */}
-                  {openStages[list._id][stage._id] && (
-                    <div className="tasks-container">
-                      {/* Render tasks that belong to this stage */}
-                      {list.tasks
-                        .filter((task) => task.stageId === stage._id)
-                        .map((task) => (
-                          <div key={task._id} className="task-item">
-                            <div className="task-details">
-                              <span
-                                className={`task-priority ${task.priority.toLowerCase()}`}
-                              >
-                                {task.priority}
-                              </span>
-                              <span className="task-title">{task.name}</span>
-                            </div>
-                            <div className="task-info">
-                              <span className="task-due-date">
-                                Due: {new Date(task.dueDate).toLocaleDateString()}
-                              </span>
-                              {/* Assignees can be displayed here if available */}
-                              {/* <div className="task-assignees">
-                                {task.assignee && (
-                                  <img
-                                    src={task.assignee.avatar}
-                                    alt={task.assignee.name}
-                                    className="assignee-avatar"
-                                  />
-                                )}
-                              </div> */}
-                              {/* Edit Task Button */}
-                              <button
-                                className="edit-task-button"
-                                onClick={() => handleEditTask(list._id, task)}
-                              >
-                                &#9998;
-                              </button>
-                              {/* Delete Task Button */}
-                              <button
-                                className="delete-task-button"
-                                onClick={() => handleDeleteTask(list._id, task._id)}
-                              >
-                                &times;
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-
-                      {/* Add Task Button */}
-                      <button
-                        className="add-task-button"
-                        onClick={() => handleAddTask(list._id, stage._id)}
-                      >
-                        + Add Task
-                      </button>
-                    </div>
-                  )}
                 </div>
-              ))}
+
+                {/* Tasks under the stage */}
+                {openStages[list._id][stage.id] && (
+                  <>
+                    {/* Task Headings */}
+                    <div className="task_headingg">
+                      <div className="task-heading-1">Name</div>
+                      <div className="task-heading-2">Priority</div>
+                      <div className="task-heading-3">&nbsp;Due Date</div>
+                      <div className="task-heading-4">Assignee</div>
+                    </div>
+
+                    {/* Task Items */}
+                    <ul className="task-list" style={{ listStyle: 'none', padding: 0 }}>
+                      {list.tasks
+                        .filter((task) => task.stageId === stage.id)
+                        .map((task) => (
+                          <li key={task._id} className="task-item">
+                            <div className="task-container">
+                              <div className="task-info">
+                                {/* Task Indicator */}
+                                <svg
+                                  width="12"
+                                  height="12"
+                                  viewBox="0 0 12 12"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <circle cx="6" cy="6" r="6" fill={stage.color} />
+                                </svg>
+                                <div className="task-name">{task.name}</div>
+                              </div>
+                            </div>
+                            <div
+                              className={`task-priority ${task.priority.toLowerCase()}-priority`}
+                            >
+                              {task.priority.toUpperCase()}
+                            </div>
+                            <div className="task-due-date">
+                              {new Date(task.dueDate).toLocaleDateString()}
+                            </div>
+                            <div className="task-assignee">
+                              {/* Assignee information */}
+                              <div className="avatar-group">
+                                <img
+                                  src="https://via.placeholder.com/30"
+                                  alt="Assignee"
+                                />
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            ))}
+
+            {/* Add Task Button */}
+            <div
+              className="add-task"
+              onClick={() => handleAddTask(list._id, sortedStages[0].id)}
+            >
+              + Add Task
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
 
       {/* Task Modal */}
       {isModalOpen && (
@@ -276,6 +363,11 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
           initialData={modalData}
         />
       )}
+
+      {/* Add New List Button */}
+      <div className="add-new-list" onClick={handleAddList}>
+        + Add New List
+      </div>
     </div>
   );
 };

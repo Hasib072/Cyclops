@@ -89,6 +89,7 @@ const WorkSpaceScreen = () => {
     if (workspace) {
       console.log('Workspace Details:', workspace);
       console.log('Selected Views:', workspace.selectedViews);
+      console.log('Lists:', workspace.lists);
     } else {
       console.log('Workspace Details: Not Found');
     }
@@ -327,11 +328,14 @@ const WorkSpaceScreen = () => {
 
             {/* Render components based on active menu item */}
             {activeMenuItem === 'Lists' && (
+              <>
+              {console.log('Lists passed to TodoListView:', workspace.lists, 'workspaceid:',workspace._id)}
               <TodoListView
                 stages={workspace.stages || []}
                 lists={workspace.lists || []}
                 workspaceId={workspace._id}
-              />
+                />
+              </>
             )}
 
             {/* Placeholder for other menu items */}

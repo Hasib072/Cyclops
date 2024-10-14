@@ -285,21 +285,9 @@ const Hero = () => {
       const defaultLists = [
         {
           _id: uuidv4(),
-          name: 'To Do',
-          description: 'Tasks to be done',
+          name: 'My list 01',
+          description: 'Add Decription here',
           tasks: [], // Initialize with empty tasks or include predefined tasks
-        },
-        {
-          _id: uuidv4(),
-          name: 'In Progress',
-          description: 'Tasks currently in progress',
-          tasks: [],
-        },
-        {
-          _id: uuidv4(),
-          name: 'Done',
-          description: 'Completed tasks',
-          tasks: [],
         },
       ];
   

@@ -18,7 +18,6 @@ const taskSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: false,
       trim: true,
       maxlength: [500, 'Task description cannot exceed 500 characters'],
     },
@@ -35,11 +34,14 @@ const taskSchema = new mongoose.Schema(
     assignee: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User', // Assuming you have a User model
-      required: false, // Made optional
     },
     creationTime: {
       type: Date,
       default: Date.now,
+    },
+    stageId: {
+      type: String,
+      required: [true, 'Stage ID is required'],
     },
   },
   {
@@ -62,9 +64,21 @@ const listSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: false,
       trim: true,
       maxlength: [500, 'List description cannot exceed 500 characters'],
+    },
+    color: {
+      type: String,
+      required: true,
+      default: '#9fa2ff', // Default color value
+      trim: true,
+      validate: {
+        validator: function (v) {
+          // Validates HEX color codes
+          return /^#([0-9A-F]{3}){1,2}$/i.test(v);
+        },
+        message: (props) => `${props.value} is not a valid HEX color code!`,
+      },
     },
     tasks: [taskSchema], // Embedding Task subdocuments
   },
