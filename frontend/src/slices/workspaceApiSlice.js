@@ -1,9 +1,10 @@
 // frontend/src/slices/workspaceApiSlice.js
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { apiSlice } from './apiSlice';
 
 // Define the workspace API slice
-export const workspaceApi = createApi({
+export const workspaceApi = apiSlice.injectEndpoints({
   reducerPath: 'workspaceApi',
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api',

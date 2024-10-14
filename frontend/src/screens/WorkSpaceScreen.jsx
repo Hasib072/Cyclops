@@ -10,8 +10,10 @@ import TodoListView from '../components/TodoListView'; // Import the TodoListVie
 // RTK Query Hooks
 import {
   useGetProfileQuery,
+} from '../slices/usersApiSlice'; // Import only useGetProfileQuery from usersApiSlice
+import {
   useGetWorkspaceByIdQuery,
-} from '../slices/usersApiSlice'; // Update to workspaceApiSlice
+} from '../slices/workspaceApiSlice'; // Corrected to import useGetWorkspaceByIdQuery from workspaceApiSlice
 
 // Import SVG Icons
 import ListsIcon from '../assets/icons/Lists.svg';
@@ -93,7 +95,7 @@ const WorkSpaceScreen = () => {
   }, [workspace]);
 
   // State to manage active menu item
-  const [activeMenuItem, setActiveMenuItem] = useState('Dashboard');
+  const [activeMenuItem, setActiveMenuItem] = useState('Lists');
 
   // State to manage visibility of toggle-container and line-below
   const [isToggleVisible, setIsToggleVisible] = useState(false);
@@ -212,13 +214,15 @@ const WorkSpaceScreen = () => {
 
   // Generate additional menu items from selectedViews, excluding defaults
   const additionalMenuItems = workspace?.selectedViews
-    .filter(
-      (view) => !defaultStartMenuItems.some((defaultItem) => defaultItem.label === view)
-    )
-    .map((view) => ({
-      label: view,
-      icon: iconMap[view] || ListsIcon, // Default to ListsIcon if no match found
-    })) || [];
+    ? workspace.selectedViews
+        .filter(
+          (view) => !defaultStartMenuItems.some((defaultItem) => defaultItem.label === view)
+        )
+        .map((view) => ({
+          label: view,
+          icon: iconMap[view] || ListsIcon, // Default to ListsIcon if no match found
+        }))
+    : [];
 
   // Combine default and additional menu items
   const dynamicMenuItems = [...defaultStartMenuItems, ...additionalMenuItems, ...defaultEndMenuItems];
@@ -321,8 +325,19 @@ const WorkSpaceScreen = () => {
             {/* Line Below */}
             <div style={styles.lineBelow}></div>
 
-            {/* Render TodoListView Component and pass necessary props */}
-            <TodoListView stages={workspace.stages || []} lists={workspace.lists || []} workspaceId={workspace._id} />
+            {/* Render components based on active menu item */}
+            {activeMenuItem === 'Lists' && (
+              <TodoListView
+                stages={workspace.stages || []}
+                lists={workspace.lists || []}
+                workspaceId={workspace._id}
+              />
+            )}
+
+            {/* Placeholder for other menu items */}
+            {activeMenuItem !== 'Lists' && (
+              <p>Content for {activeMenuItem} will go here.</p>
+            )}
           </div>
         ) : (
           <p>No workspace data available.</p>
