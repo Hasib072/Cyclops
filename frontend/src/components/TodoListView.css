@@ -287,3 +287,80 @@ svg.rotate-open {
   background-color: rgba(255, 255, 255, 0.1);
   border: 2px dashed #fff;
 }
+
+
+/* Delete Zones */
+.delete-zone {
+  position: fixed;
+  top: 0;
+  width: 100px;
+  height: 100%;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.delete-zone.left {
+  left: 0;
+}
+
+.delete-zone.right {
+  right: 0;
+}
+
+.delete-zone.active {
+  background-color: rgba(255, 0, 0, 0.2);
+  color: red;
+}
+
+.delete-zone.active span {
+  color: red;
+  font-weight: bold;
+}
+
+/* Dragging State */
+.task-list-wrapper.dragging {
+  opacity: 0.5;
+}
+
+/* List Name Input */
+.list-name-input {
+  display: flex;
+  margin-bottom: 0px;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  background: transparent;
+  color: white;
+  border: none;
+  
+}
+
+.list-name-input:focus {
+  outline: none;
+  border: none;
+  border: none;
+  border-bottom: 1px solid #fff;
+ 
+}
+
+/* Task List Header */
+.task-list-header h2 {
+  cursor: pointer;
+}
+
+
+/* Delete Zone Text */
+.delete-zone span {
+  font-size: 1em;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.delete-zone.active span {
+  opacity: 1;
+}

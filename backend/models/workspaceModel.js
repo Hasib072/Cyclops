@@ -83,7 +83,7 @@ const listSchema = new mongoose.Schema(
     tasks: [taskSchema], // Embedding Task subdocuments
   },
   {
-    _id: false, // Prevents automatic _id generation as we're using a custom _id
+    // _id: false, // Remove this line
   }
 );
 

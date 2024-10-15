@@ -472,15 +472,15 @@ const deleteListFromWorkspace = asyncHandler(async (req, res) => {
     throw new Error('Workspace not found');
   }
 
-  // Find the list
-  const list = workspace.lists.id(listId);
-  if (!list) {
+  // Check if the list exists in the workspace
+  const listExists = workspace.lists.some((list) => list._id === listId);
+  if (!listExists) {
     res.status(404);
     throw new Error('List not found in the workspace');
   }
 
-  // Remove the list
-  list.remove();
+  // Remove the list using pull
+  workspace.lists.pull({ _id: listId });
   await workspace.save();
 
   res.json({ message: 'List deleted successfully' });

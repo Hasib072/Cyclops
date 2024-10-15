@@ -1,3 +1,5 @@
+// frontend/src/components/TodoListView.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import './TodoListView.css';
 import TaskModal from './TaskModal';
@@ -6,16 +8,19 @@ import {
   useAddTaskToListMutation,
   useEditTaskInListMutation,
   useDeleteTaskFromListMutation,
+  useDeleteListFromWorkspaceMutation, // Newly added
   useUpdateListColorMutation,
+  useReorderListsMutation, // For reordering lists
+  useUpdateListInWorkspaceMutation, // For editing list names
 } from '../slices/workspaceApiSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-toastify';
 import { SketchPicker } from 'react-color';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useDrag, useDrop } from 'react-dnd';
 
 const ItemTypes = {
   TASK: 'task',
+  LIST: 'list', // New ItemType for lists
 };
 
 const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
@@ -55,7 +60,10 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   const [addTaskMutation] = useAddTaskToListMutation();
   const [editTaskMutation] = useEditTaskInListMutation();
   const [deleteTaskMutation] = useDeleteTaskFromListMutation();
+  const [deleteListFromWorkspaceMutation] = useDeleteListFromWorkspaceMutation(); // Newly added
   const [updateListColor] = useUpdateListColorMutation();
+  const [reorderListsMutation] = useReorderListsMutation(); // For reordering lists
+  const [updateListInWorkspace] = useUpdateListInWorkspaceMutation(); // For editing list names
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -73,6 +81,18 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
 
   // Ref for the color picker
   const colorPickerRef = useRef(null);
+
+  // State for editing list names
+  const [editingListId, setEditingListId] = useState(null);
+  const [editedListName, setEditedListName] = useState('');
+
+  // Introduce local lists state for optimistic UI updates
+  const [localLists, setLocalLists] = useState(lists);
+
+  // Update local state when lists prop changes
+  useEffect(() => {
+    setLocalLists(lists);
+  }, [lists]);
 
   // Handler to toggle stage visibility
   const toggleStage = (listId, stageId) => {
@@ -313,139 +333,261 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
     };
   }, [colorPicker.isOpen, colorPicker.listId, colorPicker.tempColor]);
 
-  // Introduce local lists state for optimistic UI updates
-  const [localLists, setLocalLists] = useState(lists);
+  // Drag and Drop Handlers for Lists
+  const moveList = (dragIndex, hoverIndex) => {
+    const draggedList = localLists[dragIndex];
+    const updatedLists = [...localLists];
+    updatedLists.splice(dragIndex, 1);
+    updatedLists.splice(hoverIndex, 0, draggedList);
+    setLocalLists(updatedLists);
 
-  // Update local state when lists prop changes
-  useEffect(() => {
-    setLocalLists(lists);
-  }, [lists]);
-
-  // Drag and Drop Handlers
-  const moveTask = async (task, sourceListId, targetListId, targetStageId) => {
-    // Optimistically update local state
-    setLocalLists((prevLists) => {
-      const updatedSourceList = { ...prevLists.find((list) => list._id === sourceListId) };
-      updatedSourceList.tasks = updatedSourceList.tasks.filter((t) => t._id !== task._id);
-
-      const updatedTargetList = { ...prevLists.find((list) => list._id === targetListId) };
-      updatedTargetList.tasks = [
-        ...updatedTargetList.tasks,
-        { ...task, stageId: targetStageId },
-      ];
-
-      return prevLists.map((list) => {
-        if (list._id === sourceListId) return updatedSourceList;
-        if (list._id === targetListId) return updatedTargetList;
-        return list;
+    // Persist the new order to the backend
+    const newOrder = updatedLists.map((list) => list._id);
+    reorderListsMutation({ workspaceId, newOrder })
+      .unwrap()
+      .then(() => {
+        toast.success('List order updated successfully!');
+      })
+      .catch((error) => {
+        console.error('Failed to reorder lists:', error);
+        toast.error(error.data?.message || 'Failed to reorder lists');
+        setLocalLists(lists); // Revert to original order on failure
       });
-    });
+  };
 
-    // Update openStages based on the new localLists
-    setOpenStages((prevState) => {
-      const updatedState = { ...prevState };
+  // Handler to start editing a list name
+  const handleStartEditing = (listId, currentName) => {
+    setEditingListId(listId);
+    setEditedListName(currentName);
+  };
 
-      // Remove task from source stage
-      const sourceList = localLists.find((list) => list._id === sourceListId);
-      const sourceTasks = sourceList.tasks.filter((t) => t.stageId === task.stageId);
-      if (sourceTasks.length === 0) {
-        updatedState[sourceListId][task.stageId] = false; // Collapse if no tasks
-      }
-
-      // Add task to target stage
-      updatedState[targetListId][targetStageId] = true; // Ensure target stage is open
-
-      return updatedState;
-    });
+  // Handler to submit edited list name
+  const handleSubmitEdit = async (listId) => {
+    if (!editedListName.trim()) {
+      toast.error('List name cannot be empty.');
+      return;
+    }
 
     try {
-      if (sourceListId === targetListId) {
-        // Moving within the same list
-        await editTaskMutation({
-          workspaceId,
-          listId: sourceListId,
-          taskId: task._id,
-          updatedTask: {
-            ...task,
-            stageId: targetStageId,
-          },
-        }).unwrap();
-      } else {
-        // Moving to a different list
-        await deleteTaskMutation({ workspaceId, listId: sourceListId, taskId: task._id }).unwrap();
-        await addTaskMutation({
-          workspaceId,
-          listId: targetListId,
-          taskData: {
-            ...task,
-            stageId: targetStageId,
-          },
-        }).unwrap();
-      }
-      toast.success('Task moved successfully!');
+      await updateListInWorkspace({
+        workspaceId,
+        listId,
+        name: editedListName.trim(),
+        description: '', // Update as needed; assuming description remains unchanged
+      }).unwrap();
+
+      toast.success('List name updated successfully!');
+
+      // Update localLists with the new name
+      setLocalLists((prevLists) =>
+        prevLists.map((list) =>
+          list._id === listId ? { ...list, name: editedListName.trim() } : list
+        )
+      );
+
+      setEditingListId(null);
+      setEditedListName('');
     } catch (error) {
-      console.error('Failed to move task:', error);
-      toast.error('Failed to move task');
-      // Revert local state changes
-      setLocalLists(lists);
-      // Recompute openStages based on reverted lists
-      setOpenStages(() => {
-        const recomputedState = {};
-        lists.forEach((list) => {
-          recomputedState[list._id] = {};
-          sortedStages.forEach((stage) => {
-            const tasksInStage = list.tasks.filter((task) => task.stageId === stage.id);
-            recomputedState[list._id][stage.id] = tasksInStage.length > 0;
-          });
-        });
-        return recomputedState;
-      });
+      console.error('Failed to edit list name:', error);
+      toast.error(error.data?.message || 'Failed to edit list name');
     }
   };
 
-  const Task = ({ task, listId }) => {
+  // Handler to cancel editing
+  const handleCancelEdit = () => {
+    setEditingListId(null);
+    setEditedListName('');
+  };
+
+  // Handlers for List Deletion via Dragging
+  const [{ isOverLeft }, dropLeft] = useDrop({
+    accept: ItemTypes.LIST,
+    drop: (item) => handleDeleteList(item.listId),
+    collect: (monitor) => ({
+      isOverLeft: monitor.isOver() && monitor.canDrop(),
+    }),
+  });
+
+  const [{ isOverRight }, dropRight] = useDrop({
+    accept: ItemTypes.LIST,
+    drop: (item) => handleDeleteList(item.listId),
+    collect: (monitor) => ({
+      isOverRight: monitor.isOver() && monitor.canDrop(),
+    }),
+  });
+
+  const handleDeleteList = (listId) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this list?');
+    if (!confirmDelete) return;
+
+    // Proceed to delete the list
+    deleteList(listId);
+  };
+
+  const deleteList = async (listId) => {
+    try {
+      await deleteListFromWorkspaceMutation({ workspaceId, listId }).unwrap(); // Correct mutation
+      toast.success('List deleted successfully!');
+
+      // Update localLists by removing the deleted list
+      setLocalLists((prevLists) => prevLists.filter((list) => list._id !== listId));
+
+      // Remove from openStages and collapsedLists
+      setOpenStages((prevState) => {
+        const updatedState = { ...prevState };
+        delete updatedState[listId];
+        return updatedState;
+      });
+      setCollapsedLists((prevState) => {
+        const updatedState = { ...prevState };
+        delete updatedState[listId];
+        return updatedState;
+      });
+    } catch (error) {
+      console.error('Failed to delete list:', error);
+      toast.error(error.data?.message || 'Failed to delete list');
+    }
+  };
+
+  // Define the List component inside TodoListView
+  const List = ({ list, index }) => {
+    const ref = useRef(null);
+
+    const [, drop] = useDrop({
+      accept: ItemTypes.LIST,
+      hover(item, monitor) {
+        if (!ref.current) {
+          return;
+        }
+        const dragIndex = item.index;
+        const hoverIndex = index;
+
+        if (dragIndex === hoverIndex) {
+          return;
+        }
+
+        // Determine rectangle on screen
+        const hoverBoundingRect = ref.current.getBoundingClientRect();
+
+        // Get horizontal middle
+        const hoverMiddleX = (hoverBoundingRect.right - hoverBoundingRect.left) / 2;
+
+        // Determine mouse position
+        const clientOffset = monitor.getClientOffset();
+
+        // Get pixels to the left
+        const hoverClientX = clientOffset.x - hoverBoundingRect.left;
+
+        // Only perform the move when the mouse has crossed half of the item's width
+        if (dragIndex < hoverIndex && hoverClientX < hoverMiddleX) {
+          return;
+        }
+        if (dragIndex > hoverIndex && hoverClientX > hoverMiddleX) {
+          return;
+        }
+
+        // Time to actually perform the action
+        moveList(dragIndex, hoverIndex);
+
+        // Mutate the monitor item to avoid redundant calls
+        item.index = hoverIndex;
+      },
+    });
+
     const [{ isDragging }, drag] = useDrag({
-      type: ItemTypes.TASK,
-      item: { task, listId },
+      type: ItemTypes.LIST,
+      item: { type: ItemTypes.LIST, listId: list._id, index },
       collect: (monitor) => ({
-        isDragging: !!monitor.isDragging(),
+        isDragging: monitor.isDragging(),
       }),
     });
 
+    drag(drop(ref));
+
     return (
-      <li
-        ref={drag}
-        className={`task-item ${isDragging ? 'dragging' : ''}`}
+      <div
+        ref={ref}
+        className={`task-list-wrapper ${isDragging ? 'dragging' : ''}`}
         style={{ opacity: isDragging ? 0.5 : 1 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleEditTask(listId, task);
-        }}
       >
-        <div className="task-container">
-          <div className="task-info">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="6" cy="6" r="6" fill={sortedStages.find((stage) => stage.id === task.stageId)?.color} />
-            </svg>
-            <div className="task-name">{task.name}</div>
+        {/* List Sidebar */}
+        <div
+          className="list-sidebar"
+          style={{
+            backgroundColor:
+              colorPicker.isOpen && colorPicker.listId === list._id
+                ? colorPicker.tempColor
+                : list.color || '#9fa2ff',
+            position: 'relative',
+            cursor: 'pointer',
+          }}
+          onClick={(e) => handleShowColorPicker(e, list._id)}
+        ></div>
+
+        {/* Task List Content */}
+        <div className="task-list-content">
+          {/* List Header */}
+          <div className="task-list-header">
+            {editingListId === list._id ? (
+              <input
+                type="text"
+                value={editedListName}
+                onChange={(e) => setEditedListName(e.target.value)}
+                onBlur={() => handleSubmitEdit(list._id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmitEdit(list._id);
+                  } else if (e.key === 'Escape') {
+                    handleCancelEdit();
+                  }
+                }}
+                autoFocus
+                className="list-name-input"
+              />
+            ) : (
+              <h2
+                onDoubleClick={() => handleStartEditing(list._id, list.name)}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleStartEditing(list._id, list.name);
+                  }
+                }}
+                aria-label={`Edit name of ${list.name}`}
+              >
+                {list.name}
+              </h2>
+            )}
           </div>
+          <p className="task-list-description">{list.description}</p>
+
+          {/* Stages */}
+          {!collapsedLists[list._id] &&
+            sortedStages.map((stage) => (
+              <Stage key={stage.id} stage={stage} listId={list._id} />
+            ))}
+
+          {/* Add Task Button */}
+          {!collapsedLists[list._id] && (
+            <div
+              className="add-task"
+              onClick={() => handleAddTask(list._id, sortedStages[0].id)}
+            >
+              + Add Task
+            </div>
+          )}
         </div>
-        <div className={`task-priority ${task.priority.toLowerCase()}-priority`}>{task.priority.toUpperCase()}</div>
-        <div className="task-due-date">{new Date(task.dueDate).toLocaleDateString()}</div>
-        <div className="task-assignee">
-          <div className="avatar-group">
-            <img src="https://via.placeholder.com/30" alt="Assignee" />
-          </div>
-        </div>
-      </li>
+      </div>
     );
+
   };
 
   const Stage = ({ stage, listId }) => {
     // Set up the drop functionality
     const [{ isOver, canDrop }, drop] = useDrop({
       accept: ItemTypes.TASK,
-      drop: ({ task, listId: sourceListId }) => moveTask(task, sourceListId, listId, stage.id),
+      drop: ({ task, listId: sourceListId }) =>
+        moveTask(task, sourceListId, listId, stage.id),
       collect: (monitor) => ({
         isOver: !!monitor.isOver(),
         canDrop: !!monitor.canDrop(),
@@ -457,12 +599,12 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
     const tasksInStage = list.tasks.filter((task) => task.stageId === stage.id);
 
     return (
-      <div ref={drop} className={`stage-wrapper ${isOver && canDrop ? 'drag-over' : ''}`}>
+      <div
+        ref={drop}
+        className={`stage-wrapper ${isOver && canDrop ? 'drag-over' : ''}`}
+      >
         {/* Stage Header with Conditional Task Count */}
-        <div
-          className="svg-button-wrapper"
-          onClick={() => toggleStage(listId, stage.id)}
-        >
+        <div className="svg-button-wrapper" onClick={() => toggleStage(listId, stage.id)}>
           {/* Toggle Arrow SVG */}
           <svg
             width="27"
@@ -508,10 +650,64 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
           </>
         )}
       </div>
-    )};
+    );
+  };
+
+  const Task = ({ task, listId }) => {
+    const [{ isDragging }, drag] = useDrag({
+      type: ItemTypes.TASK,
+      item: { task, listId },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    });
+
+    return (
+      <li
+        ref={drag}
+        className={`task-item ${isDragging ? 'dragging' : ''}`}
+        style={{ opacity: isDragging ? 0.5 : 1 }}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleEditTask(listId, task);
+        }}
+      >
+        <div className="task-container">
+          <div className="task-info">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="6" cy="6" r="6" fill={sortedStages.find((stage) => stage.id === task.stageId)?.color} />
+            </svg>
+            <div className="task-name">{task.name}</div>
+          </div>
+        </div>
+        <div className={`task-priority ${task.priority.toLowerCase()}-priority`}>{task.priority.toUpperCase()}</div>
+        <div className="task-due-date">{new Date(task.dueDate).toLocaleDateString()}</div>
+        <div className="task-assignee">
+          <div className="avatar-group">
+            <img src="https://via.placeholder.com/30" alt="Assignee" />
+          </div>
+        </div>
+      </li>
+    );
+  };
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <>
+      {/* Invisible Drop Zones for Deletion */}
+      {/* render it only if something is being dragged */}
+      {/* <div
+        ref={dropLeft}
+        className={`delete-zone left ${isOverLeft ? 'active' : ''}`}
+      >
+        <span>Drag here to delete</span>
+      </div> */}
+      <div
+        ref={dropRight}
+        className={`delete-zone right ${isOverRight ? 'active' : ''}`}
+      >
+        <span>Drag here to delete</span>
+      </div>
+
       <div className="todo-list-view">
         {/* Add New List Button */}
         <div className="add-new-list" onClick={handleAddList}>
@@ -519,46 +715,8 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
         </div>
 
         {/* Render all lists */}
-        {localLists.map((list) => (
-          <div key={list._id} className="task-list-wrapper">
-            {/* List Sidebar */}
-            <div
-              className="list-sidebar"
-              style={{
-                backgroundColor:
-                  colorPicker.isOpen && colorPicker.listId === list._id
-                    ? colorPicker.tempColor
-                    : list.color || '#9fa2ff',
-                position: 'relative',
-              }}
-              onClick={(e) => handleShowColorPicker(e, list._id)}
-            ></div>
-
-            {/* Task List Content */}
-            <div className="task-list-content">
-              {/* List Header */}
-              <div className="task-list-header"
-              onClick={() => toggleList(list._id)}
-              >
-                <h2>
-                  {list.name}
-                </h2>
-              </div>
-              <p className='task-list-description'>{list.description}</p>
-
-              {/* Stages */}
-              {!collapsedLists[list._id] && sortedStages.map((stage) => (
-                <Stage key={stage.id} stage={stage} listId={list._id} />
-              ))}
-
-              {/* Add Task Button */}
-              {!collapsedLists[list._id] && (
-                <div className="add-task" onClick={() => handleAddTask(list._id, sortedStages[0].id)}>
-                  + Add Task
-                </div>
-              )}
-            </div>
-          </div>
+        {localLists.map((list, index) => (
+          <List key={list._id} list={list} index={index} />
         ))}
 
         {/* Color Picker */}
@@ -596,7 +754,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
           />
         )}
       </div>
-    </DndProvider>
+    </>
   );
 };
 

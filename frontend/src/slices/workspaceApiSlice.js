@@ -52,6 +52,16 @@ export const workspaceApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: (result, error, arg) => [{ type: 'Workspace', id: arg.workspaceId }],
     }),
 
+    // Reorder Lists Endpoint
+    reorderLists: builder.mutation({
+      query: ({ workspaceId, newOrder }) => ({
+        url: `/workspaces/${workspaceId}/lists/reorder`,
+        method: 'PUT',
+        body: { newOrder }, // newOrder should be an array of list IDs in the desired order
+      }),
+      invalidatesTags: (result, error, arg) => [{ type: 'Workspace', id: arg.workspaceId }],
+    }),
+
     // Task Endpoints
     addTaskToList: builder.mutation({
       query: ({ workspaceId, listId, taskData }) => ({
@@ -87,8 +97,9 @@ export const {
   useAddListToWorkspaceMutation,
   useUpdateListInWorkspaceMutation,
   useDeleteListFromWorkspaceMutation,
+  useUpdateListColorMutation,
+  useReorderListsMutation, // Newly added hook
   useAddTaskToListMutation,
   useEditTaskInListMutation,
   useDeleteTaskFromListMutation,
-  useUpdateListColorMutation,
 } = workspaceApiSlice;

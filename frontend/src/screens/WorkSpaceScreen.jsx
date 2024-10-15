@@ -5,6 +5,8 @@ import Sidebar from '../components/Sidebar';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import Loader from '../components/Loader'; // Import the Loader component
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import TodoListView from '../components/TodoListView'; // Import the TodoListView component
 
 // RTK Query Hooks
@@ -330,11 +332,14 @@ const WorkSpaceScreen = () => {
             {activeMenuItem === 'Lists' && (
               <>
               {console.log('Lists passed to TodoListView:', workspace.lists, 'workspaceid:',workspace._id)}
+              <DndProvider backend={HTML5Backend}>
+
               <TodoListView
                 stages={workspace.stages || []}
                 lists={workspace.lists || []}
                 workspaceId={workspace._id}
                 />
+              </DndProvider>
               </>
             )}
 
