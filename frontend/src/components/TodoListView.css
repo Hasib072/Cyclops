@@ -62,6 +62,8 @@
   margin-bottom: 0px;
   justify-content: space-between;
   align-items: center;
+  font-size: 1.6rem;
+  font-weight: 600
 }
 
 .icons {
@@ -113,8 +115,8 @@
 /* Task Status Headers */
 .task-status-header {
   font-weight: bold;
-  margin-top: 16px;
-  padding: 8px 12px;
+  margin-top: 5px;
+  padding: 5px 12px;
   border-radius: 10px;
   display: flex;
   justify-content: center;
@@ -261,4 +263,13 @@ svg.rotate-open {
   height: 20px;
   margin-left: -6px;
   border: 2px solid #fff;
+}
+
+.task-item.dragging {
+  opacity: 0.5;
+}
+
+.stage-wrapper.drag-over {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px dashed #fff;
 }

@@ -595,8 +595,9 @@ const deleteTaskFromList = asyncHandler(async (req, res) => {
   }
 
   // Remove the task
-  task.remove();
+  list.tasks.pull(taskId);
   await workspace.save();
+
 
   res.json({ message: 'Task deleted successfully' });
 });
