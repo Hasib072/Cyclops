@@ -8,7 +8,7 @@ const taskSchema = new mongoose.Schema(
   {
     _id: {
       type: String,
-      default: () => uuidv4(), // Generates a unique identifier
+      default: uuidv4,
     },
     name: {
       type: String,
@@ -54,7 +54,7 @@ const listSchema = new mongoose.Schema(
   {
     _id: {
       type: String,
-      default: () => uuidv4(), // Generates a unique identifier
+      default: uuidv4,
     },
     name: {
       type: String,

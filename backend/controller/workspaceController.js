@@ -317,8 +317,7 @@ const updateListColor = asyncHandler(async (req, res) => {
     throw new Error('Workspace not found');
   }
 
-  const list = workspace.lists.id(listId);
-  if (!list) {
+  const list = workspace.lists.find((list) => list._id === listId);  if (!list) {
     res.status(404);
     throw new Error('List not found');
   }
@@ -343,8 +342,7 @@ const addTaskToList = asyncHandler(async (req, res) => {
     throw new Error('Workspace not found');
   }
 
-  const list = workspace.lists.id(listId);
-  if (!list) {
+  const list = workspace.lists.find((list) => list._id === listId);  if (!list) {
     res.status(404);
     throw new Error('List not found');
   }
@@ -383,8 +381,7 @@ const editTaskInList = asyncHandler(async (req, res) => {
     throw new Error('Workspace not found');
   }
 
-  const list = workspace.lists.id(listId);
-  if (!list) {
+  const list = workspace.lists.find((list) => list._id === listId);  if (!list) {
     res.status(404);
     throw new Error('List not found');
   }
@@ -423,11 +420,11 @@ const updateListInWorkspace = asyncHandler(async (req, res) => {
   }
 
   // Find the list
-  const list = workspace.lists.id(listId);
-  if (!list) {
+  const list = workspace.lists.find((list) => list._id === listId);  if (!list) {
     res.status(404);
     throw new Error('List not found in the workspace');
   }
+
 
   // Update fields if provided
   if (name) {
@@ -458,6 +455,62 @@ const updateListInWorkspace = asyncHandler(async (req, res) => {
 
   res.json(list);
 });
+
+// @desc    Reorder lists within a workspace
+// @route   PUT /api/workspaces/:workspaceId/lists/reorder
+// @access  Private
+const reorderLists = asyncHandler(async (req, res) => {
+  const { workspaceId } = req.params;
+  const { newOrder } = req.body; // Expecting an array of listIds in the desired order
+
+  console.log('Reorder Lists Request:', { workspaceId, newOrder });
+
+  // Validate newOrder
+  if (!Array.isArray(newOrder) || newOrder.length === 0) {
+    res.status(400);
+    throw new Error('newOrder must be a non-empty array of list IDs');
+  }
+
+  // Find the workspace
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  console.log('Workspace Lists:', workspace.lists.map(list => list._id));
+
+  // Extract existing list IDs from the workspace
+  const existingListIds = workspace.lists.map((list) => list._id);
+
+  // Check if newOrder contains all existing list IDs without duplicates
+  const allListsPresent =
+    newOrder.length === existingListIds.length &&
+    newOrder.every((id) => existingListIds.includes(id));
+  if (!allListsPresent) {
+    res.status(400);
+    throw new Error('newOrder must include all existing list IDs without duplicates');
+  }
+
+  // Reorder the workspace.lists array based on newOrder
+  const reorderedLists = newOrder.map((id) => {
+    const list = workspace.lists.find((list) => list._id === id);
+    if (!list) {
+      res.status(404);
+      throw new Error(`List with ID ${id} not found in the workspace`);
+    }
+    return list;
+  });
+
+  workspace.lists = reorderedLists;
+
+  await workspace.save();
+
+  console.log('Reordered Lists:', workspace.lists.map(list => list._id));
+
+  res.json({ message: 'Lists reordered successfully', lists: workspace.lists });
+});
+
 
 // @desc    Delete a list within a workspace
 // @route   DELETE /api/workspaces/:workspaceId/lists/:listId
@@ -501,8 +554,7 @@ const updateTaskInList = asyncHandler(async (req, res) => {
   }
 
   // Find the list
-  const list = workspace.lists.id(listId);
-  if (!list) {
+  const list = workspace.lists.find((list) => list._id === listId);  if (!list) {
     res.status(404);
     throw new Error('List not found in the workspace');
   }
@@ -581,8 +633,7 @@ const deleteTaskFromList = asyncHandler(async (req, res) => {
   }
 
   // Find the list
-  const list = workspace.lists.id(listId);
-  if (!list) {
+  const list = workspace.lists.find((list) => list._id === listId);  if (!list) {
     res.status(404);
     throw new Error('List not found in the workspace');
   }
@@ -1051,6 +1102,7 @@ export {
   addTaskToList,
   editTaskInList,
   updateListInWorkspace,
+  reorderLists,
   deleteListFromWorkspace,
   updateTaskInList,
   deleteTaskFromList,

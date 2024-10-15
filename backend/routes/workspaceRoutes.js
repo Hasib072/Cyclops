@@ -12,6 +12,7 @@ import {
   addListToWorkspace,
   addTaskToList,
   updateListInWorkspace,
+  reorderLists,
   deleteListFromWorkspace,
   updateTaskInList,
   deleteTaskFromList,
@@ -114,6 +115,11 @@ router.post('/:workspaceId/lists/:listId/tasks', addTaskToList);
 // @desc    Update a list within a workspace
 // @access  Private
 router.put('/:workspaceId/lists/:listId', updateListInWorkspace);
+
+// @desc    Reorder lists within a workspace
+// @route   PUT /api/workspaces/:workspaceId/lists/reorder
+// @access  Private
+router.put('/:workspaceId/lists/reorder', reorderLists);
 
 // @route   PUT /api/workspaces/:workspaceId/lists/:listId.color
 // @desc    Update a list color within a workspace

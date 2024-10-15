@@ -8,19 +8,20 @@ import {
   useAddTaskToListMutation,
   useEditTaskInListMutation,
   useDeleteTaskFromListMutation,
-  useDeleteListFromWorkspaceMutation, // Newly added
+  useDeleteListFromWorkspaceMutation,
   useUpdateListColorMutation,
-  useReorderListsMutation, // For reordering lists
-  useUpdateListInWorkspaceMutation, // For editing list names
+  useReorderListsMutation,
+  useUpdateListInWorkspaceMutation,
 } from '../slices/workspaceApiSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-toastify';
 import { SketchPicker } from 'react-color';
 import { useDrag, useDrop } from 'react-dnd';
+import mongoose from 'mongoose'; // Ensure mongoose is imported
 
 const ItemTypes = {
   TASK: 'task',
-  LIST: 'list', // New ItemType for lists
+  LIST: 'list',
 };
 
 const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
@@ -37,7 +38,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
       initialState[list._id] = {};
       sortedStages.forEach((stage) => {
         const tasksInStage = list.tasks.filter((task) => task.stageId === stage.id);
-        initialState[list._id][stage.id] = tasksInStage.length > 0; // Open if tasks exist
+        initialState[list._id][stage.id] = tasksInStage.length > 0;
       });
     });
     return initialState;
@@ -50,7 +51,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   useEffect(() => {
     const initialCollapsed = {};
     lists.forEach((list) => {
-      initialCollapsed[list._id] = false; // false means expanded
+      initialCollapsed[list._id] = false;
     });
     setCollapsedLists(initialCollapsed);
   }, [lists]);
@@ -60,10 +61,10 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   const [addTaskMutation] = useAddTaskToListMutation();
   const [editTaskMutation] = useEditTaskInListMutation();
   const [deleteTaskMutation] = useDeleteTaskFromListMutation();
-  const [deleteListFromWorkspaceMutation] = useDeleteListFromWorkspaceMutation(); // Newly added
+  const [deleteListFromWorkspaceMutation] = useDeleteListFromWorkspaceMutation();
   const [updateListColor] = useUpdateListColorMutation();
-  const [reorderListsMutation] = useReorderListsMutation(); // For reordering lists
-  const [updateListInWorkspace] = useUpdateListInWorkspaceMutation(); // For editing list names
+  const [reorderListsMutation] = useReorderListsMutation();
+  const [updateListInWorkspace] = useUpdateListInWorkspaceMutation();
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -76,7 +77,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
     isOpen: false,
     listId: null,
     position: { x: 0, y: 0 },
-    tempColor: '#9fa2ff', // Default color
+    tempColor: '#9fa2ff',
   });
 
   // Ref for the color picker
@@ -86,7 +87,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   const [editingListId, setEditingListId] = useState(null);
   const [editedListName, setEditedListName] = useState('');
 
-  // Introduce local lists state for optimistic UI updates
+  // Local lists state for optimistic UI updates
   const [localLists, setLocalLists] = useState(lists);
 
   // Update local state when lists prop changes
@@ -212,7 +213,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
           ...prevState,
           [newList._id]: {
             ...prevState[newList._id],
-            [stage.id]: false, // No tasks initially, so collapsed
+            [stage.id]: false,
           },
         }));
       });
@@ -220,8 +221,11 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
       // Initialize collapsed state for the new list
       setCollapsedLists((prevState) => ({
         ...prevState,
-        [newList._id]: false, // Expanded by default
+        [newList._id]: false,
       }));
+
+      // Add the new list to localLists
+      setLocalLists((prevLists) => [...prevLists, newList]);
 
       toast.success('List added successfully!');
     } catch (error) {
@@ -340,9 +344,10 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
     updatedLists.splice(dragIndex, 1);
     updatedLists.splice(hoverIndex, 0, draggedList);
     setLocalLists(updatedLists);
-
+  
     // Persist the new order to the backend
     const newOrder = updatedLists.map((list) => list._id);
+    console.log('New Order for Reorder:', newOrder); // Debugging line
     reorderListsMutation({ workspaceId, newOrder })
       .unwrap()
       .then(() => {
@@ -354,6 +359,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
         setLocalLists(lists); // Revert to original order on failure
       });
   };
+  
 
   // Handler to start editing a list name
   const handleStartEditing = (listId, currentName) => {
@@ -446,6 +452,84 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
     } catch (error) {
       console.error('Failed to delete list:', error);
       toast.error(error.data?.message || 'Failed to delete list');
+    }
+  };
+
+  // Define the moveTask function
+  const moveTask = async (task, sourceListId, targetListId, targetStageId) => {
+    if (sourceListId === targetListId) {
+      // Moving within the same list; just update the stageId
+      try {
+        await editTaskMutation({
+          workspaceId,
+          listId: sourceListId,
+          taskId: task._id,
+          updatedTask: {
+            ...task,
+            stageId: targetStageId,
+          },
+        }).unwrap();
+
+        // Update local state
+        setLocalLists((prevLists) =>
+          prevLists.map((list) =>
+            list._id === sourceListId
+              ? {
+                  ...list,
+                  tasks: list.tasks.map((t) =>
+                    t._id === task._id ? { ...t, stageId: targetStageId } : t
+                  ),
+                }
+              : list
+          )
+        );
+
+        toast.success('Task moved successfully!');
+      } catch (error) {
+        console.error('Failed to move task:', error);
+        toast.error(error.data?.message || 'Failed to move task');
+      }
+    } else {
+      // Moving across different lists; remove from source and add to target
+      try {
+        // Remove from source list
+        await deleteTaskMutation({
+          workspaceId,
+          listId: sourceListId,
+          taskId: task._id,
+        }).unwrap();
+
+        // Add to target list with updated stageId
+        const updatedTask = { ...task, stageId: targetStageId };
+        await addTaskMutation({
+          workspaceId,
+          listId: targetListId,
+          taskData: updatedTask,
+        }).unwrap();
+
+        // Update local state
+        setLocalLists((prevLists) =>
+          prevLists.map((list) => {
+            if (list._id === sourceListId) {
+              return {
+                ...list,
+                tasks: list.tasks.filter((t) => t._id !== task._id),
+              };
+            } else if (list._id === targetListId) {
+              return {
+                ...list,
+                tasks: [...list.tasks, updatedTask],
+              };
+            }
+            return list;
+          })
+        );
+
+        toast.success('Task moved successfully!');
+      } catch (error) {
+        console.error('Failed to move task:', error);
+        toast.error(error.data?.message || 'Failed to move task');
+      }
     }
   };
 
@@ -579,7 +663,6 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
         </div>
       </div>
     );
-
   };
 
   const Stage = ({ stage, listId }) => {
@@ -694,7 +777,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   return (
     <>
       {/* Invisible Drop Zones for Deletion */}
-      {/* render it only if something is being dragged */}
+      {/* Uncomment and style as needed */}
       {/* <div
         ref={dropLeft}
         className={`delete-zone left ${isOverLeft ? 'active' : ''}`}
