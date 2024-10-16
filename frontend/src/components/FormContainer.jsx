@@ -53,7 +53,7 @@ const FormContainer = ({ children }) => {
                style={{
                   minHeight: '100vh',
                   width: '42%',
-                  background: 'rgb(29,24,35)',
+                  // background: 'rgb(29,24,35)',
                   background: 'linear-gradient(84deg, rgba(29,24,35,1) 0%, rgba(31,25,37,1) 20%, rgba(52,38,61,1) 90%)',
                   borderRadius:'0px 40px 40px 0px'
                }}

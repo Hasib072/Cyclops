@@ -1,27 +1,38 @@
-import asyncHandler from 'express-async-handler';
+// backend/controller/authMiddleware.js
+
 import jwt from 'jsonwebtoken';
+import asyncHandler from 'express-async-handler';
 import User from '../models/userModel.js';
 
 const ValidateJWT = asyncHandler(async (req, res, next) => {
-   let token;
-   token = req.cookies.jwt;
+  let token;
 
-   if (token) {
-      try {
-         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-         req.user = await User.findById(decoded.userId).select('-password');
-         next();
-      } catch (error) {
-         console.error(error);
-         res.status(401);
-         throw new Error('User Not Authorized --- (Token Failed)');
+  // Check for JWT in cookies
+  if (req.cookies && req.cookies.jwt) {
+    try {
+      token = req.cookies.jwt;
+
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Get user from the token
+      req.user = await User.findById(decoded.id).select('-password');
+
+      if (!req.user) {
+        res.status(401);
+        throw new Error('User not found');
       }
-   } else {
+
+      next();
+    } catch (error) {
+      console.error('JWT Verification Error:', error);
       res.status(401);
-      throw new Error('User Not Authorized --- (Token Missing)');
-   }
+      throw new Error('Not authorized, token failed');
+    }
+  } else {
+    res.status(401);
+    throw new Error('Not authorized, no token');
+  }
 });
 
-export {
-   ValidateJWT
-};
+export { ValidateJWT };

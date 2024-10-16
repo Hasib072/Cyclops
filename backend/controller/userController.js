@@ -4,6 +4,9 @@ import User from '../models/userModel.js';
 import sendEmail from '../utils/sendEmail.js';
 import generateToken from '../utils/generateToken.js';
 import bcrypt from 'bcryptjs';
+import Profile from '../models/profileModel.js';
+import generateProfileImage from '../utils/imageGenerator.js';
+
 
 //  @desc   Auth user/set token
 //  @route   POST /api/users/auth
@@ -32,35 +35,59 @@ const authUser = asyncHandler(async (req, res) => {
   }
 });
 
+
 // @desc    Register a new user
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-   const { name, email, password } = req.body;
- 
-   // Check if user already exists
-   const userExist = await User.findOne({ email });
- 
-   if (userExist) {
-     res.status(400);
-     throw new Error('User already exists');
-   }
- 
-   // Create new user instance
-   const user = new User({
-     name,
-     email,
-     password,
-   });
- 
-   // Save user to the database
-   await user.save();
- 
-   // Respond with success
-   res.status(201).json({
-     message: 'User registered successfully. Please verify your email.',
-   });
- });
+  const { name, email, password } = req.body;
+
+  // Validate input
+  if (!name || !email || !password) {
+    res.status(400);
+    throw new Error('Please provide name, email, and password');
+  }
+
+  // Check if user already exists
+  const userExist = await User.findOne({ email });
+
+  if (userExist) {
+    res.status(400);
+    throw new Error('User already exists');
+  }
+
+  // Create new user instance
+  const user = new User({
+    name,
+    email,
+    password,
+  });
+
+  // Save user to the database
+  const savedUser = await user.save();
+
+  // Generate default profile image
+  const defaultProfileImagePath = await generateProfileImage(savedUser.name);
+
+  // Create a profile for the user with the default profile image
+  const profile = new Profile({
+    user: savedUser._id,
+    profileImage: defaultProfileImagePath, // Set the generated profile image
+  });
+
+  // Save the profile to the database
+  await profile.save();
+
+  // Optionally, generate a verification code and send email
+  // const verificationCode = user.generateVerificationCode();
+  // await user.save();
+  // await sendVerificationEmail(user.email, verificationCode);
+
+  // Respond with success
+  res.status(201).json({
+    message: 'User registered successfully. Please verify your email.',
+  });
+});
 
 // @desc    Verify user's email
 // @route   POST /api/users/verify-email

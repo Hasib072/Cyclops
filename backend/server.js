@@ -1,46 +1,71 @@
 // backend/server.js
 
-import path from 'path';
 import express from 'express';
-import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import cors from 'cors';
-
-import { notFound, errorHandler } from './middleware/errorMiddleware.js';
-
-import connectDB from './config/db.js';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser'; // Import cookie-parser
 import userRoutes from './routes/userRoutes.js';
+import profileRoutes from './routes/profileRoutes.js'; // Ensure you have profile routes
+import workspaceRoutes from './routes/workspaceRoutes.js'; // Import workspace routes
+import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import connectDB from './config/db.js';
 
 dotenv.config();
 
-const port = process.env.PORT || 5000;
+const app = express();
 
-connectDB();
+// Middleware
+app.use(express.json());
+app.use(cookieParser()); // Use cookie-parser
+app.use(cors({
+  origin: 'http://localhost:3000', // Frontend URL
+  credentials: true, // Allow credentials (cookies)
+}));
 
-const app = express(); // create instance as "app"
+// Define __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-app.use(express.json()); // allow to pass raw json
-app.use(express.urlencoded({ extended: true })); // allow to send form-data
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
-app.use(cookieParser());
-
-app.use(cors());
-
-// Use user routes
+// Routes
 app.use('/api/users', userRoutes);
+app.use('/api/profile', profileRoutes); // This should be /api/profile
+app.use('/api/workspaces', workspaceRoutes); // Mount workspace routes
 
-// Serve frontend in production
+// Optional: Remove or verify the Test Route
+// Ensure 'test.png' exists in the uploads directory or remove this route
+// app.get('/test-upload', (req, res) => {
+//   res.sendFile(path.join(__dirname, '..', 'uploads', 'test.png'));
+// });
+
+// Serve frontend in production (optional)
 if (process.env.NODE_ENV === 'production') {
-  const __dirname = path.resolve();
-  app.use(express.static(path.join(__dirname, '/frontend/dist')));
+  app.use(express.static(path.join(__dirname, '../frontend/build')));
   app.get('*', (req, res) =>
-    res.sendFile(path.resolve(__dirname, 'frontend', 'dist', 'index.html'))
+    res.sendFile(path.resolve(__dirname, '../frontend', 'build', 'index.html'))
   );
 } else {
-  app.get('/', (req, res) => res.send('Server is ready')); //for root hit
+  app.get('/', (req, res) => {
+    res.send('API is running...');
+  });
 }
 
-app.use(notFound); //for handle non-exist api url
-app.use(errorHandler); //for handle and show error with stack in response
+// Error Handling Middlewares
+app.use(notFound);
+app.use(errorHandler);
 
-app.listen(port, () => console.log(`Server started on port ${port}`));
+// Connect to DB and Start Server
+const PORT = process.env.PORT || 5000;
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}).catch(error => {
+  console.error('Failed to connect to the database', error);
+  process.exit(1);
+});

@@ -1,0 +1,73 @@
+/* frontend/src/components/TaskModal.css */
+
+.task-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+.task-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  background: #2b2b2b;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  color: #fff;
+}
+
+.task-form .form-group {
+  margin-bottom: 15px;
+}
+
+.task-form .form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.task-form .form-group input,
+.task-form .form-group textarea,
+.task-form .form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+.task-form .form-group textarea {
+  resize: vertical;
+  height: 80px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.submit-button,
+.cancel-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-button {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.cancel-button {
+  background-color: #f44336;
+  color: #fff;
+}
