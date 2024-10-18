@@ -8,6 +8,7 @@ import Loader from '../components/Loader'; // Import the Loader component
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import TodoListView from '../components/TodoListView'; // Import the TodoListView component
+import TodoBoardView from '../components/TodoBoardView';
 
 // RTK Query Hooks
 import {
@@ -342,9 +343,18 @@ const WorkSpaceScreen = () => {
               </DndProvider>
               </>
             )}
+            {activeMenuItem === 'Board' && (
+              <DndProvider backend={HTML5Backend}>
+                <TodoBoardView
+                  stages={workspace.stages || []}
+                  lists={workspace.lists || []}
+                  workspaceId={workspace._id}
+                />
+              </DndProvider>
+            )}
 
             {/* Placeholder for other menu items */}
-            {activeMenuItem !== 'Lists' && (
+            {activeMenuItem !== 'Lists' && activeMenuItem !== 'Board' &&  (
               <p>Content for {activeMenuItem} will go here.</p>
             )}
           </div>
