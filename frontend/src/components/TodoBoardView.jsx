@@ -269,12 +269,20 @@ const TodoBoardView = ({ stages = [], lists = [], workspaceId }) => {
 };
 
 const Stage = ({ stage, tasks, moveTask, handleAddTask, handleEditTask }) => {
+  // Use individual state for each stage's collapse status
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Use useEffect to persist collapse state when updates happen
+  const isCollapsedRef = useRef(isCollapsed);
+  useEffect(() => {
+    isCollapsedRef.current = isCollapsed;
+  }, [isCollapsed]);
 
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: ItemTypes.TASK,
     drop: ({ task, stageId: sourceStageId }) =>
       moveTask(task, sourceStageId, stage.id),
+    canDrop: () => !isCollapsed, // Prevent dropping if the stage is collapsed
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
       canDrop: !!monitor.canDrop(),
@@ -286,30 +294,31 @@ const Stage = ({ stage, tasks, moveTask, handleAddTask, handleEditTask }) => {
 
   // Function to toggle collapse state
   const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
+    setIsCollapsed((prev) => !prev);
   };
-
-  // Map stage names to CSS classes and background colors
-  const stageClassMap = {
-    'Opened': 'opened',
-    'In Progress': 'in-progress',
-    'Blocked': 'blocked',
-    'Backlog': 'backlog',
-    'Closed': 'closed',
-  };
-
-  const stageClass = stageClassMap[stage.name] || 'default';
 
   return (
     <div
       ref={drop}
-      className={`column column-${stageClass}`}
+      className={`column ${
+        isCollapsed ? 'collapsed' : ''
+      } column-${stage.name.toLowerCase().replace(' ', '-')}`}
+      style={{ backgroundColor: isCollapsed ? 'transparent' : '#2c2f36' }}
     >
-      <h2 onClick={toggleCollapse}>
-        <span className="icon chevron" />
-        {stage.name}{' '}
+      <div
+        className={`stage-header ${isCollapsed ? 'collapsed' : ''}`}
+        onClick={toggleCollapse}
+        style={{
+          backgroundColor: stage.color,
+          borderRadius: isCollapsed ? '24px' : '8px 8px 0 0',
+        }}
+      >
+        <span className={`icon chevron ${isCollapsed ? 'collapsed' : ''}`} />
+        <span className={`stage-title ${isCollapsed ? 'collapsed' : ''}`}>
+          {stage.name}
+        </span>
         <span className="task-count">{tasksInStage.length}</span>
-      </h2>
+      </div>
 
       {!isCollapsed && (
         <div className="task-container expanded">

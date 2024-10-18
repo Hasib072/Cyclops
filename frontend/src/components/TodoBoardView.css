@@ -42,6 +42,7 @@
   .task-board {
     display: flex;
     justify-content: flex-start;
+    align-items: flex-start; /* Added to prevent columns from stretching */
     width: 100%;
     padding: 20px;
     position: relative;
@@ -49,48 +50,81 @@
   }
   
   .column {
-    width: 300px;
     background-color: #2c2f36;
     padding: 0px;
-    border-radius: 24px;
+    border-radius: 8px 8px 0 0;
     margin-right: 20px;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s;
   }
   
-  .column h2 {
+  .column:not(.collapsed) {
+    width: 300px;
+  }
+  
+  .column.collapsed {
+    width: 50px;
+    background-color: transparent;
+  }
+  
+  .stage-header {
     margin-bottom: 20px;
     color: #ddd;
     display: flex;
     align-items: center;
     font-size: 16px;
     text-transform: uppercase;
-    border-radius: 8px 8px 0 0;
     padding: 10px;
     cursor: pointer;
     position: relative;
+    justify-content: center;
+    transition: all 0.3s;
   }
   
-  .column h2 .task-count {
-    margin-left: auto;
+  .stage-header.collapsed {
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 0;
   }
   
-  .column h2 .icon.chevron {
-    cursor: pointer;
-    display: inline-block;
-    position: relative;
-    color: white;
-    margin-right: 8px;
+  .stage-header.collapsed .stage-title {
+    transform: rotate(0deg);
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    margin-left: 0;
+    margin-top: 5px;
   }
   
-  .column h2 .icon.chevron::before {
-    content: '«';
-    font-size: 24px;
-    display: block;
-    transform: rotate(90deg);
-  }
-  
-  .column h2.collapsed .icon.chevron::before {
+  .stage-header.collapsed .icon.chevron {
     transform: rotate(-90deg);
+  }
+  
+  .stage-header.collapsed .task-count {
+    margin-top: 5px;
+  }
+  
+  .stage-header.collapsed .icon.chevron,
+  .stage-header.collapsed .stage-title,
+  .stage-header.collapsed .task-count {
+    margin: 0;
+  }
+  
+  .stage-header .stage-title {
+    margin-left: 10px;
+  }
+  
+  .task-count {
+    margin-left: auto;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .stage-header.collapsed .task-count {
+    margin-left: 0;
   }
   
   .task {
@@ -182,42 +216,9 @@
     color: #ffffff;
   }
   
-  /* Specific column styles based on stage name */
-  .column-opened h2 {
-    background-color: #9854cb;
-  }
-  
-  .column-in-progress h2 {
-    background-color: #547ccb;
-  }
-  
-  .column-blocked h2 {
-    background-color: #54cbb6;
-  }
-  
-  .column-backlog h2 {
-    background-color: #cb8d54;
-  }
-  
-  .column-closed h2 {
-    background-color: #88cb54;
-  }
-  
   .task-container {
     transition: height 0.3s ease;
     overflow: hidden;
-  }
-  
-  .collapsed .task-container {
-    height: 0;
-    padding: 0;
-    overflow: hidden;
-    display: none;
-  }
-  
-  .expanded .task-container {
-    height: auto;
-    padding: 15px 0;
   }
   
   .delete-zone.right {
