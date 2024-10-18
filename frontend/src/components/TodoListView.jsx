@@ -50,12 +50,17 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
 
   // Initialize collapsedLists when lists change
   useEffect(() => {
-    const initialCollapsed = {};
-    lists.forEach((list) => {
-      initialCollapsed[list._id] = false;
+    setCollapsedLists((prevState) => {
+      const updatedCollapsedLists = { ...prevState };
+      lists.forEach((list) => {
+        if (!(list._id in updatedCollapsedLists)) {
+          updatedCollapsedLists[list._id] = false; // Default to expanded
+        }
+      });
+      return updatedCollapsedLists;
     });
-    setCollapsedLists(initialCollapsed);
   }, [lists]);
+  
 
   // RTK Query mutations
   const [addListMutation] = useAddListToWorkspaceMutation();
@@ -617,7 +622,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
         ></div>
 
         {/* Task List Content */}
-        <div className="task-list-content">
+        <div className="task-list-content" onDoubleClick={() => toggleList(list._id)}>
           {/* List Header */}
           <div className="task-list-header">
             {editingListId === list._id ? (
@@ -638,7 +643,9 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
               />
             ) : (
               <h2
-                onDoubleClick={() => handleStartEditing(list._id, list.name)}
+                onDoubleClick={(e) => 
+                  {e.stopPropagation();
+                  handleStartEditing(list._id, list.name)}}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
