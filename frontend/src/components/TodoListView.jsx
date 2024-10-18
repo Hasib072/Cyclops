@@ -18,6 +18,7 @@ import { toast } from 'react-toastify';
 import { SketchPicker } from 'react-color';
 import { useDrag, useDrop } from 'react-dnd';
 import mongoose from 'mongoose'; // Ensure mongoose is imported
+import deleteIconSvg from '../assets/icons/delete-tilt.svg'
 
 const ItemTypes = {
   TASK: 'task',
@@ -415,12 +416,19 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   });
 
   const [{ isOverRight }, dropRight] = useDrop({
-    accept: ItemTypes.LIST,
-    drop: (item) => handleDeleteList(item.listId),
+    accept: [ItemTypes.LIST, ItemTypes.TASK],
+    drop: (item) => {
+      if (item.type === ItemTypes.LIST) {
+        handleDeleteList(item.listId);
+      } else if (item.type === ItemTypes.TASK) {
+        handleDeleteTask(item.listId, item.task._id);
+      }
+    },
     collect: (monitor) => ({
       isOverRight: monitor.isOver() && monitor.canDrop(),
     }),
   });
+  
 
   const handleDeleteList = (listId) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this list?');
@@ -739,7 +747,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   const Task = ({ task, listId }) => {
     const [{ isDragging }, drag] = useDrag({
       type: ItemTypes.TASK,
-      item: { task, listId },
+      item: { type: ItemTypes.TASK, task, listId },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
@@ -788,7 +796,8 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
         ref={dropRight}
         className={`delete-zone right ${isOverRight ? 'active' : ''}`}
       >
-        <span>Drag here to delete</span>
+        <img src={deleteIconSvg} alt="DeleteIconSVG" />
+        {/* <span>Drag here to delete</span> */}
       </div>
 
       <div className="todo-list-view">

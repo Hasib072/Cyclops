@@ -292,15 +292,37 @@ svg.rotate-open {
 /* Delete Zones */
 .delete-zone {
   position: fixed;
-  top: 0;
+  top: 250px;
   width: 100px;
-  height: 100%;
+  height: 55%;
   z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
   color: transparent;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, border 0.3s ease;
+  border-radius: 15px 0px 0px 15px;
+  
+}
+
+.delete-zone span{
+  position: fixed;
+  top: 0;
+  transition: top 0.3s ease;
+}
+
+.delete-zone img {
+  position: fixed;
+  top: 110px;
+  width: 90px;
+  height: 90%;
+  z-index: 2001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0%;
+  transition: opacity 0.3s ease, top 0.3s ease;
+  
 }
 
 .delete-zone.left {
@@ -312,14 +334,25 @@ svg.rotate-open {
 }
 
 .delete-zone.active {
-  background-color: rgba(255, 0, 0, 0.2);
+  background-color: rgba(255, 0, 0, 0.104);
   color: red;
+  border: 3px solid rgba(255, 0, 0, 0.2);
+  border-style: dashed;
 }
+
+.delete-zone.active img{
+  opacity: 70%;
+  top: 95px;
+}
+
 
 .delete-zone.active span {
   color: red;
   font-weight: bold;
+  top: 50px;
 }
+
+
 
 /* Dragging State */
 .task-list-wrapper.dragging {
