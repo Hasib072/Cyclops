@@ -10,6 +10,8 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import TodoListView from '../components/TodoListView'; // Import the TodoListView component
 import TodoBoardView from '../components/TodoBoardView';
+import TodoTableView from '../components/TodoTableView';
+
 
 // RTK Query Hooks
 import {
@@ -382,15 +384,13 @@ const WorkSpaceScreen = () => {
             {/* Render components based on active menu item */}
             {activeMenuItem === 'Lists' && (
               <>
-              {console.log('Lists passed to TodoListView:', workspace.lists, 'workspaceid:',workspace._id)}
-              <DndProvider backend={HTML5Backend}>
-
-              <TodoListView
-                stages={workspace.stages || []}
-                lists={workspace.lists || []}
-                workspaceId={workspace._id}
-                />
-              </DndProvider>
+                <DndProvider backend={HTML5Backend}>
+                  <TodoListView
+                    stages={workspace.stages || []}
+                    lists={workspace.lists || []}
+                    workspaceId={workspace._id}
+                  />
+                </DndProvider>
               </>
             )}
             {activeMenuItem === 'Board' && (
@@ -402,9 +402,15 @@ const WorkSpaceScreen = () => {
                 />
               </DndProvider>
             )}
-
+            {activeMenuItem === 'Table' && (
+              <TodoTableView
+                stages={workspace.stages || []}
+                lists={workspace.lists || []}
+                workspaceId={workspace._id}
+              />
+            )}
             {/* Placeholder for other menu items */}
-            {activeMenuItem !== 'Lists' && activeMenuItem !== 'Board' &&  (
+            {!['Lists', 'Board', 'Table'].includes(activeMenuItem) && (
               <p>Content for {activeMenuItem} will go here.</p>
             )}
           </div>
