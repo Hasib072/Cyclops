@@ -93,7 +93,7 @@ const stageSchema = new mongoose.Schema(
     id: {
       type: String,
       required: [true, 'Stage ID is required'],
-      unique: true,
+      //unique: true,
     },
     name: {
       type: String,

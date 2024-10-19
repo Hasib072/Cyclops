@@ -23,7 +23,7 @@
     color: #fff;
     margin-right: 5px;
     cursor: pointer;
-    border-radius: 8px 8px 0 0;
+    border-radius: 0px 0px 8px 8px;
   }
   
   .tab-item.active {
@@ -42,17 +42,19 @@
   .task-board {
     display: flex;
     justify-content: flex-start;
-    align-items: flex-start; /* Added to prevent columns from stretching */
-    width: 100%;
+    align-items: flex-start;
     padding: 20px;
     position: relative;
-    overflow-x: auto;
+    /* Remove width and overflow from .task-board */
+    /* width: 100%; */ /* Remove this line */
+    /* overflow-x: auto; */ /* Remove this line */
+    /* overflow-y: hidden; */ /* Remove this line */
   }
   
   .column {
     background-color: #2c2f36;
     padding: 0px;
-    border-radius: 8px 8px 0 0;
+    border-radius: 24px;
     margin-right: 20px;
     position: relative;
     display: flex;
@@ -74,7 +76,8 @@
     color: #ddd;
     display: flex;
     align-items: center;
-    font-size: 16px;
+    font-size: 18px;
+    font-weight: bold;
     text-transform: uppercase;
     padding: 10px;
     cursor: pointer;
@@ -94,7 +97,7 @@
   .stage-header.collapsed .stage-title {
     transform: rotate(0deg);
     writing-mode: vertical-rl;
-    text-orientation: upright;
+    text-orientation: sideways-right;
     margin-left: 0;
     margin-top: 5px;
   }
@@ -119,7 +122,7 @@
   
   .task-count {
     margin-left: auto;
-    font-size: 14px;
+    font-size: 18px;
     font-weight: bold;
   }
   
@@ -133,6 +136,7 @@
     border-radius: 8px;
     margin-bottom: 20px;
     cursor: pointer;
+    margin: 10px;
   }
   
   .task h3 {
@@ -163,16 +167,20 @@
   
   .high {
     color: #ff5050;
-    border: 2px solid #ff5050;
-    border-radius: 20px;
+    /* border: 2px solid #ff5050; */
+    /* border-radius: 20px; */
   }
   
   .low {
     color: #8b8b8bd6;
-    border: 2px solid #8b8b8bd6;
-    border-radius: 20px;
+    /* border: 2px solid #8b8b8bd6;
+    border-radius: 20px; */
   }
   
+  .task.high{
+    border: 2px solid #ff5050;
+    border-radius: 20px;
+  }
   .moderate {
     color: #ffca28;
     border: 2px solid #ffca28;
@@ -220,24 +228,9 @@
     transition: height 0.3s ease;
     overflow: hidden;
   }
-  
-  .delete-zone.right {
-    position: fixed;
-    top: 50%;
-    right: 0;
-    transform: translateY(-50%);
-    width: 60px;
-    height: 60px;
-    background-color: #ff5050;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    z-index: 100;
+
+  .task-board-container {
+    width: 100%;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    overflow-y: hidden; /* Prevent vertical scrolling */
   }
-  
-  .delete-zone.right.active {
-    background-color: #ff0000;
-  }
-  

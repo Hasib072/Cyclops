@@ -241,18 +241,20 @@ const TodoBoardView = ({ stages = [], lists = [], workspaceId }) => {
         <img src={deleteIconSvg} alt="DeleteIconSVG" />
       </div>
 
-      {/* Task Board */}
-      <div className="task-board" id="task-board">
-        {sortedStages.map((stage) => (
-          <Stage
-            key={stage.id}
-            stage={stage}
-            tasks={selectedList.tasks}
-            moveTask={moveTask}
-            handleAddTask={handleAddTask}
-            handleEditTask={handleEditTask}
-          />
-        ))}
+      {/* Task Board Container with Overflow Handling */}
+      <div className="task-board-container">
+        <div className="task-board" id="task-board">
+          {sortedStages.map((stage) => (
+            <Stage
+              key={stage.id}
+              stage={stage}
+              tasks={selectedList.tasks}
+              moveTask={moveTask}
+              handleAddTask={handleAddTask}
+              handleEditTask={handleEditTask}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Task Modal */}
@@ -317,6 +319,7 @@ const Stage = ({ stage, tasks, moveTask, handleAddTask, handleEditTask }) => {
         <span className={`stage-title ${isCollapsed ? 'collapsed' : ''}`}>
           {stage.name}
         </span>
+        <span>&nbsp;</span>
         <span className="task-count">{tasksInStage.length}</span>
       </div>
 
