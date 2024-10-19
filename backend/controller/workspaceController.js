@@ -5,10 +5,23 @@ import Workspace from '../models/workspaceModel.js';
 import WorkspaceMember from '../models/workspaceMemberModel.js';
 import User from '../models/userModel.js';
 import Profile from '../models/profileModel.js';
-import generateWorkspaceImage from '../utils/imageGenerator.js'; // Assuming you have a utility for generating images
+import generateWorkspaceImage from '../utils/imageGenerator.js';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique stage IDs
+
+// Keep track of connected clients for SSE
+let clients = []; // List of connected clients
+
+// Helper function to send SSE messages to clients connected to a workspace
+const sendSSEMessage = (workspaceId, message) => {
+  clients.forEach((client) => {
+    if (client.workspaceId === workspaceId) {
+      client.res.write(`data: ${JSON.stringify(message)}\n\n`);
+    }
+  });
+};
+
 
 
 // Allowed Workspace Types and Views (Adjust as per your application needs)
@@ -342,6 +355,14 @@ const addListToWorkspace = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.status(201).json(newList);
+
+  const newListData = {
+    listId: newList._id,
+    list: newList,
+  };
+
+  sendSSEMessage(workspaceId, { type: 'LIST_ADDED', payload: newListData });
+
 });
 
 const updateListColor = asyncHandler(async (req, res) => {
@@ -364,6 +385,13 @@ const updateListColor = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.status(200).json(list);
+  // Send SSE message to clients connected to this workspace
+  const updatedListData = {
+    listId,
+    list,
+  };
+
+  sendSSEMessage(workspaceId, { type: 'LIST_COLOR_UPDATED', payload: updatedListData });
 });
 
 // @desc    Add a new task to a list within a workspace
@@ -405,6 +433,13 @@ const addTaskToList = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.status(201).json(newTask);
+  const newTaskData = {
+    listId,
+    taskId: newTask._id,
+    task: newTask,
+  };
+
+  sendSSEMessage(workspaceId, { type: 'TASK_ADDED', payload: newTaskData });
 });
 
 
@@ -440,6 +475,13 @@ const editTaskInList = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.status(200).json(task);
+  const updatedTaskData = {
+    listId,
+    taskId,
+    task,
+  };
+
+  sendSSEMessage(workspaceId, { type: 'TASK_UPDATED', payload: updatedTaskData });
 });
 
 // @desc    Update a list within a workspace
@@ -498,11 +540,7 @@ const updateListInWorkspace = asyncHandler(async (req, res) => {
     list,
   };
 
-  clients.forEach((client) => {
-    if (client.workspaceId === workspaceId) {
-      client.res.write(`data: ${JSON.stringify({ type: 'LIST_UPDATED', payload: updatedListData })}\n\n`);
-    }
-  });
+  sendSSEMessage(workspaceId, { type: 'LIST_UPDATED', payload: updatedListData });
 });
 
 // @desc    Reorder lists within a workspace
@@ -558,6 +596,13 @@ const reorderLists = asyncHandler(async (req, res) => {
   console.log('Reordered Lists:', workspace.lists.map(list => list._id));
 
   res.json({ message: 'Lists reordered successfully', lists: workspace.lists });
+
+  // Send SSE message to clients connected to this workspace
+  sendSSEMessage(workspaceId, {
+    type: 'LISTS_REORDERED',
+    payload: { lists: workspace.lists },
+  });
+
 });
 
 
@@ -586,6 +631,13 @@ const deleteListFromWorkspace = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.json({ message: 'List deleted successfully' });
+
+  // Send SSE message to clients connected to this workspace
+  sendSSEMessage(workspaceId, {
+    type: 'LIST_DELETED',
+    payload: { listId },
+  });
+
 });
 
 // @desc    Update a task within a list in a workspace
@@ -673,11 +725,7 @@ const updateTaskInList = asyncHandler(async (req, res) => {
     task,
   };
 
-  clients.forEach((client) => {
-    if (client.workspaceId === workspaceId) {
-      client.res.write(`data: ${JSON.stringify({ type: 'TASK_UPDATED', payload: updatedTaskData })}\n\n`);
-    }
-  });
+  sendSSEMessage(workspaceId, { type: 'TASK_UPDATED', payload: updatedTaskData });
 });
 
 // @desc    Delete a task within a list in a workspace
@@ -712,6 +760,12 @@ const deleteTaskFromList = asyncHandler(async (req, res) => {
 
 
   res.json({ message: 'Task deleted successfully' });
+
+  // Send SSE message to clients connected to this workspace
+  sendSSEMessage(workspaceId, {
+    type: 'TASK_DELETED',
+    payload: { listId, taskId },
+  });
 });
 
 // @desc    Get workspace by ID
@@ -969,6 +1023,11 @@ const updateWorkspace = asyncHandler(async (req, res) => {
       invitePeople: updatedWorkspace.invitePeople,
       stages: updatedWorkspace.stages,
     });
+    // Send SSE message to clients connected to this workspace
+    sendSSEMessage(workspace._id.toString(), {
+      type: 'WORKSPACE_UPDATED',
+      payload: { workspace: updatedWorkspace },
+    });
   } else {
     res.status(404);
     throw new Error('Workspace not found');
@@ -1089,6 +1148,12 @@ const addMember = asyncHandler(async (req, res) => {
   await workspaceMember.save();
 
   res.status(201).json({ message: 'Member added successfully' });
+
+  // Send SSE message to clients connected to this workspace
+  sendSSEMessage(req.params.id, {
+    type: 'MEMBER_ADDED',
+    payload: { userId, role },
+  });
 });
 
 // @desc    Remove member from workspace
@@ -1149,6 +1214,11 @@ const removeMember = asyncHandler(async (req, res) => {
   await workspaceMember.save();
 
   res.json({ message: 'Member removed successfully' });
+  // Send SSE message to clients connected to this workspace
+  sendSSEMessage(id, {
+    type: 'MEMBER_REMOVED',
+    payload: { userId: memberId },
+  });
 });
 
 // @desc    List all workspaces accessible to the user
@@ -1207,7 +1277,7 @@ const listWorkspaces = asyncHandler(async (req, res) => {
   res.json(workspaces);
 });
 
-let clients = []; // List of connected clients
+
 
 // @desc    Get real-time updates for a workspace
 // @route   GET /api/workspaces/:workspaceId/updates
@@ -1256,6 +1326,7 @@ const getWorkspaceUpdates = asyncHandler(async (req, res) => {
     clearInterval(keepAliveInterval);
   });
 });
+
 
 // Export all controller functions
 export {

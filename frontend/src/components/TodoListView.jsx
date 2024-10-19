@@ -1,6 +1,6 @@
 // frontend/src/components/TodoListView.jsx
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo} from 'react';
 import './TodoListView.css';
 import TaskModal from './TaskModal';
 import {
@@ -28,9 +28,11 @@ const ItemTypes = {
 const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   // Sort stages based on predefined order
   const stageOrder = ['Pending', 'Active', 'Done'];
-  const sortedStages = [...stages].sort(
-    (a, b) => stageOrder.indexOf(a.category) - stageOrder.indexOf(b.category)
-  );
+  const sortedStages = useMemo(() => {
+    return [...stages].sort(
+      (a, b) => stageOrder.indexOf(a.category) - stageOrder.indexOf(b.category)
+    );
+  }, [stages]);
 
   // State to manage open/closed stages per list
   const [openStages, setOpenStages] = useState(() => {
@@ -694,8 +696,13 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
 
     // Find the corresponding list from localLists
     const list = localLists.find((lst) => lst._id === listId);
-    const tasksInStage = list.tasks.filter((task) => task.stageId === stage.id);
 
+    if (!list) {
+      console.warn(`List with ID ${listId} not found.`);
+      return null; // Or render a placeholder
+    }
+
+    const tasksInStage = list.tasks.filter((task) => task.stageId === stage.id);
     return (
       <div
         ref={drop}
@@ -729,7 +736,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
         </div>
 
         {/* Tasks under the stage */}
-        {openStages[listId][stage.id] && (
+        {openStages[listId] && openStages[listId][stage.id] && (
           <>
             {/* Task Headings */}
             <div className="task_headingg">
@@ -750,6 +757,23 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
       </div>
     );
   };
+
+  useEffect(() => {
+    const initialState = {};
+    lists.forEach((list) => {
+      initialState[list._id] = {};
+      sortedStages.forEach((stage) => {
+        const tasksInStage = list.tasks.filter((task) => task.stageId === stage.id);
+        initialState[list._id][stage.id] = tasksInStage.length > 0;
+      });
+    });
+    setOpenStages(initialState);
+  }, [lists, sortedStages]);  
+
+  useEffect(() => {
+    setLocalLists(lists);
+  }, [lists]);
+  
 
   const Task = ({ task, listId }) => {
     const [{ isDragging }, drag] = useDrag({

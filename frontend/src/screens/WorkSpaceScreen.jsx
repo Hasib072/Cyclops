@@ -121,37 +121,44 @@ const WorkSpaceScreen = () => {
 
   useEffect(() => {
     if (workspaceId) {
-      
       const eventSource = new EventSource(`/api/workspaces/${workspaceId}/updates`);
       eventSourceRef.current = eventSource;
-
+  
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
         handleServerEvent(data);
       };
-
+  
       eventSource.onerror = (err) => {
         console.error('EventSource failed:', err);
         eventSource.close();
       };
-
+  
       return () => {
         eventSource.close();
       };
     }
   }, [workspaceId]);
-
+  
   const handleServerEvent = (data) => {
     switch (data.type) {
       case 'TASK_UPDATED':
-        // Option 1: Refetch the workspace data
-        refetchWorkspace();
-        break;
+      case 'TASK_ADDED':
+      case 'TASK_DELETED':
       case 'LIST_UPDATED':
-        // Option 1: Refetch the workspace data
+      case 'LIST_COLOR_UPDATED':
+      case 'LIST_ADDED':
+      case 'LIST_DELETED':
+      case 'LISTS_REORDERED':
+      case 'WORKSPACE_UPDATED':
+      case 'MEMBER_ADDED':
+      case 'MEMBER_REMOVED':
         refetchWorkspace();
         break;
-      // Handle other event types
+      case 'WORKSPACE_DELETED':
+        // Handle workspace deletion (e.g., navigate away)
+        navigate('/workspaces');
+        break;
       default:
         break;
     }
