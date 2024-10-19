@@ -10,6 +10,7 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique stage IDs
 
+
 // Allowed Workspace Types and Views (Adjust as per your application needs)
 const allowedWorkspaceTypes = ['Starter', 'Kanban', 'Project', 'Scrum']; // Extend as needed
 
@@ -490,6 +491,18 @@ const updateListInWorkspace = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.json(list);
+
+  // Send SSE message to clients connected to this workspace
+  const updatedListData = {
+    listId,
+    list,
+  };
+
+  clients.forEach((client) => {
+    if (client.workspaceId === workspaceId) {
+      client.res.write(`data: ${JSON.stringify({ type: 'LIST_UPDATED', payload: updatedListData })}\n\n`);
+    }
+  });
 });
 
 // @desc    Reorder lists within a workspace
@@ -652,8 +665,20 @@ const updateTaskInList = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.json(task);
-});
 
+  // Send SSE message to clients connected to this workspace
+  const updatedTaskData = {
+    listId,
+    taskId,
+    task,
+  };
+
+  clients.forEach((client) => {
+    if (client.workspaceId === workspaceId) {
+      client.res.write(`data: ${JSON.stringify({ type: 'TASK_UPDATED', payload: updatedTaskData })}\n\n`);
+    }
+  });
+});
 
 // @desc    Delete a task within a list in a workspace
 // @route   DELETE /api/workspaces/:workspaceId/lists/:listId/tasks/:taskId
@@ -1182,6 +1207,56 @@ const listWorkspaces = asyncHandler(async (req, res) => {
   res.json(workspaces);
 });
 
+let clients = []; // List of connected clients
+
+// @desc    Get real-time updates for a workspace
+// @route   GET /api/workspaces/:workspaceId/updates
+// @access  Private
+const getWorkspaceUpdates = asyncHandler(async (req, res) => {
+  const { workspaceId } = req.params;
+
+  // Authorization: Check if the user is a member of the workspace
+  const isMember = await WorkspaceMember.exists({
+    workspace: workspaceId,
+    'members.user': req.user._id,
+  });
+
+  if (!isMember) {
+    res.status(403);
+    throw new Error('You do not have access to this workspace');
+  }
+
+  // Set headers for SSE
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  res.flushHeaders();
+
+  // Keep the connection alive with heartbeats
+  const keepAliveInterval = setInterval(() => {
+    res.write(':\n\n');
+  }, 30000); // Every 30 seconds
+
+  // Add client to the list
+  const clientId = Date.now();
+  const newClient = {
+    id: clientId,
+    workspaceId,
+    res,
+  };
+  clients.push(newClient);
+
+  console.log(`Client ${clientId} connected to workspace ${workspaceId}`);
+
+  // Remove client on connection close
+  req.on('close', () => {
+    console.log(`Client ${clientId} disconnected`);
+    clients = clients.filter((client) => client.id !== clientId);
+    clearInterval(keepAliveInterval);
+  });
+});
+
 // Export all controller functions
 export {
   createWorkspace,
@@ -1200,4 +1275,6 @@ export {
   updateTaskInList,
   deleteTaskFromList,
   updateListColor,
+  getWorkspaceUpdates,
+  clients,
 };

@@ -1,6 +1,7 @@
 // frontend/src/screens/WorkSpaceScreen.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
+import { useDispatch } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -87,6 +88,7 @@ const WorkSpaceScreen = () => {
     skip: !workspaceId, // Skip the query if workspaceId is not present
   });
 
+
   // Effect to log workspace details when data is fetched
   useEffect(() => {
     if (workspace) {
@@ -112,6 +114,47 @@ const WorkSpaceScreen = () => {
   // Handler for filter button click
   const handleFilterClick = () => {
     setIsToggleVisible(!isToggleVisible);
+  };
+
+  const dispatch = useDispatch(); // If you need to dispatch actions
+  const eventSourceRef = useRef(null); // Use useRef to store the EventSource instance
+
+  useEffect(() => {
+    if (workspaceId) {
+      
+      const eventSource = new EventSource(`/api/workspaces/${workspaceId}/updates`);
+      eventSourceRef.current = eventSource;
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        handleServerEvent(data);
+      };
+
+      eventSource.onerror = (err) => {
+        console.error('EventSource failed:', err);
+        eventSource.close();
+      };
+
+      return () => {
+        eventSource.close();
+      };
+    }
+  }, [workspaceId]);
+
+  const handleServerEvent = (data) => {
+    switch (data.type) {
+      case 'TASK_UPDATED':
+        // Option 1: Refetch the workspace data
+        refetchWorkspace();
+        break;
+      case 'LIST_UPDATED':
+        // Option 1: Refetch the workspace data
+        refetchWorkspace();
+        break;
+      // Handle other event types
+      default:
+        break;
+    }
   };
 
   // Inline styles (optional, consider using CSS modules or styled-components)
