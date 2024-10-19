@@ -73,7 +73,7 @@
   
   .stage-header {
     margin-bottom: 20px;
-    color: #ddd;
+    color: #ffffff;
     display: flex;
     align-items: center;
     font-size: 18px;
@@ -131,7 +131,7 @@
   }
   
   .task {
-    background-color: #000;
+    background-color: #121212;
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 20px;
@@ -183,7 +183,7 @@
   }
   .moderate {
     color: #ffca28;
-    border: 2px solid #ffca28;
+    /* border: 2px solid #ffca28; */
     border-radius: 20px;
   }
   
