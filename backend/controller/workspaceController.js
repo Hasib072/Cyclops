@@ -4,6 +4,7 @@ import asyncHandler from 'express-async-handler';
 import Workspace from '../models/workspaceModel.js';
 import WorkspaceMember from '../models/workspaceMemberModel.js';
 import User from '../models/userModel.js';
+import Profile from '../models/profileModel.js';
 import generateWorkspaceImage from '../utils/imageGenerator.js'; // Assuming you have a utility for generating images
 import path from 'path';
 import fs from 'fs';
@@ -692,18 +693,45 @@ const deleteTaskFromList = asyncHandler(async (req, res) => {
 // @route   GET /api/workspaces/:id
 // @access  Private
 const getWorkspaceById = asyncHandler(async (req, res) => {
-  const workspace = await Workspace.findById(req.params.id)
+  const workspaceId = req.params.id;
+
+  // Check if the user is a member of the workspace
+  const workspaceMember = await WorkspaceMember.findOne({
+    workspace: workspaceId,
+    'members.user': req.user._id,
+  }).lean();
+
+  if (!workspaceMember) {
+    res.status(403);
+    throw new Error('You do not have access to this workspace');
+  }
+
+  const workspace = await Workspace.findById(workspaceId)
     .populate('createdBy', 'name email')
-    .lean(); // Use lean for better performance since we don't need mongoose documents
+    .lean();
 
   if (workspace) {
-    // Fetch members
-    const workspaceMembers = await WorkspaceMember.findOne({ workspace: workspace._id })
-      .populate('members.user', 'name email')
-      .lean();
+    // Fetch all members of the workspace
+    const membersWithDetails = await Promise.all(
+      workspaceMember.members.map(async (member) => {
+        // Fetch user data
+        const user = await User.findById(member.user).select('name email').lean();
+
+        // Fetch profile data
+        const profile = await Profile.findOne({ user: member.user }).select('profileImage').lean();
+
+        return {
+          user: {
+            ...user,
+            profileImage: profile?.profileImage || '',
+          },
+          role: member.role,
+        };
+      })
+    );
 
     // Add the members to the workspace object
-    workspace.members = workspaceMembers ? workspaceMembers.members : [];
+    workspace.members = membersWithDetails;
 
     res.json(workspace);
   } else {
@@ -1119,9 +1147,17 @@ const listWorkspaces = asyncHandler(async (req, res) => {
     // Fetch all members of the workspace
     const membersWithDetails = await Promise.all(
       wm.members.map(async (member) => {
-        const user = await User.findById(member.user).select('name email profileImage').lean();
+        // Fetch user data
+        const user = await User.findById(member.user).select('name email').lean();
+
+        // Fetch profile data
+        const profile = await Profile.findOne({ user: member.user }).select('profileImage').lean();
+
         return {
-          user,
+          user: {
+            ...user,
+            profileImage: profile?.profileImage || '',
+          },
           role: member.role,
         };
       })

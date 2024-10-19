@@ -160,6 +160,9 @@ const Hero = () => {
   // Get Backend URL from Environment Variable
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
+  // Function to check if a string is a Data URL
+  const isDataURL = (str) => /^data:/.test(str);
+
   // Construct the full profile image URL
   const profileImageUrl = profile?.profileImage
     ? isDataURL(profile.profileImage)
@@ -773,7 +776,7 @@ const Hero = () => {
                 >
                   {new Date(workspace.creationDateTime).toLocaleString()}
                 </small>
-                {workspace.members?.length > 0 && ( // Safeguard against undefined members
+                {workspace.members?.length > 1 && (
                   <div
                     style={{
                       position: 'absolute',
@@ -782,37 +785,26 @@ const Hero = () => {
                       display: 'flex',
                     }}
                   >
-                    {workspace.members?.length > 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '0px',
-            right: '4px',
-            display: 'flex',
-          }}
-        >
-          {workspace.members.map((member, index) => (
-            <img
-              key={index}
-              src={
-                member.user.profileImage
-                  ? isDataURL(member.user.profileImage)
-                    ? member.user.profileImage // Use data URL directly
-                    : `${BACKEND_URL}/${member.user.profileImage}` // Prepend backend URL for server-hosted images
-                  : 'https://via.placeholder.com/30'
-              }
-              alt={member.user.name}
-              style={{
-                borderRadius: '50%',
-                width: '30px',
-                height: '30px',
-                marginLeft: '-6px',
-                border: '2px solid #121212',
-              }}
-            />
-          ))}
-        </div>
-      )}
+                    {workspace.members.map((member, index) => (
+                      <img
+                        key={index}
+                        src={
+                          member.user.profileImage
+                            ? isDataURL(member.user.profileImage)
+                              ? member.user.profileImage // Use data URL directly
+                              : `${BACKEND_URL}/${member.user.profileImage}` // Prepend backend URL for server-hosted images
+                            : 'https://via.placeholder.com/30'
+                        }
+                        alt={member.user.name}
+                        style={{
+                          borderRadius: '50%',
+                          width: '30px',
+                          height: '30px',
+                          marginLeft: '-6px',
+                          border: '2px solid #121212',
+                        }}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
