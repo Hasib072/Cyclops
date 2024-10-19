@@ -286,7 +286,7 @@ const Hero = () => {
         {
           _id: uuidv4(),
           name: 'My list 01',
-          description: 'Add Decription here',
+          // description: 'Add Decription here',
           tasks: [], // Initialize with empty tasks or include predefined tasks
         },
       ];
@@ -782,26 +782,37 @@ const Hero = () => {
                       display: 'flex',
                     }}
                   >
-                    {workspace.members.map((member, index) => (
-                      <img
-                        key={index}
-                        src={
-                          member.user.profileImage
-                            ? isDataURL(member.user.profileImage)
-                              ? member.user.profileImage // Use data URL directly
-                              : `${BACKEND_URL}/${member.user.profileImage}` // Prepend backend URL for server-hosted images
-                            : 'https://via.placeholder.com/30'
-                        }
-                        alt={`User ${index + 1}`}
-                        style={{
-                          borderRadius: '50%',
-                          width: '30px',
-                          height: '30px',
-                          marginLeft: '-6px',
-                          border: '2px solid #121212',
-                        }}
-                      />
-                    ))}
+                    {workspace.members?.length > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '0px',
+            right: '4px',
+            display: 'flex',
+          }}
+        >
+          {workspace.members.map((member, index) => (
+            <img
+              key={index}
+              src={
+                member.user.profileImage
+                  ? isDataURL(member.user.profileImage)
+                    ? member.user.profileImage // Use data URL directly
+                    : `${BACKEND_URL}/${member.user.profileImage}` // Prepend backend URL for server-hosted images
+                  : 'https://via.placeholder.com/30'
+              }
+              alt={member.user.name}
+              style={{
+                borderRadius: '50%',
+                width: '30px',
+                height: '30px',
+                marginLeft: '-6px',
+                border: '2px solid #121212',
+              }}
+            />
+          ))}
+        </div>
+      )}
                   </div>
                 )}
               </div>

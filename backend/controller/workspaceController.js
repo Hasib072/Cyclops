@@ -234,14 +234,49 @@ const createWorkspace = asyncHandler(async (req, res) => {
 
   if (workspace) {
     // Initialize WorkspaceMember with the creator as admin
+    const members = [
+      {
+        user: req.user._id,
+        role: 'admin',
+      },
+    ];
+    // await WorkspaceMember.create({
+    //   workspace: workspace._id,
+    //   members: [
+    //     {
+    //       user: req.user._id,
+    //       role: 'admin',
+    //     },
+    //   ],
+    // });
+
+    // Handle invited users
+    if (parsedInvitePeople.length > 0) {
+      for (const email of parsedInvitePeople) {
+        const user = await User.findOne({ email });
+
+        if (user) {
+          // Check if the user is already in the members array to prevent duplicates
+          const alreadyMember = members.some((member) => member.user.toString() === user._id.toString());
+          if (!alreadyMember) {
+            // Add user to members array with 'member' role
+            members.push({
+              user: user._id,
+              role: 'member',
+            });
+          }
+        } else {
+          // Optionally, handle users who don't exist (e.g., send email invitation)
+          // For now, we'll skip them or you can choose to handle them differently
+          console.warn(`User with email ${email} does not exist.`);
+        }
+      }
+    }
+
+    // Create the WorkspaceMember document
     await WorkspaceMember.create({
       workspace: workspace._id,
-      members: [
-        {
-          user: req.user._id,
-          role: 'admin',
-        },
-      ],
+      members,
     });
 
     res.status(201).json({
@@ -1069,22 +1104,44 @@ const removeMember = asyncHandler(async (req, res) => {
 const listWorkspaces = asyncHandler(async (req, res) => {
   // Find all WorkspaceMembers where the user is a member
   const workspaceMembers = await WorkspaceMember.find({ 'members.user': req.user._id })
-    .populate('workspace')
-    .lean(); // Use lean for better performance since we don't need mongoose documents
+    .populate({
+      path: 'workspace',
+      populate: {
+        path: 'createdBy',
+        select: 'name email',
+      },
+    })
+    .lean();
 
-  const workspaces = workspaceMembers.map((wm) => ({
-    _id: wm.workspace._id,
-    workspaceTitle: wm.workspace.workspaceTitle,
-    coverImage: wm.workspace.coverImage,
-    workspaceDescription: wm.workspace.workspaceDescription,
-    createdBy: wm.workspace.createdBy,
-    creationDateTime: wm.workspace.creationDateTime,
-    workspaceType: wm.workspace.workspaceType,
-    selectedViews: wm.workspace.selectedViews,
-    invitePeople: wm.workspace.invitePeople,
-    stages: wm.workspace.stages,
-    role: wm.members.find((m) => m.user.toString() === req.user._id.toString()).role,
-  }));
+  const workspaces = [];
+
+  for (const wm of workspaceMembers) {
+    // Fetch all members of the workspace
+    const membersWithDetails = await Promise.all(
+      wm.members.map(async (member) => {
+        const user = await User.findById(member.user).select('name email profileImage').lean();
+        return {
+          user,
+          role: member.role,
+        };
+      })
+    );
+
+    workspaces.push({
+      _id: wm.workspace._id,
+      workspaceTitle: wm.workspace.workspaceTitle,
+      coverImage: wm.workspace.coverImage,
+      workspaceDescription: wm.workspace.workspaceDescription,
+      createdBy: wm.workspace.createdBy,
+      creationDateTime: wm.workspace.creationDateTime,
+      workspaceType: wm.workspace.workspaceType,
+      selectedViews: wm.workspace.selectedViews,
+      invitePeople: wm.workspace.invitePeople,
+      stages: wm.workspace.stages,
+      role: wm.members.find((m) => m.user.toString() === req.user._id.toString()).role,
+      members: membersWithDetails,
+    });
+  }
 
   res.json(workspaces);
 });
