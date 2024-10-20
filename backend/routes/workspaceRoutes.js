@@ -20,6 +20,8 @@ import {
   deleteTaskFromList,
   updateListColor,
   getWorkspaceUpdates,
+  getMessages,
+  sendMessage,
 } from '../controller/workspaceController.js';
 import { ValidateJWT, sseAuthMiddleware} from '../controller/authMiddleware.js';
 import workspaceUpload from '../middleware/workspaceUpload.js';
@@ -146,5 +148,11 @@ router.delete('/:workspaceId/lists/:listId/tasks/:taskId', deleteTaskFromList);
 
 // SSE endpoint for workspace updates
 router.get('/:workspaceId/updates', sseAuthMiddleware, getWorkspaceUpdates);
+
+// GET all messages for a workspace
+router.get('/:workspaceId/messages', getMessages);
+
+// POST a new message to a workspace
+router.post('/:workspaceId/messages', sendMessage);
 
 export default router;

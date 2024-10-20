@@ -127,7 +127,35 @@ const stageSchema = new mongoose.Schema(
   }
 );
 
-// Define the Workspace Schema with Embedded Lists and Tasks
+// Define the Message Subdocument Schema
+const messageSchema = new mongoose.Schema(
+  {
+    _id: {
+      type: String,
+      default: uuidv4,
+    },
+    sender: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User', // References the User model
+      required: [true, 'Sender is required'],
+    },
+    content: {
+      type: String,
+      required: [true, 'Message content is required'],
+      trim: true,
+      maxlength: [1000, 'Message content cannot exceed 1000 characters'],
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    _id: false, // Prevents automatic _id generation for subdocuments
+  }
+);
+
+// Define the Workspace Schema with Embedded Lists, Tasks, and Messages
 const workspaceSchema = new mongoose.Schema(
   {
     workspaceTitle: {
@@ -199,6 +227,21 @@ const workspaceSchema = new mongoose.Schema(
       },
     },
     lists: [listSchema], // Embedding List subdocuments
+    messages: [messageSchema], // Embedding Message subdocuments
+    members: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+        role: {
+          type: String,
+          enum: ['admin', 'member'],
+          default: 'member',
+        },
+      },
+    ],
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields

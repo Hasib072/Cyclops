@@ -83,6 +83,25 @@ export const workspaceApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: (result, error, { workspaceId }) => [{ type: 'Workspace', id: workspaceId }],
     }),
 
+    getMessages: builder.query({
+      query: (workspaceId) => `/workspaces/${workspaceId}/messages`,
+      providesTags: (result, error, workspaceId) => [
+        { type: 'Messages', id: workspaceId },
+      ],
+    }),
+
+    // Send Message
+    sendMessage: builder.mutation({
+      query: ({ workspaceId, content }) => ({
+        url: `/workspaces/${workspaceId}/messages`,
+        method: 'POST',
+        body: { content },
+      }),
+      invalidatesTags: (result, error, { workspaceId }) => [
+        { type: 'Messages', id: workspaceId },
+      ],
+    }),
+
     // Task Endpoints
     addTaskToList: builder.mutation({
       query: ({ workspaceId, listId, taskData }) => ({
@@ -124,4 +143,6 @@ export const {
   useAddTaskToListMutation,
   useEditTaskInListMutation,
   useDeleteTaskFromListMutation,
+  useGetMessagesQuery,
+  useSendMessageMutation,
 } = workspaceApiSlice;

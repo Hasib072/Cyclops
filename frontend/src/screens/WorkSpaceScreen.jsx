@@ -11,6 +11,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import TodoListView from '../components/TodoListView'; // Import the TodoListView component
 import TodoBoardView from '../components/TodoBoardView';
 import TodoTableView from '../components/TodoTableView';
+import TeamChat from '../components/TeamChat';
 
 
 // RTK Query Hooks
@@ -154,6 +155,7 @@ const WorkSpaceScreen = () => {
       case 'WORKSPACE_UPDATED':
       case 'MEMBER_ADDED':
       case 'MEMBER_REMOVED':
+      case 'NEW_MESSAGE':
         refetchWorkspace();
         break;
       case 'WORKSPACE_DELETED':
@@ -410,8 +412,11 @@ const WorkSpaceScreen = () => {
                 members={workspace.members || []}
               />
             )}
+            {activeMenuItem === 'Teams' && (
+              <TeamChat workspaceId={workspace._id} />
+            )}
             {/* Placeholder for other menu items */}
-            {!['Lists', 'Board', 'Table'].includes(activeMenuItem) && (
+            {!['Lists', 'Board', 'Table', 'Teams'].includes(activeMenuItem) && (
               <p>Content for {activeMenuItem} will go here.</p>
             )}
           </div>

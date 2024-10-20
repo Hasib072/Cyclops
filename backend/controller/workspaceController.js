@@ -1327,6 +1327,88 @@ const getWorkspaceUpdates = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get all messages for a workspace
+// @route   GET /api/workspaces/:workspaceId/messages
+// @access  Private (Members of the workspace)
+const getMessages = asyncHandler(async (req, res) => {
+  const workspace = await Workspace.findById(req.params.workspaceId)
+    .populate('messages.sender', 'name email profileImage')
+    .populate('members.user', 'name email profileImage');
+
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  // Check if the user is a member of the workspace
+  const isMember = workspace.members.some(
+    (member) => member.user._id.toString() === req.user._id.toString()
+  );
+
+  // if (!isMember) {
+  //   res.status(403);
+  //   throw new Error('Access denied');
+  // }
+
+  res.json(workspace.messages);
+});
+
+// @desc    Send a new message to a workspace
+// @route   POST /api/workspaces/:workspaceId/messages
+// @access  Private (Members of the workspace)
+const sendMessage = asyncHandler(async (req, res) => {
+  const { content } = req.body;
+
+  if (!content || content.trim() === '') {
+    res.status(400);
+    throw new Error('Message content is required');
+  }
+
+  const workspace = await Workspace.findById(req.params.workspaceId);
+
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  // Check if the user is a member of the workspace
+  const isMember = workspace.members.some(
+    (member) => member.user.toString() === req.user._id.toString()
+  );
+
+  // if (!isMember) {
+  //   res.status(403);
+  //   throw new Error('Access denied');
+  // }
+
+  const message = {
+    sender: req.user._id,
+    content: content.trim(),
+    createdAt: new Date(),
+  };
+
+  workspace.messages.push(message);
+  await workspace.save();
+
+  // Populate the sender's information for the response
+  await workspace.populate({
+    path: 'messages.sender',
+    select: 'name email profileImage',
+  });
+
+  // Retrieve the newly added message (last in the array)
+  const populatedMessage = workspace.messages[workspace.messages.length - 1];
+
+  // Emit the new message to all connected clients via SSE
+  sendSSEMessage(req.params.workspaceId, {
+    type: 'NEW_MESSAGE',
+    payload: populatedMessage,
+  });
+
+  res.status(201).json(populatedMessage);
+});
+
+
 
 // Export all controller functions
 export {
@@ -1348,4 +1430,6 @@ export {
   updateListColor,
   getWorkspaceUpdates,
   clients,
+  getMessages,
+  sendMessage,
 };
