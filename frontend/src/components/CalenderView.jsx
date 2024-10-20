@@ -251,26 +251,32 @@ const CalenderView = ({ lists, stages }) => {
         ))}
       </div>
 
-      {/* Calendar Grid */}
-      <div className="Cal_calendar">
-        {/* Weekday Headers */}
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-          <div key={day} className="Cal_weekdays">
-            {day}
-          </div>
-        ))}
-
-        {/* Dates */}
-        {calendarWeeks.map((week, weekIndex) => (
-          week.map((day, dayIndex) => (
-            <div key={`${weekIndex}-${dayIndex}`} className={`Cal_date-cell ${day.currentMonth ? '' : 'Cal_not-current-month'}`}>
-              <span className="Cal_date">{day.day}</span>
+      {/* Calendar Wrapper */}
+      <div className="Cal_calendar-wrapper">
+        {/* Date Cells Grid */}
+        <div className="Cal_calendar">
+          {/* Weekday Headers */}
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+            <div key={day} className="Cal_weekdays">
+              {day}
             </div>
-          ))
-        ))}
+          ))}
 
-        {/* Render Task Segments */}
-        {renderTaskSegments()}
+          {/* Dates */}
+          {calendarWeeks.map((week, weekIndex) => (
+            week.map((day, dayIndex) => (
+              <div key={`${weekIndex}-${dayIndex}`} className={`Cal_date-cell ${day.currentMonth ? '' : 'Cal_not-current-month'}`}>
+                <span className="Cal_date">{day.day}</span>
+              </div>
+            ))
+          ))}
+        </div>
+
+        {/* Tasks Grid */}
+        <div className="Cal_tasks-grid">
+          {/* Render Task Segments */}
+          {renderTaskSegments()}
+        </div>
       </div>
 
       {/* Task Details Modal */}

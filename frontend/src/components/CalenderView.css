@@ -68,13 +68,16 @@
     background-color: #4caf50; /* Active tab color */
   }
   
+  .Cal_calendar-wrapper {
+    position: relative; /* To contain the absolutely positioned tasks grid */
+  }
+  
   .Cal_calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-auto-rows: 103px; /* Adjust row height as needed */
     gap: 0px;
     background-color: #3d3d3d;
-    position: relative; /* Ensure task bars appear within calendar grid */
     max-width: 100vw; /* Ensure full viewable width */
     border-radius: 8px;
     overflow: hidden;
@@ -113,8 +116,22 @@
     color: #a7a7a7;
   }
   
+  /* Tasks Grid */
+  .Cal_tasks-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: 103px; /* Match the date grid's row height */
+    pointer-events: none; /* Allow clicks to pass through except on tasks */
+  }
+  
   /* Task Segments */
   .Cal_task {
+    pointer-events: auto; /* Allow clicks on tasks */
     font-weight: bold;
     height: 22px;
     display: flex;
@@ -212,6 +229,10 @@
   
     .Cal_month-year {
       font-size: 20px;
+    }
+  
+    .Cal_tasks-grid {
+      grid-auto-rows: 80px; /* Adjust row height for smaller screens */
     }
   }
   
