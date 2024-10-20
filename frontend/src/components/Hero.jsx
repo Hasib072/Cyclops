@@ -18,7 +18,6 @@ import { v4 as uuidv4 } from 'uuid';
 import ListsIcon from '../assets/icons/Lists.svg';
 import CalendarIcon from '../assets/icons/Calendar.svg';
 import TableIcon  from '../assets/icons/Table.svg';
-import ChatIcon from '../assets/icons/Chat.svg';
 import GanttIcon from '../assets/icons/Gantt.svg';
 import BoardIcon from '../assets/icons/Board.svg';
 
@@ -33,7 +32,7 @@ import {
 } from '../slices/usersApiSlice';
 
 // Toast Notifications
-import { toast, ToastContainer } from 'react-toastify';
+import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const ItemTypes = {
@@ -349,10 +348,10 @@ const Hero = () => {
 
   // Define default views for each workspace type
   const defaultViewsByType = {
-    Starter: ['Lists', 'Board','Table','Chat'],
-    Kanban: ['Board', 'Calendar', 'Chat'],
-    Project: ['Gantt','Chat'],
-    Scrum: ['Gantt', 'Board','Chat'],
+    Starter: ['Lists', 'Board','Table'],
+    Kanban: ['Board', 'Calendar'],
+    Project: ['Lists','Gantt'],
+    Scrum: ['Gantt', 'Board'],
     // Add other types and their default views as needed
   };
 
@@ -1238,7 +1237,6 @@ const Hero = () => {
                 { name: 'Lists', icon: ListsIcon },
                 { name: 'Calendar', icon: CalendarIcon },
                 { name: 'Table', icon: TableIcon },
-                { name: 'Chat', icon: ChatIcon },
                 { name: 'Gantt', icon: GanttIcon },
                 { name: 'Board', icon: BoardIcon },
                 
@@ -1450,10 +1448,6 @@ const Hero = () => {
         )}
       </div>
     </DndProvider>
-
-
-      {/* Toast Container for Notifications */}
-      <ToastContainer />
     </div>
   );
 };

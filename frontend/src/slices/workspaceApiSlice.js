@@ -12,11 +12,32 @@ export const workspaceApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: formData,
       }),
-      invalidatesTags: [{ type: 'Workspace', id: 'LIST' }],
+      invalidatesTags: [{ type: 'Workspace', id: 'LIST' }, { type: 'Workspaces', id: 'LIST' }],
     }),
     getWorkspaceById: builder.query({
       query: (workspaceId) => `/workspaces/${workspaceId}`,
       providesTags: (result, error, arg) => [{ type: 'Workspace', id: arg }],
+    }),
+
+    // Delete Workspace Mutation
+    deleteWorkspace: builder.mutation({
+      query: (workspaceId) => ({
+        url: `/workspaces/${workspaceId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, workspaceId) => [
+        { type: 'Workspace', id: workspaceId },
+        { type: 'Workspaces', id: 'LIST' }, // Assuming you have a list of workspaces that should be refreshed
+      ],
+      // Optional: You can add onQueryStarted for optimistic updates or additional side effects
+      // onQueryStarted: async (workspaceId, { dispatch, queryFulfilled }) => {
+      //   try {
+      //     await queryFulfilled;
+      //     // Additional side effects if needed
+      //   } catch {
+      //     // Handle errors if needed
+      //   }
+      // },
     }),
 
     // List Endpoints
@@ -94,6 +115,7 @@ export const workspaceApiSlice = apiSlice.injectEndpoints({
 export const {
   useCreateWorkspaceMutation,
   useGetWorkspaceByIdQuery,
+  useDeleteWorkspaceMutation, // Newly added hook
   useAddListToWorkspaceMutation,
   useUpdateListInWorkspaceMutation,
   useDeleteListFromWorkspaceMutation,
