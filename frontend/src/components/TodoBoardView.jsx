@@ -1,6 +1,6 @@
 // frontend/src/components/TodoBoardView.jsx
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './TodoBoardView.css';
 import TaskModal from './TaskModal';
 import {
@@ -17,6 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-toastify';
 import { useDrag, useDrop } from 'react-dnd';
 import deleteIconSvg from '../assets/icons/delete-tilt.svg';
+import UnassignedIcon from '../assets/icons/AddPerson.svg';
 
 const ItemTypes = {
   TASK: 'task',
@@ -24,10 +25,12 @@ const ItemTypes = {
 
 const TodoBoardView = ({ stages = [], lists = [], workspaceId, members = [] }) => {
   // Sort stages based on predefined order
-  const stageOrder = ['Opened', 'In Progress', 'Blocked', 'Backlog', 'Closed'];
-  const sortedStages = [...stages].sort(
-    (a, b) => stageOrder.indexOf(a.name) - stageOrder.indexOf(b.name)
-  );
+  const stageOrder = ['Open', 'In Progress', 'Review', 'Done', 'Planned']; // Adjusted to match stage names
+  const sortedStages = useMemo(() => {
+    return [...stages].sort(
+      (a, b) => stageOrder.indexOf(a.name) - stageOrder.indexOf(b.name)
+    );
+  }, [stages]);
 
   // State to manage the selected list
   const [selectedListId, setSelectedListId] = useState(null);
@@ -238,7 +241,7 @@ const TodoBoardView = ({ stages = [], lists = [], workspaceId, members = [] }) =
         ref={dropRight}
         className={`delete-zone right ${isOverRight ? 'active' : ''}`}
       >
-        <img src={deleteIconSvg} alt="DeleteIconSVG" />
+        <img src={deleteIconSvg} alt="Delete Icon" />
       </div>
 
       {/* Task Board Container with Overflow Handling */}
@@ -252,6 +255,7 @@ const TodoBoardView = ({ stages = [], lists = [], workspaceId, members = [] }) =
               moveTask={moveTask}
               handleAddTask={handleAddTask}
               handleEditTask={handleEditTask}
+              members={members} // Pass members to Stage
             />
           ))}
         </div>
@@ -271,7 +275,8 @@ const TodoBoardView = ({ stages = [], lists = [], workspaceId, members = [] }) =
   );
 };
 
-const Stage = ({ stage, tasks, moveTask, handleAddTask, handleEditTask }) => {
+// Stage Component
+const Stage = ({ stage, tasks, moveTask, handleAddTask, handleEditTask, members }) => {
   // Use individual state for each stage's collapse status
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -331,6 +336,7 @@ const Stage = ({ stage, tasks, moveTask, handleAddTask, handleEditTask }) => {
               key={task._id}
               task={task}
               handleEditTask={handleEditTask}
+              members={members} // Pass members to Task
             />
           ))}
           {/* Add Task Button */}
@@ -346,7 +352,8 @@ const Stage = ({ stage, tasks, moveTask, handleAddTask, handleEditTask }) => {
   );
 };
 
-const Task = ({ task, handleEditTask }) => {
+// Task Component
+const Task = ({ task, handleEditTask, members }) => {
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes.TASK,
     item: { type: ItemTypes.TASK, task, stageId: task.stageId },
@@ -354,6 +361,26 @@ const Task = ({ task, handleEditTask }) => {
       isDragging: monitor.isDragging(),
     }),
   });
+
+  // Create a map for faster lookup
+  const userMap = useMemo(() => {
+    const map = {};
+    members.forEach((member) => {
+      map[member.user._id] = member.user;
+    });
+    return map;
+  }, [members]);
+
+  // Find the assignee using the map
+  const assignee = userMap[task.assignee] || null;
+
+  // Determine the profile image source with fallback
+  const profileImageSrc = assignee && assignee.profileImage
+    ? `http://localhost:5000/${assignee.profileImage}`
+    : 'https://placehold.co/50';
+
+  // Determine the assignee's name
+  const assigneeName = assignee ? assignee.name : 'Unassigned';
 
   return (
     <div
@@ -374,9 +401,18 @@ const Task = ({ task, handleEditTask }) => {
         <span className="due-date">
           {new Date(task.dueDate).toLocaleDateString()}
         </span>
-        <div className="avatar-group2">
-          <img src="https://via.placeholder.com/30" alt="Assignee" />
-        </div>
+          {assignee ? (
+            <div className="avatar-group">
+              <img
+                src={profileImageSrc}
+              />
+            </div>
+          ) : (
+            <div className="assign-icon">
+              {/* Placeholder for unassigned tasks */}
+              <img src={UnassignedIcon} alt="Unassigned" />
+            </div>
+          )}
       </div>
     </div>
   );

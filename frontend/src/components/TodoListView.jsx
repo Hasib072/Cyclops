@@ -19,6 +19,7 @@ import { SketchPicker } from 'react-color';
 import { useDrag, useDrop } from 'react-dnd';
 import mongoose from 'mongoose'; // Ensure mongoose is imported
 import deleteIconSvg from '../assets/icons/delete-tilt.svg'
+import UnassignedIcon from '../assets/icons/AddPerson.svg';
 
 const ItemTypes = {
   TASK: 'task',
@@ -749,7 +750,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId, members = [] }) =>
             {/* Task Items */}
             <ul className="task-list" style={{ listStyle: 'none', padding: 0 }}>
               {tasksInStage.map((task) => (
-                <Task key={task._id} task={task} listId={listId} />
+                <Task key={task._id} task={task} listId={listId} members={members}/>
               ))}
             </ul>
           </>
@@ -775,7 +776,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId, members = [] }) =>
   }, [lists]);
   
 
-  const Task = ({ task, listId }) => {
+  const Task = ({ task, listId, members }) => {
     const [{ isDragging }, drag] = useDrag({
       type: ItemTypes.TASK,
       item: { type: ItemTypes.TASK, task, listId },
@@ -783,7 +784,10 @@ const TodoListView = ({ stages = [], lists = [], workspaceId, members = [] }) =>
         isDragging: monitor.isDragging(),
       }),
     });
-
+  
+    // Find the assignee in the members array
+    const assignee = members.find((member) => member.user._id === task.assignee);
+  
     return (
       <li
         ref={drag}
@@ -796,22 +800,51 @@ const TodoListView = ({ stages = [], lists = [], workspaceId, members = [] }) =>
       >
         <div className="task-container">
           <div className="task-info">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="6" cy="6" r="6" fill={sortedStages.find((stage) => stage.id === task.stageId)?.color} />
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="6"
+                cy="6"
+                r="6"
+                fill={
+                  sortedStages.find((stage) => stage.id === task.stageId)?.color
+                }
+              />
             </svg>
             <div className="task-name">{task.name}</div>
           </div>
         </div>
-        <div className={`task-priority ${task.priority.toLowerCase()}-priority`}>{task.priority.toUpperCase()}</div>
-        <div className="task-due-date">{new Date(task.dueDate).toLocaleDateString()}</div>
+        <div
+          className={`task-priority ${task.priority.toLowerCase()}-priority`}
+        >
+          {task.priority.toUpperCase()}
+        </div>
+        <div className="task-due-date">
+          {new Date(task.dueDate).toLocaleDateString()}
+        </div>
         <div className="task-assignee">
-          <div className="avatar-group">
-            <img src="https://via.placeholder.com/30" alt="Assignee" />
-          </div>
+          {assignee ? (
+            <div className="avatar-group">
+              <img
+                src={`http://localhost:5000/${assignee.user.profileImage}`}
+              />
+            </div>
+          ) : (
+            <div className="assign-icon">
+              {/* Placeholder for unassigned tasks */}
+              <img src={UnassignedIcon} alt="Unassigned" />
+            </div>
+          )}
         </div>
       </li>
     );
   };
+  
 
   return (
     <>

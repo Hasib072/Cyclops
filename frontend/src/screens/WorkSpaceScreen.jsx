@@ -341,7 +341,7 @@ const WorkSpaceScreen = () => {
                 {dynamicMenuItems.map((item, index) => (
                   <li key={`${item.label}-${index}`} style={styles.menuItem}>
                     <a
-                      href="#!"
+                      href="#"
                       style={{
                         ...styles.menuLink,
                         ...(activeMenuItem === item.label ? styles.activeMenuLink : {}),

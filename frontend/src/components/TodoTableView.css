@@ -93,13 +93,7 @@
   gap: 4px;
 }
 
-.avatar-group img {
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  margin-left: -6px;
-  border: 2px solid #121212;
-}
+
 
 .assign-icon {
   display: flex;

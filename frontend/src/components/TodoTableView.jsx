@@ -1,6 +1,6 @@
 // frontend/src/components/TodoTableView.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './TodoTableView.css';
 import TaskModal from './TaskModal';
 import {
@@ -151,6 +151,15 @@ const TodoTableView = ({ stages = [], lists = [], workspaceId, members = [] }) =
   // Prepare data for the table
   const tasks = selectedList.tasks;
 
+  // Create a map for faster lookup of users by ID
+  const userMap = useMemo(() => {
+    const map = {};
+    members.forEach((member) => {
+      map[member.user._id] = member.user;
+    });
+    return map;
+  }, [members]);
+
   return (
     <div className="todo-table-view">
       {/* Tabs for lists */}
@@ -187,6 +196,16 @@ const TodoTableView = ({ stages = [], lists = [], workspaceId, members = [] }) =
           <tbody>
             {tasks.map((task, index) => {
               const stage = stages.find((stage) => stage.id === task.stageId);
+              const assignee = userMap[task.assignee] || null;
+
+              // Determine the profile image source with fallback
+              const profileImageSrc = assignee && assignee.profileImage
+                ? `http://localhost:5000/${assignee.profileImage}`
+                : 'https://placehold.co/50';
+
+              // Determine the assignee's name
+              const assigneeName = assignee ? assignee.name : 'Unassigned';
+
               return (
                 <tr key={task._id} onClick={() => handleEditTask(task)}>
                   <td>{index + 1}</td>
@@ -199,20 +218,32 @@ const TodoTableView = ({ stages = [], lists = [], workspaceId, members = [] }) =
                     ></span>
                     {task.name}
                   </td>
-                  <td>{task.description || <span className="add-description">+ Add Description</span>}</td>
                   <td>
-                    {task.assignee ? (
+                    {task.description || (
+                      <span className="add-description">+ Add Description</span>
+                    )}
+                  </td>
+                  <td>
+                    {assignee ? (
                       <div className="assignee-icon">
                         {/* Display assignee information */}
                         <div className="avatar-group">
-                          <img src={task.assignee.avatarUrl} alt={task.assignee.name} />
+                          <img
+                            src={profileImageSrc}
+                            alt={assigneeName}
+                            loading="lazy"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = 'https://placehold.co/50';
+                            }}
+                          />
+                          <span className="assignee-name">{assigneeName}</span>
                         </div>
-                        <span>{task.assignee.name}</span>
                       </div>
                     ) : (
                       <div className="assign-icon">
                         <img src={UnassignedIcon} alt="Assign" />
-                        <span style={{color: 'gray'}}>&nbsp; Assign</span>
+                        <span style={{ color: 'gray' }}>&nbsp; Assign</span>
                       </div>
                     )}
                   </td>
