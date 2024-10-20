@@ -199,8 +199,12 @@ const TodoTableView = ({ stages = [], lists = [], workspaceId, members = [] }) =
               const assignee = userMap[task.assignee] || null;
 
               // Determine the profile image source with fallback
+              // const profileImageSrc = assignee && assignee.profileImage
+              //   ? `http://localhost:5000/${assignee.profileImage}`
+              //   : 'https://placehold.co/50';
+
               const profileImageSrc = assignee && assignee.profileImage
-                ? `http://localhost:5000/${assignee.profileImage}`
+                ? `https://d0c7-2402-e280-21b0-55e-c79-8529-479-df00.ngrok-free.app/${assignee.profileImage}`
                 : 'https://placehold.co/50';
 
               // Determine the assignee's name
@@ -237,7 +241,7 @@ const TodoTableView = ({ stages = [], lists = [], workspaceId, members = [] }) =
                               e.target.src = 'https://placehold.co/50';
                             }}
                           />
-                          <span className="assignee-name">{assigneeName}</span>
+                          <span className="assignee-name">&nbsp;{assigneeName}</span>
                         </div>
                       </div>
                     ) : (
@@ -262,11 +266,11 @@ const TodoTableView = ({ stages = [], lists = [], workspaceId, members = [] }) =
           </tbody>
         </table>
         {/* Add Task Button */}
-        <div className="add-task-container">
+        {/* <div className="add-task-container">
           <button className="add-task-button" onClick={handleAddTask}>
             + Add Task
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Task Modal */}
