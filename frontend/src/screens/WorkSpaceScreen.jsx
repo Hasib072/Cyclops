@@ -267,17 +267,16 @@ const WorkSpaceScreen = () => {
     { label: 'Repository', icon: RepositoryIcon },
   ];
 
-  // Generate additional menu items from selectedViews, excluding defaults
-  const additionalMenuItems = workspace?.selectedViews
-    ? workspace.selectedViews
-        .filter(
-          (view) => !defaultStartMenuItems.some((defaultItem) => defaultItem.label === view)
-        )
-        .map((view) => ({
-          label: view,
-          icon: iconMap[view] || ListsIcon, // Default to ListsIcon if no match found
-        }))
-    : [];
+  // Define the desired order for additional menu items
+  const desiredMenuOrder = ['Lists', 'Table', 'Board', 'Gantt', 'Calendar'];
+
+  // Generate additional menu items from selectedViews, excluding defaults and maintaining desired order
+  const additionalMenuItems = desiredMenuOrder
+  .filter(view => workspace?.selectedViews?.includes(view))
+  .map(view => ({
+    label: view,
+    icon: iconMap[view] || ListsIcon, // Default to ListsIcon if no match found
+  }));
 
   // Combine default and additional menu items
   const dynamicMenuItems = [...defaultStartMenuItems, ...additionalMenuItems, ...defaultEndMenuItems];
