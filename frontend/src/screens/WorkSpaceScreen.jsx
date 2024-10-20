@@ -12,7 +12,7 @@ import TodoListView from '../components/TodoListView'; // Import the TodoListVie
 import TodoBoardView from '../components/TodoBoardView';
 import TodoTableView from '../components/TodoTableView';
 import TeamChat from '../components/TeamChat';
-
+import CalenderView from '../components/CalenderView';
 
 // RTK Query Hooks
 import {
@@ -418,8 +418,14 @@ const WorkSpaceScreen = () => {
               members={workspace.members || []}
               />
             )}
+            {activeMenuItem === 'Calendar' && (
+              <CalenderView
+              lists={workspace.lists}
+              stages={workspace.stages}
+            />
+            )}
             {/* Placeholder for other menu items */}
-            {!['Lists', 'Board', 'Table', 'Teams'].includes(activeMenuItem) && (
+            {!['Lists', 'Board', 'Table', 'Teams', 'Calendar'].includes(activeMenuItem) && (
               <p>Content for {activeMenuItem} will go here.</p>
             )}
           </div>
