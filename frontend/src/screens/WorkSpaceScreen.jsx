@@ -28,7 +28,6 @@ import TableIcon from '../assets/icons/Table.svg';
 import ChatIcon from '../assets/icons/Chat.svg';
 import GanttIcon from '../assets/icons/Gantt.svg';
 import BoardIcon from '../assets/icons/Board.svg';
-import TimelineIcon from '../assets/icons/timeline.svg';
 import DashboardIcon from '../assets/icons/Dashboard.svg';
 import MapIcon from '../assets/icons/Map.svg';
 import TeamsIcon from '../assets/icons/Teams.svg';
@@ -43,7 +42,6 @@ const iconMap = {
   Chat: ChatIcon,
   'Gantt Chart': GanttIcon,
   Board: BoardIcon,
-  Timeline: TimelineIcon,
   Map: MapIcon,
   Teams: TeamsIcon,
   Repository: RepositoryIcon,

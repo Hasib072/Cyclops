@@ -21,7 +21,6 @@ import TableIcon  from '../assets/icons/Table.svg';
 import ChatIcon from '../assets/icons/Chat.svg';
 import GanttIcon from '../assets/icons/Gantt.svg';
 import BoardIcon from '../assets/icons/Board.svg';
-import TimelineIcon from '../assets/icons/timeline.svg';
 
 
 // RTK Query Hooks
@@ -349,9 +348,9 @@ const Hero = () => {
 
   // Define default views for each workspace type
   const defaultViewsByType = {
-    Starter: ['Lists', 'Board','Table','Chat', 'Timeline'],
-    Kanban: ['Board', 'Calendar', 'Timeline', 'Chat'],
-    Project: ['Gantt', 'Timeline','Chat'],
+    Starter: ['Lists', 'Board','Table','Chat'],
+    Kanban: ['Board', 'Calendar', 'Chat'],
+    Project: ['Gantt','Chat'],
     Scrum: ['Gantt', 'Board','Chat'],
     // Add other types and their default views as needed
   };
@@ -1241,7 +1240,7 @@ const Hero = () => {
                 { name: 'Chat', icon: ChatIcon },
                 { name: 'Gantt', icon: GanttIcon },
                 { name: 'Board', icon: BoardIcon },
-                { name: 'Timeline', icon: TimelineIcon },
+                
               ].map((view) => (
                 <label
                   className="option"

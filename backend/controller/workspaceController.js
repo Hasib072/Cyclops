@@ -28,9 +28,9 @@ const sendSSEMessage = (workspaceId, message) => {
 const allowedWorkspaceTypes = ['Starter', 'Kanban', 'Project', 'Scrum']; // Extend as needed
 
 const defaultViewsByType = {
-  Starter: ['Lists', 'Board', 'Table', 'Chat', 'Timeline'],
-  Kanban: ['Board', 'Calendar', 'Timeline', 'Chat'],
-  Project: ['Gantt', 'Timeline', 'Chat'],
+  Starter: ['Lists', 'Board', 'Table', 'Chat'],
+  Kanban: ['Board', 'Calendar', 'Chat'],
+  Project: ['Gantt', 'Chat'],
   Scrum: ['Gantt', 'Board', 'Chat'],
   // Add other types and their default views as needed
 };
