@@ -1,19 +1,19 @@
 // frontend/src/components/TeamChat.jsx
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useGetMessagesQuery, useSendMessageMutation } from '../slices/workspaceApiSlice';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useSendMessageMutation, useGetMessagesQuery } from '../slices/workspaceApiSlice';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
-// Message Bubble Component
-const MessageBubble = ({ message, isOwnMessage }) => {
+// MessageBubble Component as defined earlier
+const MessageBubble = ({ message, sender, isOwnMessage }) => {
   const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
 
-  const profileImageUrl = message.sender.profileImage
-    ? message.sender.profileImage.startsWith('data:image/')
-      ? message.sender.profileImage
-      : `${BACKEND_URL}/${message.sender.profileImage}`
-    : 'path_to_default_profile_image.png'; // Replace with a default image path
+  const profileImageUrl = sender.profileImage
+    ? sender.profileImage.startsWith('data:image/')
+      ? sender.profileImage
+      : `${BACKEND_URL}/${sender.profileImage}`
+    : '/assets/default-profile.png'; // Ensure this path is correct
 
   return (
     <div
@@ -26,7 +26,7 @@ const MessageBubble = ({ message, isOwnMessage }) => {
     >
       <img
         src={profileImageUrl}
-        alt={`${message.sender.name}'s profile`}
+        alt={`${sender.name}'s profile`}
         style={{
           width: '40px',
           height: '40px',
@@ -53,7 +53,7 @@ const MessageBubble = ({ message, isOwnMessage }) => {
   );
 };
 
-const TeamChat = ({ workspaceId }) => {
+const TeamChat = ({ workspaceId, members }) => {
   const { userInfo } = useSelector((state) => state.auth);
   const [newMessage, setNewMessage] = useState('');
   const [sendMessage] = useSendMessageMutation();
@@ -62,9 +62,18 @@ const TeamChat = ({ workspaceId }) => {
   const eventSourceRef = useRef(null);
   const messagesEndRef = useRef(null);
 
+  // Create a map from user ID to user object for quick lookup
+  const userMap = useMemo(() => {
+    const map = {};
+    members.forEach((member) => {
+      map[member.user._id] = member.user;
+    });
+    return map;
+  }, [members]);
+
   // Fetch initial messages
   const { data: fetchedMessages, isLoading, isError, error } = useGetMessagesQuery(workspaceId, {
-    // Since the token is in cookies, no need for additional headers
+    // No need for additional headers; cookies are included automatically
   });
 
   useEffect(() => {
@@ -77,16 +86,19 @@ const TeamChat = ({ workspaceId }) => {
   useEffect(() => {
     if (!workspaceId) return;
 
+    // Initialize EventSource
     const eventSource = new EventSource(`/api/workspaces/${workspaceId}/updates`, {
-      // No need to set headers; cookies are sent automatically with 'credentials: include' in apiSlice
+      withCredentials: true, // Ensures cookies are sent
     });
 
     eventSourceRef.current = eventSource;
 
     eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'NEW_MESSAGE') {
-        setMessages((prev) => [...prev, data.payload]);
+      try {
+        const data = JSON.parse(event.data);
+        handleServerEvent(data);
+      } catch (err) {
+        console.error('Failed to parse SSE data:', err);
       }
     };
 
@@ -100,6 +112,21 @@ const TeamChat = ({ workspaceId }) => {
       eventSource.close();
     };
   }, [workspaceId]);
+
+  const handleServerEvent = (data) => {
+    switch (data.type) {
+      case 'NEW_MESSAGE':
+        setMessages((prev) => [...prev, data.payload]);
+        break;
+      case 'MEMBER_REMOVED':
+        // Handle member removal (e.g., update members list or show notification)
+        toast.info(`Member with ID ${data.payload.userId} has been removed.`);
+        break;
+      // Handle other event types as needed
+      default:
+        console.warn('Unhandled SSE event type:', data.type);
+    }
+  };
 
   // Auto-scroll to the bottom when messages update
   useEffect(() => {
@@ -118,7 +145,7 @@ const TeamChat = ({ workspaceId }) => {
       toast.success('Message sent!');
     } catch (err) {
       console.error('Failed to send message:', err);
-      toast.error('Failed to send message.');
+      toast.error(err?.data?.message || 'Failed to send message.');
     }
   };
 
@@ -148,13 +175,22 @@ const TeamChat = ({ workspaceId }) => {
           marginBottom: '10px',
         }}
       >
-        {messages.map((msg) => (
-          <MessageBubble
-            key={msg._id}
-            message={msg}
-            isOwnMessage={msg.sender._id === userInfo?._id}
-          />
-        ))}
+        {messages.map((msg) => {
+          const sender = userMap[msg.sender._id];
+          if (!sender) {
+            console.warn(`Sender with ID ${msg.sender._id} not found in members.`);
+            return null; // Or render a placeholder
+          }
+
+          return (
+            <MessageBubble
+              key={msg._id}
+              message={msg}
+              sender={sender}
+              isOwnMessage={msg.sender._id === userInfo?._id}
+            />
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
       <form onSubmit={handleSendMessage} style={{ display: 'flex' }}>

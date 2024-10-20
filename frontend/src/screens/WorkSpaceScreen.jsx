@@ -413,7 +413,10 @@ const WorkSpaceScreen = () => {
               />
             )}
             {activeMenuItem === 'Teams' && (
-              <TeamChat workspaceId={workspace._id} />
+              <TeamChat 
+              workspaceId={workspace._id} 
+              members={workspace.members || []}
+              />
             )}
             {/* Placeholder for other menu items */}
             {!['Lists', 'Board', 'Table', 'Teams'].includes(activeMenuItem) && (
