@@ -25,7 +25,7 @@ const ItemTypes = {
   LIST: 'list',
 };
 
-const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
+const TodoListView = ({ stages = [], lists = [], workspaceId, members = [] }) => {
   // Sort stages based on predefined order
   const stageOrder = ['Pending', 'Active', 'Done'];
   const sortedStages = useMemo(() => {
@@ -874,6 +874,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
             onRequestClose={() => setIsModalOpen(false)}
             onSubmit={handleModalSubmit}
             initialData={modalData}
+            members={members}
           />
         )}
       </div>

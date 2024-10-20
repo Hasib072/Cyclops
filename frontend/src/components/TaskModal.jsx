@@ -2,15 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
+import { useSelector } from 'react-redux';
 import './TaskModal.css'; // Ensure correct CSS file name
+
+
 
 Modal.setAppElement('#root'); // Set the app element for accessibility
 
-const TaskModal = ({ isOpen, onRequestClose, onSubmit, initialData }) => {
+const TaskModal = ({ isOpen, onRequestClose, onSubmit, initialData, members}) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('Low');
   const [dueDate, setDueDate] = useState('');
+  const [assignee, setAssignee] = useState('');
 
   useEffect(() => {
     if (initialData) {
@@ -18,13 +22,16 @@ const TaskModal = ({ isOpen, onRequestClose, onSubmit, initialData }) => {
       setDescription(initialData.description);
       setPriority(initialData.priority);
       setDueDate(new Date(initialData.dueDate).toISOString().split('T')[0]);
+      setAssignee(initialData.assignee || '');
     } else {
       setName('');
       setDescription('');
       setPriority('Low');
       setDueDate('');
+      setAssignee('');
     }
   }, [initialData]);
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -32,15 +39,16 @@ const TaskModal = ({ isOpen, onRequestClose, onSubmit, initialData }) => {
       alert('Please fill in all required fields.');
       return;
     }
-
+  
     onSubmit({
       name: name.trim(),
       description: description.trim(),
       priority,
       dueDate: new Date(dueDate),
-      // Add other fields as necessary
+      assignee: assignee || null,
     });
-  };
+  };  
+  
 
   return (
     <Modal
@@ -95,7 +103,22 @@ const TaskModal = ({ isOpen, onRequestClose, onSubmit, initialData }) => {
             required
           />
         </div>
-        {/* Add other fields like assignee if necessary */}
+        <div className="form-group">
+          <label htmlFor="task-assignee">Assignee</label>
+          <select
+            id="task-assignee"
+            value={assignee}
+            onChange={(e) => setAssignee(e.target.value)}
+          >
+            <option value="">Unassigned</option>
+            {members.map((member) => (
+              <option key={member.user._id} value={member.user._id}>
+                {member.user.name}
+              </option>
+            ))}
+          </select>
+        </div>
+          
         <div className="form-actions">
           <button type="submit" className="submit-button">
             {initialData ? 'Update Task' : 'Add Task'}

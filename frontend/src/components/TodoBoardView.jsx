@@ -22,7 +22,7 @@ const ItemTypes = {
   TASK: 'task',
 };
 
-const TodoBoardView = ({ stages = [], lists = [], workspaceId }) => {
+const TodoBoardView = ({ stages = [], lists = [], workspaceId, members = [] }) => {
   // Sort stages based on predefined order
   const stageOrder = ['Opened', 'In Progress', 'Blocked', 'Backlog', 'Closed'];
   const sortedStages = [...stages].sort(
@@ -264,6 +264,7 @@ const TodoBoardView = ({ stages = [], lists = [], workspaceId }) => {
           onRequestClose={() => setIsModalOpen(false)}
           onSubmit={handleModalSubmit}
           initialData={modalData}
+          members={members}
         />
       )}
     </>

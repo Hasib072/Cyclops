@@ -15,7 +15,7 @@ import { toast } from 'react-toastify';
 // Import the unassigned icon SVG
 import UnassignedIcon from '../assets/icons/AddPerson.svg';
 
-const TodoTableView = ({ stages = [], lists = [], workspaceId }) => {
+const TodoTableView = ({ stages = [], lists = [], workspaceId, members = [] }) => {
   // State to manage the selected list
   const [selectedListId, setSelectedListId] = useState(null);
 
@@ -246,6 +246,7 @@ const TodoTableView = ({ stages = [], lists = [], workspaceId }) => {
           onSubmit={handleModalSubmit}
           initialData={modalData}
           stages={stages}
+          members={members}
         />
       )}
     </div>

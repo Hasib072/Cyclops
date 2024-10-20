@@ -389,6 +389,7 @@ const WorkSpaceScreen = () => {
                     stages={workspace.stages || []}
                     lists={workspace.lists || []}
                     workspaceId={workspace._id}
+                    members={workspace.members || []}
                   />
                 </DndProvider>
               </>
@@ -399,6 +400,7 @@ const WorkSpaceScreen = () => {
                   stages={workspace.stages || []}
                   lists={workspace.lists || []}
                   workspaceId={workspace._id}
+                  members={workspace.members || []}
                 />
               </DndProvider>
             )}
@@ -407,6 +409,7 @@ const WorkSpaceScreen = () => {
                 stages={workspace.stages || []}
                 lists={workspace.lists || []}
                 workspaceId={workspace._id}
+                members={workspace.members || []}
               />
             )}
             {/* Placeholder for other menu items */}
