@@ -314,8 +314,8 @@ const ProfileScreen = () => {
   };
 
   // Get Backend URL from Environment Variable
-  //const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-  const BACKEND_URL = 'https://d0c7-2402-e280-21b0-55e-c79-8529-479-df00.ngrok-free.app';
+  const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+  //const BACKEND_URL = 'https://d0c7-2402-e280-21b0-55e-c79-8529-479-df00.ngrok-free.app';
 
 
   // Construct the full profile image URL

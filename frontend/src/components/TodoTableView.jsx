@@ -199,13 +199,13 @@ const TodoTableView = ({ stages = [], lists = [], workspaceId, members = [] }) =
               const assignee = userMap[task.assignee] || null;
 
               // Determine the profile image source with fallback
-              // const profileImageSrc = assignee && assignee.profileImage
-              //   ? `http://localhost:5000/${assignee.profileImage}`
-              //   : 'https://placehold.co/50';
-
               const profileImageSrc = assignee && assignee.profileImage
-                ? `https://d0c7-2402-e280-21b0-55e-c79-8529-479-df00.ngrok-free.app/${assignee.profileImage}`
+                ? `${import.meta.env.VITE_APP_BACKEND_URL}/${assignee.profileImage}`
                 : 'https://placehold.co/50';
+
+              // const profileImageSrc = assignee && assignee.profileImage
+              //   ? `https://d0c7-2402-e280-21b0-55e-c79-8529-479-df00.ngrok-free.app/${assignee.profileImage}`
+              //   : 'https://placehold.co/50';
 
               // Determine the assignee's name
               const assigneeName = assignee ? assignee.name : 'Unassigned';
