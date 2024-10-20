@@ -13,6 +13,7 @@ import TodoBoardView from '../components/TodoBoardView';
 import TodoTableView from '../components/TodoTableView';
 import TeamChat from '../components/TeamChat';
 import CalenderView from '../components/CalenderView';
+import DashboardView from '../components/DashboardView';
 
 // RTK Query Hooks
 import {
@@ -424,8 +425,11 @@ const WorkSpaceScreen = () => {
               stages={workspace.stages}
             />
             )}
+            {activeMenuItem === 'Dashboard' && (
+              <DashboardView/>
+            )}
             {/* Placeholder for other menu items */}
-            {!['Lists', 'Board', 'Table', 'Teams', 'Calendar'].includes(activeMenuItem) && (
+            {!['Lists', 'Board', 'Table', 'Teams', 'Calendar', 'Dashboard'].includes(activeMenuItem) && (
               <p>Content for {activeMenuItem} will go here.</p>
             )}
           </div>
