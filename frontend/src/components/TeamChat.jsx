@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSendMessageMutation, useGetMessagesQuery } from '../slices/workspaceApiSlice';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import './TeamChat.css';
 
 // MessageBubble Component as defined earlier
 const MessageBubble = ({ message, sender, isOwnMessage }) => {
@@ -37,8 +38,8 @@ const MessageBubble = ({ message, sender, isOwnMessage }) => {
       />
       <div
         style={{
-          backgroundColor: isOwnMessage ? '#4caf50' : '#ffffff',
-          color: isOwnMessage ? '#fff' : '#000',
+          backgroundColor: isOwnMessage ? '#382251' : '#2f2f2f',
+          color: isOwnMessage ? '#fff' : '#fff',
           padding: '10px 15px',
           borderRadius: '15px',
           maxWidth: '60%',
@@ -157,20 +158,20 @@ const TeamChat = ({ workspaceId, members }) => {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        height: '80vh',
-        border: '1px solid #ccc',
+        height: '77vh',
         borderRadius: '8px',
         padding: '10px',
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#121212',
       }}
     >
-      <h2>Team Chat</h2>
+      {/* <h2>Team Chat</h2> */}
       <div
+        className="chat-messages"
         style={{
           flex: 1,
           overflowY: 'auto',
           padding: '10px',
-          backgroundColor: '#e5ddd5',
+          backgroundColor: '#121212',
           borderRadius: '8px',
           marginBottom: '10px',
         }}
@@ -203,7 +204,9 @@ const TeamChat = ({ workspaceId, members }) => {
             flex: 1,
             padding: '10px',
             borderRadius: '20px',
-            border: '1px solid #ccc',
+            border: '2px solid #8159ad',
+            backgroundColor: '#121212',
+            color: 'white',
             outline: 'none',
           }}
         />
@@ -214,7 +217,7 @@ const TeamChat = ({ workspaceId, members }) => {
             padding: '10px 20px',
             borderRadius: '20px',
             border: 'none',
-            backgroundColor: '#4caf50',
+            backgroundColor: '#8159ad',
             color: '#fff',
             cursor: 'pointer',
           }}
