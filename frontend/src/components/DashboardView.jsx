@@ -119,7 +119,7 @@ const DashboardView = ({ stages, lists, members }) => {
 
         {/* Progress Pie Chart */}
         <div className="Dashboard_progress">
-          <h3>Progress</h3>
+          {/* <h3>Progress</h3> */}
           <PieChart width={300} height={200} className="Dashboard_progress-chart">
             <Pie
               data={progressData}

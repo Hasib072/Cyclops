@@ -25,6 +25,11 @@ import { setMindMap } from '../slices/mindMapSlice';
 import { v4 as uuidv4 } from 'uuid';
 
 import NodeDetailsModal from './NodeDetailsModal';
+import CustomNode from './CustomNode'; // Import the custom node component
+
+const nodeTypes = {
+  custom: CustomNode, // Define the custom node type
+};
 
 const Maps = ({ workspaceId }) => {
   const dispatch = useDispatch();
@@ -46,14 +51,36 @@ const Maps = ({ workspaceId }) => {
   // Modal state
   const [selectedNode, setSelectedNode] = useState(null);
 
+  // Handle deleting a node
+  const handleDeleteNode = useCallback(
+    async (nodeId) => {
+      // Optimistically remove the node from local state
+      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+
+      try {
+        await deleteNodeMutation({ workspaceId, nodeId }).unwrap();
+        // Optionally, show a success notification
+      } catch (error) {
+        console.error('Failed to delete node:', error);
+        // Optionally, refetch mind map or revert the state
+      }
+    },
+    [deleteNodeMutation, workspaceId, setNodes, setEdges],
+  );
+
   // Initialize nodes and edges when data is fetched
   useEffect(() => {
     if (isSuccess && mindMapData) {
       const flowNodes = mindMapData.nodes.map((node) => ({
         id: node.id,
-        data: { label: node.label },
+        type: 'custom', // Use the custom node type
+        data: { 
+          label: node.label,
+          onDelete: handleDeleteNode, // Pass the delete handler to the node
+        },
         position: node.position,
-        style: { background: node.color },
+        style: { background: node.color, borderRadius: '10px' }, // Ensure background is set
       }));
 
       const flowEdges = mindMapData.edges.map((edge) => ({
@@ -67,7 +94,7 @@ const Maps = ({ workspaceId }) => {
       setEdges(flowEdges);
       dispatch(setMindMap({ nodes: flowNodes, edges: flowEdges }));
     }
-  }, [isSuccess, mindMapData, setNodes, setEdges, dispatch]);
+  }, [isSuccess, mindMapData, setNodes, setEdges, dispatch, handleDeleteNode]);
 
   // Handle connecting nodes (adding edges)
   const onConnectHandler = useCallback(
@@ -83,10 +110,12 @@ const Maps = ({ workspaceId }) => {
             target: params.target,
           },
         }).unwrap();
+        // Optionally, show a success notification
       } catch (error) {
         console.error('Failed to add edge:', error);
         // Optionally, revert the local state if mutation fails
         setEdges((eds) => eds.filter((e) => e.id !== params.id));
+        // Optionally, show an error notification
       }
     },
     [addEdgeMutation, edges, workspaceId, setEdges],
@@ -105,6 +134,7 @@ const Maps = ({ workspaceId }) => {
           nodeId: node.id,
           nodeData: { position: node.position },
         }).unwrap();
+        // Optionally, show a success notification
       } catch (error) {
         console.error('Failed to update node position:', error);
         // Optionally, revert the position if mutation fails
@@ -113,52 +143,10 @@ const Maps = ({ workspaceId }) => {
     [updateNodeMutation, workspaceId, setNodes],
   );
 
-  // Handle element removal (nodes or edges)
-  const onRemoveHandler = useCallback(
-    async (elementsToRemove) => {
-      const nodesToRemove = elementsToRemove.filter((el) => el.position); // Nodes have position
-      const edgesToRemove = elementsToRemove.filter((el) => el.source && el.target); // Edges have source and target
-
-      // Update local state
-      setNodes((nds) => nds.filter((n) => !nodesToRemove.find((r) => r.id === n.id)));
-      setEdges((eds) => eds.filter((e) => !edgesToRemove.find((r) => r.id === e.id)));
-
-      // Delete nodes
-      for (const node of nodesToRemove) {
-        try {
-          await deleteNodeMutation({ workspaceId, nodeId: node.id }).unwrap();
-        } catch (error) {
-          console.error('Failed to delete node:', error);
-          // Optionally, revert the node removal in local state
-        }
-      }
-
-      // Delete edges
-      for (const edge of edgesToRemove) {
-        try {
-          await deleteEdgeMutation({ workspaceId, edgeId: edge.id }).unwrap();
-        } catch (error) {
-          console.error('Failed to delete edge:', error);
-          // Optionally, revert the edge removal in local state
-        }
-      }
-    },
-    [deleteNodeMutation, deleteEdgeMutation, workspaceId, setNodes, setEdges],
-  );
-
   // Handle node click (for editing)
   const onNodeClickHandler = useCallback(
     (event, node) => {
       setSelectedNode(node);
-    },
-    [],
-  );
-
-  // Handle edge click (optional: for editing edges)
-  const onEdgeClickHandler = useCallback(
-    (event, edge) => {
-      // Implement edge editing if needed
-      console.log('Edge clicked:', edge);
     },
     [],
   );
@@ -181,10 +169,15 @@ const Maps = ({ workspaceId }) => {
       setNodes((nds) =>
         nds.map((n) =>
           n.id === updatedNode.id
-            ? { ...n, data: { label: updatedNode.data.label }, style: { background: updatedNode.style.background } }
+            ? { 
+                ...n, 
+                data: { label: updatedNode.data.label, onDelete: handleDeleteNode }, 
+                style: { background: updatedNode.style.background, borderRadius: '10px' } 
+              }
             : n,
         ),
       );
+      // Optionally, show a success notification
     } catch (error) {
       console.error('Failed to update node:', error);
       // Optionally, handle the error (e.g., show a notification)
@@ -196,9 +189,13 @@ const Maps = ({ workspaceId }) => {
     const newNodeId = uuidv4();
     const newNode = {
       id: newNodeId,
-      data: { label: 'New Node' },
+      type: 'custom', // Use the custom node type
+      data: { 
+        label: 'New Node',
+        onDelete: handleDeleteNode, // Pass the delete handler
+      },
       position: { x: 250, y: 250 },
-      style: { background: '#ffffff' },
+      style: { background: '#737373',borderRadius: '10px' }, // Default color
     };
 
     // Update local state
@@ -209,15 +206,18 @@ const Maps = ({ workspaceId }) => {
       await addNodeMutation({
         workspaceId,
         nodeData: {
+          id: newNode.id, // Ensure the backend uses the same ID
           label: newNode.data.label,
           position: newNode.position,
           color: newNode.style.background,
         },
       }).unwrap();
+      // Optionally, show a success notification
     } catch (error) {
       console.error('Failed to add node:', error);
       // Optionally, remove the node from local state if mutation fails
       setNodes((nds) => nds.filter((n) => n.id !== newNodeId));
+      // Optionally, show an error notification
     }
   };
 
@@ -234,9 +234,13 @@ const Maps = ({ workspaceId }) => {
             ...nds,
             {
               id: data.payload.id,
-              data: { label: data.payload.label },
+              type: 'custom',
+              data: { 
+                label: data.payload.label,
+                onDelete: handleDeleteNode,
+              },
               position: data.payload.position,
-              style: { background: data.payload.color },
+              style: { background: data.payload.color || '#737373', borderRadius: '10px' },
             },
           ]);
           break;
@@ -244,7 +248,11 @@ const Maps = ({ workspaceId }) => {
           setNodes((nds) =>
             nds.map((node) =>
               node.id === data.payload.id
-                ? { ...node, data: { label: data.payload.label }, style: { background: data.payload.color } }
+                ? { 
+                    ...node, 
+                    data: { label: data.payload.label, onDelete: handleDeleteNode }, 
+                    style: { background: data.payload.color || '#737373', borderRadius: '10px' } 
+                  }
                 : node,
             ),
           );
@@ -289,16 +297,27 @@ const Maps = ({ workspaceId }) => {
     return () => {
       eventSource.close();
     };
-  }, [workspaceId, setNodes, setEdges]);
+  }, [workspaceId, setNodes, setEdges, handleDeleteNode]);
 
   if (isLoading) return <div>Loading Mind Map...</div>;
   if (error) return <div>Error loading mind map: {error.data?.message || error.error}</div>;
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div style={{ width: '87vw', height: '77vh' }}>
       <button
         onClick={addNewNode}
-        style={{ position: 'absolute', zIndex: 4, padding: '10px', margin: '10px' }}
+        style={{
+          position: 'absolute',
+          zIndex: 4,
+          padding: '10px 20px',
+          margin: '10px',
+          backgroundColor: '#402b5e',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '16px',
+        }}
       >
         Add Node
       </button>
@@ -306,17 +325,26 @@ const Maps = ({ workspaceId }) => {
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        nodeTypes={nodeTypes} // Pass the custom node types
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnectHandler}
         onNodeDragStop={onNodeDragStopHandler}
-        onRemove={onRemoveHandler} // Updated prop
-        onNodeClick={onNodeClickHandler} // Updated prop
-        onEdgeClick={onEdgeClickHandler} // Optional: Handle edge clicks
+        onNodeClick={onNodeClickHandler}
         deleteKeyCode={46} // 'delete'-key
+        fitView
       >
         <Controls />
-        <MiniMap />
+        <MiniMap
+          nodeStrokeColor={(n) => {
+            if (n.type === 'custom') return '#737373';
+            return '#555';
+          }}
+          nodeColor={(n) => {
+            if (n.type === 'custom') return n.style.background || '#737373';
+            return '#fff';
+          }}
+        />
         <Background variant="dots" gap={12} size={1} />
       </ReactFlow>
 

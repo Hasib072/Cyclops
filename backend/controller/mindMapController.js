@@ -85,7 +85,7 @@ const addNode = asyncHandler(async (req, res) => {
   const newNode = {
     id: uuidv4(),
     label: label.trim(),
-    color: color || '#ffffff',
+    color: color || '#737373',
     position,
   };
 
