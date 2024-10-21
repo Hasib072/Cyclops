@@ -426,7 +426,11 @@ const WorkSpaceScreen = () => {
             />
             )}
             {activeMenuItem === 'Dashboard' && (
-              <DashboardView/>
+              <DashboardView
+                stages={workspace.stages}
+                lists={workspace.lists}
+                members={workspace.members}
+              />
             )}
             {/* Placeholder for other menu items */}
             {!['Lists', 'Board', 'Table', 'Teams', 'Calendar', 'Dashboard'].includes(activeMenuItem) && (

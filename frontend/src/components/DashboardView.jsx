@@ -1,62 +1,72 @@
 // frontend/src/components/DashboardView.jsx
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import './DashboardView.css';
-import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 /**
  * DashboardView Component
  * Renders the Dashboard view with Recently Added Tasks, Progress Pie Chart, and Gantt Chart.
+ * 
+ * Props:
+ * - stages: Array of stage objects.
+ * - lists: Array of list objects containing tasks.
+ * - members: Array of member objects.
  */
-const DashboardView = () => {
-  // Sample data for Recently Added Tasks
-  const recentTasks = [
-    {
-      id: 1,
-      name: 'Task01 Make UI',
-      stage: 'Reviewing',
-      avatars: [
-        'https://via.placeholder.com/30',
-        'https://via.placeholder.com/30',
-      ],
-    },
-    {
-      id: 2,
-      name: 'Task02 Backend',
-      stage: 'In Progress',
-      avatars: [
-        'https://via.placeholder.com/30',
-        'https://via.placeholder.com/30',
-      ],
-    },
-    {
-      id: 3,
-      name: 'Task03 Documentation',
-      stage: 'In Progress',
-      avatars: [
-        'https://via.placeholder.com/30',
-      ],
-    },
-    {
-      id: 4,
-      name: 'Notes',
-      stage: 'Reviewing',
-      avatars: [
-        'https://via.placeholder.com/30',
-        'https://via.placeholder.com/30',
-      ],
-    },
-  ];
+const DashboardView = ({ stages, lists, members }) => {
+  // Flatten all tasks from all lists
+  const allTasks = useMemo(() => {
+    return lists.flatMap((list) => list.tasks);
+  }, [lists]);
 
-  // Sample data for Progress Pie Chart
-  const progressData = [
-    { name: 'Reviewing', value: 2 },
-    { name: 'In Progress', value: 5 },
-    { name: 'Rejected', value: 1 },
-  ];
+  // Get Recently Added Tasks (sorted by creationTime descending)
+  const recentTasks = useMemo(() => {
+    return allTasks
+      .sort((a, b) => new Date(b.creationTime) - new Date(a.creationTime))
+      .slice(0, 4); // Get top 4 recent tasks
+  }, [allTasks]);
 
-  // Colors for the pie chart slices
-  const COLORS = ['#e5cf59', '#343ad5', '#bf5b5b'];
+  // Compute Progress Data for Pie Chart (count of tasks per stage)
+  const progressData = useMemo(() => {
+    const stageCountMap = {};
+    stages.forEach((stage) => {
+      stageCountMap[stage.name] = 0;
+    });
+    allTasks.forEach((task) => {
+      const stage = stages.find((s) => s.id === task.stageId);
+      if (stage) {
+        stageCountMap[stage.name] += 1;
+      }
+    });
+    return Object.keys(stageCountMap).map((stageName) => ({
+      name: stageName,
+      value: stageCountMap[stageName],
+    }));
+  }, [allTasks, stages]);
+
+  // Define colors for the pie chart based on stages
+  const stageColorMap = useMemo(() => {
+    const map = {};
+    stages.forEach((stage, index) => {
+      map[stage.name] = stage.color;
+    });
+    return map;
+  }, [stages]);
+
+  const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+
+  // Sample data for Gantt Chart (You can make this dynamic based on your requirements)
+  // Here, we'll assume weeks W11 to W16 correspond to specific date ranges
+  const ganttTasks = useMemo(() => {
+    // Example mapping, adjust according to your actual date ranges
+    return allTasks.map((task, index) => ({
+      id: task._id,
+      name: task.name,
+      color: stages.find((s) => s.id === task.stageId)?.color || '#9fa2ff',
+      status: stages.find((s) => s.id === task.stageId)?.name.replace(' ', '-').toLowerCase() || 'opened',
+      span: 7, // Assuming each task spans 7 weeks for demonstration; adjust as needed
+    }));
+  }, [allTasks, stages]);
 
   return (
     <div className="Dashboard_container">
@@ -66,32 +76,44 @@ const DashboardView = () => {
         <div className="Dashboard_recent-opens">
           <h3>Recent Opens</h3>
           <ul>
-            {recentTasks.map((task) => (
-              <li key={task.id}>
-                <span className="Dashboard_span_1">
-                  <span
-                    className={`Dashboard_name-icon ${
-                      task.stage === 'Reviewing' ? 'Dashboard_yellow' :
-                      task.stage === 'In Progress' ? 'Dashboard_dark-blue' :
-                      'Dashboard_orange'
-                    }`}
-                  ></span>
-                  {task.name}
-                </span>
-                <span className="Dashboard_span_2">{task.stage}</span>
-                {task.avatars && task.avatars.length > 0 && (
-                  <div className="Dashboard_avatar-group2">
-                    {task.avatars.map((avatar, index) => (
-                      <img
-                        key={index}
-                        src={avatar}
-                        alt={`User ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </li>
-            ))}
+            {recentTasks.map((task) => {
+              const stage = stages.find((s) => s.id === task.stageId);
+              return (
+                <li key={task._id}>
+                  <span className="Dashboard_span_1">
+                    <span
+                      className={`Dashboard_name-icon ${
+                        stage?.category === 'Pending'
+                          ? 'Dashboard_yellow'
+                          : stage?.category === 'Active'
+                          ? 'Dashboard_dark-blue'
+                          : 'Dashboard_orange'
+                      }`}
+                    ></span>
+                    {task.name}
+                  </span>
+                  <span className="Dashboard_span_2">{stage?.name || 'N/A'}</span>
+                  {task.assignee && (
+                    <div className="Dashboard_avatar-group2">
+                      {/* Find member details based on assignee ID */}
+                      {members
+                        .filter((member) => member.user._id === task.assignee)
+                        .map((member, idx) => (
+                          <img
+                            key={idx}
+                            src={
+                              member.user.profileImage
+                                ? `${BACKEND_URL}/${member.user.profileImage}`
+                                : 'https://via.placeholder.com/30'
+                            }
+                            alt={`User ${idx + 1}`}
+                          />
+                        ))}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
 
@@ -110,12 +132,10 @@ const DashboardView = () => {
               label
             >
               {progressData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                <Cell key={`cell-${index}`} fill={stageColorMap[entry.name] || '#9fa2ff'} />
               ))}
             </Pie>
             <Tooltip />
-            {/* Optionally, you can include a legend */}
-            {/* <Legend /> */}
           </PieChart>
           <div className="Dashboard_legend">
             {progressData.map((entry, index) => (
@@ -148,50 +168,22 @@ const DashboardView = () => {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>1</td>
-              <td>
-                <span className="Dashboard_name-icon Dashboard_blue"></span>Task01 Name
-              </td>
-              <td colSpan="7">
-                <div className="Dashboard_gantt-chart">
-                  <div className="Dashboard_bar Dashboard_opened">OPENED</div>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>
-                <span className="Dashboard_name-icon Dashboard_blue"></span>Another Task
-              </td>
-              <td colSpan="7">
-                <div className="Dashboard_gantt-chart">
-                  <div className="Dashboard_bar Dashboard_opened_1">OPENED</div>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>
-                <span className="Dashboard_name-icon Dashboard_blue"></span>Something to do
-              </td>
-              <td colSpan="7">
-                <div className="Dashboard_gantt-chart">
-                  <div className="Dashboard_bar Dashboard_in-progress_1">IN PROGRESS</div>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>
-                <span className="Dashboard_name-icon Dashboard_orange"></span>From other list
-              </td>
-              <td colSpan="7">
-                <div className="Dashboard_gantt-chart">
-                  <div className="Dashboard_bar Dashboard_in-progress_2">IN PROGRESS</div>
-                </div>
-              </td>
-            </tr>
+            {ganttTasks.map((task, index) => (
+              <tr key={task.id}>
+                <td>{index + 1}</td>
+                <td>
+                  <span className="Dashboard_name-icon" style={{ backgroundColor: task.color }}></span>
+                  {task.name}
+                </td>
+                <td colSpan={task.span}>
+                  <div className="Dashboard_gantt-chart">
+                    <div className={`Dashboard_bar Dashboard_${task.status}`}>
+                      {task.status.replace('-', ' ').toUpperCase()}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
