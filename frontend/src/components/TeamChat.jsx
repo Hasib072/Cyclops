@@ -143,7 +143,7 @@ const TeamChat = ({ workspaceId, members }) => {
     try {
       await sendMessage({ workspaceId, content: newMessage.trim() }).unwrap();
       setNewMessage('');
-      toast.success('Message sent!');
+      // toast.success('Message sent!');
     } catch (err) {
       console.error('Failed to send message:', err);
       toast.error(err?.data?.message || 'Failed to send message.');
@@ -158,7 +158,7 @@ const TeamChat = ({ workspaceId, members }) => {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        height: '77vh',
+        height: '76vh',
         borderRadius: '8px',
         padding: '10px',
         backgroundColor: '#121212',

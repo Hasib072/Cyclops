@@ -866,11 +866,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId, members = [] }) =>
       </div>
 
       <div className="todo-list-view">
-        {/* Add New List Button */}
-        <div className="add-new-list" onClick={handleAddList}>
-          + Add New List
-        </div>
-
+      
         {/* Render all lists */}
         {localLists.map((list, index) => (
           <List key={list._id} list={list} index={index} />
@@ -911,6 +907,12 @@ const TodoListView = ({ stages = [], lists = [], workspaceId, members = [] }) =>
             members={members}
           />
         )}
+
+        {/* Add New List Button */}
+        <div className="add-new-list" onClick={handleAddList}>
+          + Add New List
+        </div>
+        
       </div>
     </>
   );

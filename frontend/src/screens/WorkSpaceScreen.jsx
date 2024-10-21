@@ -271,7 +271,7 @@ const WorkSpaceScreen = () => {
   const defaultEndMenuItems = [
     { label: 'Map', icon: MapIcon },
     { label: 'Teams', icon: TeamsIcon },
-    { label: 'Repository', icon: RepositoryIcon },
+    // { label: 'Repository', icon: RepositoryIcon }, //Repo Tab
   ];
 
   // Define the desired order for additional menu items
