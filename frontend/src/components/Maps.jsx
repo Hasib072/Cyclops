@@ -10,7 +10,7 @@ import ReactFlow, {
   addEdge,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-
+import Loader from './Loader';
 import { useDispatch } from 'react-redux';
 import {
   useGetMindMapQuery,
@@ -299,7 +299,7 @@ const Maps = ({ workspaceId }) => {
     };
   }, [workspaceId, setNodes, setEdges, handleDeleteNode]);
 
-  if (isLoading) return <div>Loading Mind Map...</div>;
+  if (isLoading) return <div><Loader/></div>;
   if (error) return <div>Error loading mind map: {error.data?.message || error.error}</div>;
 
   return (

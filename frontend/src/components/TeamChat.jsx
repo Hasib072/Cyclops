@@ -5,6 +5,7 @@ import { useSendMessageMutation, useGetMessagesQuery } from '../slices/workspace
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import './TeamChat.css';
+import Loader from './Loader';
 
 // MessageBubble Component as defined earlier
 const MessageBubble = ({ message, sender, isOwnMessage }) => {
@@ -150,7 +151,7 @@ const TeamChat = ({ workspaceId, members }) => {
     }
   };
 
-  if (isLoading) return <p>Loading messages...</p>;
+  if (isLoading) return <div><Loader/></div>;
   if (isError) return <p>Error loading messages: {error.data?.message || error.error}</p>;
 
   return (
