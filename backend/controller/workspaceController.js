@@ -3,6 +3,7 @@
 import asyncHandler from 'express-async-handler';
 import Workspace from '../models/workspaceModel.js';
 import WorkspaceMember from '../models/workspaceMemberModel.js';
+import MindMap from '../models/mindMapModel.js'; 
 import User from '../models/userModel.js';
 import Profile from '../models/profileModel.js';
 import generateWorkspaceImage from '../utils/imageGenerator.js';
@@ -255,15 +256,6 @@ const createWorkspace = asyncHandler(async (req, res) => {
         role: 'admin',
       },
     ];
-    // await WorkspaceMember.create({
-    //   workspace: workspace._id,
-    //   members: [
-    //     {
-    //       user: req.user._id,
-    //       role: 'admin',
-    //     },
-    //   ],
-    // });
 
     // Handle invited users
     if (parsedInvitePeople.length > 0) {
@@ -282,7 +274,6 @@ const createWorkspace = asyncHandler(async (req, res) => {
           }
         } else {
           // Optionally, handle users who don't exist (e.g., send email invitation)
-          // For now, we'll skip them or you can choose to handle them differently
           console.warn(`User with email ${email} does not exist.`);
         }
       }
@@ -292,6 +283,13 @@ const createWorkspace = asyncHandler(async (req, res) => {
     await WorkspaceMember.create({
       workspace: workspace._id,
       members,
+    });
+
+    // Create a default MindMap for the workspace
+    const defaultMindMap = await MindMap.create({
+      workspace: workspace._id,
+      nodes: [], // Initialize with empty nodes or add default nodes if desired
+      edges: [], // Initialize with empty edges or add default edges if desired
     });
 
     res.status(201).json({
@@ -306,6 +304,7 @@ const createWorkspace = asyncHandler(async (req, res) => {
       invitePeople: workspace.invitePeople,
       stages: workspace.stages,
       lists: workspace.lists,
+      mindMap: defaultMindMap,
     });
   } else {
     res.status(400);
@@ -1432,4 +1431,5 @@ export {
   clients,
   getMessages,
   sendMessage,
+  sendSSEMessage,
 };

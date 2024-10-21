@@ -226,6 +226,10 @@ const workspaceSchema = new mongoose.Schema(
         message: 'Stage names must be unique within the workspace',
       },
     },
+    mindMap: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'MindMap',
+    },
     lists: [listSchema], // Embedding List subdocuments
     messages: [messageSchema], // Embedding Message subdocuments
     members: [

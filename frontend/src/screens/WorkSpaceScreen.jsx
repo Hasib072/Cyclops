@@ -15,6 +15,7 @@ import TeamChat from '../components/TeamChat';
 import CalenderView from '../components/CalenderView';
 import DashboardView from '../components/DashboardView';
 import GanttView from '../components/GanttView';
+import Maps from '../components/Maps';
 
 // RTK Query Hooks
 import {
@@ -143,6 +144,8 @@ const WorkSpaceScreen = () => {
       };
     }
   }, [workspaceId]);
+
+  
   
   const handleServerEvent = (data) => {
     switch (data.type) {
@@ -440,8 +443,11 @@ const WorkSpaceScreen = () => {
                 members={workspace.members}
               />
             )}
+            {activeMenuItem === 'Map' && (
+              <Maps workspaceId={workspaceId} />
+            )}
             {/* Placeholder for other menu items */}
-            {!['Lists', 'Board', 'Table', 'Teams', 'Calendar', 'Dashboard', 'Gantt'].includes(activeMenuItem) && (
+            {!['Lists', 'Board', 'Table', 'Teams', 'Calendar', 'Dashboard', 'Gantt', 'Map'].includes(activeMenuItem) && (
               <p>Content for {activeMenuItem} will go here.</p>
             )}
           </div>
