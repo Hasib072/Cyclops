@@ -14,6 +14,7 @@ import TodoTableView from '../components/TodoTableView';
 import TeamChat from '../components/TeamChat';
 import CalenderView from '../components/CalenderView';
 import DashboardView from '../components/DashboardView';
+import GanttView from '../components/GanttView';
 
 // RTK Query Hooks
 import {
@@ -432,8 +433,15 @@ const WorkSpaceScreen = () => {
                 members={workspace.members}
               />
             )}
+            {activeMenuItem === 'Gantt' && (
+              <GanttView
+                stages={workspace.stages}
+                lists={workspace.lists}
+                members={workspace.members}
+              />
+            )}
             {/* Placeholder for other menu items */}
-            {!['Lists', 'Board', 'Table', 'Teams', 'Calendar', 'Dashboard'].includes(activeMenuItem) && (
+            {!['Lists', 'Board', 'Table', 'Teams', 'Calendar', 'Dashboard', 'Gantt'].includes(activeMenuItem) && (
               <p>Content for {activeMenuItem} will go here.</p>
             )}
           </div>
