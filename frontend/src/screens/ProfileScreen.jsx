@@ -539,11 +539,12 @@ const ProfileScreen = () => {
       justifyContent: 'center',
       alignItems: 'center',
       height: '100%', // Full height of the modal
+      width: '500px', // 90% width to match design
       flexDirection: 'column',
       background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)', // Gradient background
       padding: '25px 20px', // Padding inside the form container
       borderRadius: '10px', // Rounded corners
-      width: '100%', // 90% width to match design
+      
       color: '#fff',
       position: 'relative',
     }}
