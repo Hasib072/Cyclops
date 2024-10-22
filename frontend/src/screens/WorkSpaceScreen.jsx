@@ -1,6 +1,7 @@
 // frontend/src/screens/WorkSpaceScreen.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
+import { useDispatch } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -8,6 +9,13 @@ import Loader from '../components/Loader'; // Import the Loader component
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import TodoListView from '../components/TodoListView'; // Import the TodoListView component
+import TodoBoardView from '../components/TodoBoardView';
+import TodoTableView from '../components/TodoTableView';
+import TeamChat from '../components/TeamChat';
+import CalenderView from '../components/CalenderView';
+import DashboardView from '../components/DashboardView';
+import GanttView from '../components/GanttView';
+import Maps from '../components/Maps';
 
 // RTK Query Hooks
 import {
@@ -24,7 +32,6 @@ import TableIcon from '../assets/icons/Table.svg';
 import ChatIcon from '../assets/icons/Chat.svg';
 import GanttIcon from '../assets/icons/Gantt.svg';
 import BoardIcon from '../assets/icons/Board.svg';
-import TimelineIcon from '../assets/icons/timeline.svg';
 import DashboardIcon from '../assets/icons/Dashboard.svg';
 import MapIcon from '../assets/icons/Map.svg';
 import TeamsIcon from '../assets/icons/Teams.svg';
@@ -39,7 +46,6 @@ const iconMap = {
   Chat: ChatIcon,
   'Gantt Chart': GanttIcon,
   Board: BoardIcon,
-  Timeline: TimelineIcon,
   Map: MapIcon,
   Teams: TeamsIcon,
   Repository: RepositoryIcon,
@@ -54,8 +60,9 @@ const WorkSpaceScreen = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false); // Sidebar state
 
   const isDataURL = (str) => /^data:image\/[a-z]+;base64,/.test(str); // Helper function to determine if a string is a data URL
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'; // Get Backend URL from Environment Variable
-
+  const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL; // Get Backend URL from Environment Variable
+  //const BACKEND_URL = 'https://d0c7-2402-e280-21b0-55e-c79-8529-479-df00.ngrok-free.app';
+ 
   // Fetching Profile Data
   const {
     data: profile,
@@ -86,6 +93,7 @@ const WorkSpaceScreen = () => {
     skip: !workspaceId, // Skip the query if workspaceId is not present
   });
 
+
   // Effect to log workspace details when data is fetched
   useEffect(() => {
     if (workspace) {
@@ -111,6 +119,57 @@ const WorkSpaceScreen = () => {
   // Handler for filter button click
   const handleFilterClick = () => {
     setIsToggleVisible(!isToggleVisible);
+  };
+
+  const dispatch = useDispatch(); // If you need to dispatch actions
+  const eventSourceRef = useRef(null); // Use useRef to store the EventSource instance
+
+  useEffect(() => {
+    if (workspaceId) {
+      const eventSource = new EventSource(`/api/workspaces/${workspaceId}/updates`);
+      eventSourceRef.current = eventSource;
+  
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        handleServerEvent(data);
+      };
+  
+      eventSource.onerror = (err) => {
+        console.error('EventSource failed:', err);
+        eventSource.close();
+      };
+  
+      return () => {
+        eventSource.close();
+      };
+    }
+  }, [workspaceId]);
+
+  
+  
+  const handleServerEvent = (data) => {
+    switch (data.type) {
+      case 'TASK_UPDATED':
+      case 'TASK_ADDED':
+      case 'TASK_DELETED':
+      case 'LIST_UPDATED':
+      case 'LIST_COLOR_UPDATED':
+      case 'LIST_ADDED':
+      case 'LIST_DELETED':
+      case 'LISTS_REORDERED':
+      case 'WORKSPACE_UPDATED':
+      case 'MEMBER_ADDED':
+      case 'MEMBER_REMOVED':
+      case 'NEW_MESSAGE':
+        refetchWorkspace();
+        break;
+      case 'WORKSPACE_DELETED':
+        // Handle workspace deletion (e.g., navigate away)
+        navigate('/workspaces');
+        break;
+      default:
+        break;
+    }
   };
 
   // Inline styles (optional, consider using CSS modules or styled-components)
@@ -212,20 +271,19 @@ const WorkSpaceScreen = () => {
   const defaultEndMenuItems = [
     { label: 'Map', icon: MapIcon },
     { label: 'Teams', icon: TeamsIcon },
-    { label: 'Repository', icon: RepositoryIcon },
+    // { label: 'Repository', icon: RepositoryIcon }, //Repo Tab
   ];
 
-  // Generate additional menu items from selectedViews, excluding defaults
-  const additionalMenuItems = workspace?.selectedViews
-    ? workspace.selectedViews
-        .filter(
-          (view) => !defaultStartMenuItems.some((defaultItem) => defaultItem.label === view)
-        )
-        .map((view) => ({
-          label: view,
-          icon: iconMap[view] || ListsIcon, // Default to ListsIcon if no match found
-        }))
-    : [];
+  // Define the desired order for additional menu items
+  const desiredMenuOrder = ['Lists', 'Table', 'Board', 'Gantt', 'Calendar'];
+
+  // Generate additional menu items from selectedViews, excluding defaults and maintaining desired order
+  const additionalMenuItems = desiredMenuOrder
+  .filter(view => workspace?.selectedViews?.includes(view))
+  .map(view => ({
+    label: view,
+    icon: iconMap[view] || ListsIcon, // Default to ListsIcon if no match found
+  }));
 
   // Combine default and additional menu items
   const dynamicMenuItems = [...defaultStartMenuItems, ...additionalMenuItems, ...defaultEndMenuItems];
@@ -288,7 +346,7 @@ const WorkSpaceScreen = () => {
                 {dynamicMenuItems.map((item, index) => (
                   <li key={`${item.label}-${index}`} style={styles.menuItem}>
                     <a
-                      href="#!"
+                      href="#"
                       style={{
                         ...styles.menuLink,
                         ...(activeMenuItem === item.label ? styles.activeMenuLink : {}),
@@ -331,20 +389,65 @@ const WorkSpaceScreen = () => {
             {/* Render components based on active menu item */}
             {activeMenuItem === 'Lists' && (
               <>
-              {console.log('Lists passed to TodoListView:', workspace.lists, 'workspaceid:',workspace._id)}
+                <DndProvider backend={HTML5Backend}>
+                  <TodoListView
+                    stages={workspace.stages || []}
+                    lists={workspace.lists || []}
+                    workspaceId={workspace._id}
+                    members={workspace.members || []}
+                  />
+                </DndProvider>
+              </>
+            )}
+            {activeMenuItem === 'Board' && (
               <DndProvider backend={HTML5Backend}>
-
-              <TodoListView
+                <TodoBoardView
+                  stages={workspace.stages || []}
+                  lists={workspace.lists || []}
+                  workspaceId={workspace._id}
+                  members={workspace.members || []}
+                />
+              </DndProvider>
+            )}
+            {activeMenuItem === 'Table' && (
+              <TodoTableView
                 stages={workspace.stages || []}
                 lists={workspace.lists || []}
                 workspaceId={workspace._id}
-                />
-              </DndProvider>
-              </>
+                members={workspace.members || []}
+              />
             )}
-
+            {activeMenuItem === 'Teams' && (
+              <TeamChat 
+              workspaceId={workspace._id} 
+              members={workspace.members || []}
+              />
+            )}
+            {activeMenuItem === 'Calendar' && (
+              <CalenderView
+              lists={workspace.lists}
+              stages={workspace.stages}
+            />
+            )}
+            {activeMenuItem === 'Dashboard' && (
+              <DashboardView
+                stages={workspace.stages}
+                lists={workspace.lists}
+                members={workspace.members}
+              />
+            )}
+            {activeMenuItem === 'Gantt' && (
+              <GanttView
+                stages={workspace.stages}
+                lists={workspace.lists}
+                members={workspace.members}
+              />
+            )}
+            {activeMenuItem === 'Map' && (
+              <Maps workspaceId={workspaceId} />
+            )}
             {/* Placeholder for other menu items */}
-            {activeMenuItem !== 'Lists' && (
+            {!['Lists', 'Board', 'Table', 'Teams', 'Calendar', 'Dashboard', 'Gantt', 'Map'].includes(activeMenuItem) && (
               <p>Content for {activeMenuItem} will go here.</p>
             )}
           </div>

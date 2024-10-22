@@ -1,0 +1,184 @@
+/* frontend/src/components/GanttView.css */
+
+.Gantt_container {
+    padding: 20px;
+    color: #fff;
+    font-family: 'Open Sans', sans-serif;
+    background-color: #121212;
+    min-height: 77vh;
+  }
+  
+  .Gantt_tab-container {
+    display: flex;
+    margin-bottom: 10px;
+  }
+  
+  .Gantt_tab-item {
+    position: relative;
+    top: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #2a2a38;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .Gantt_tab-item:hover {
+    background-color: #575757;
+  }
+  
+  .Gantt_tab-item.Gantt_active {
+    background-color: #402b5e;
+  }
+  
+  .Gantt_tab-item.Gantt_second {
+    background-color: #ffc19f;
+  }
+  
+  .Gantt_tab-item.Gantt_add-new-list {
+    background-color: #28a74600; /* Green color for add button */
+  }
+  
+  .Gantt_tab-item.Gantt_add-new-list:hover {
+    background-color: #218838;
+  }
+  
+  .Gantt_header-container {
+    display: flex;
+    justify-content: flex-start;
+    position: relative;
+  }
+  
+  .Gantt_task-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #2b2b2b;
+    margin-bottom: 0px;
+  }
+  
+  .Gantt_task-table th {
+    background-color: #402b5e;
+    color: #fff;
+    padding: 15px;
+    position: sticky;
+    top: 0;
+    border-left: none;
+    border-right: none;
+    text-align: center;
+  }
+  
+  .Gantt_task-table td {
+    background-color: #333;
+    padding: 12px 15px;
+    font-size: 14px;
+    border-bottom: 1px solid #6c6c6c;
+    white-space: nowrap;
+    text-align: center;
+    border-left: none;
+    border-right: 1px solid #6c6c6c;
+  }
+  
+  .Gantt_task-table tbody tr:first-child td {
+    border-top: 2px solid #6c6c6c;
+  }
+  
+  .Gantt_task-table td:last-child {
+    border-right: none;
+  }
+  
+  .Gantt_name-icon {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  
+  .Gantt_gantt-chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .Gantt_bar {
+    padding: 5px 10px;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    min-width: 80px; /* Set a minimum width for visibility */
+  }
+  
+  .Gantt_opened {
+    background-color: #9fa2ff;
+    width: 32%;
+  }
+  
+  .Gantt_opened_1 {
+    background-color: #9fa2ff;
+    margin-left: 20px;
+    width: 32%;
+  }
+  
+  .Gantt_in-progress {
+    background-color: #42a5f5;
+    width: 50%;
+    margin-left: -15px;
+    border-radius: 0 12px 12px 0;
+  }
+  
+  .Gantt_done {
+    background-color: #d4d4d4;
+    width: 32%;
+  }
+  
+  .Gantt_review {
+    background-color: #fdd835;
+    width: 32%;
+  }
+  
+  .Gantt_planned {
+    background-color: #c256bf;
+    width: 32%;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .Gantt_container {
+      padding: 20px;
+    }
+  
+    .Gantt_tab-container {
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    .Gantt_task-table th,
+    .Gantt_task-table td {
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+  
+    .Gantt_bar {
+      min-width: 60px;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+  
+    .Gantt_task-table th:nth-child(2),
+    .Gantt_task-table td:nth-child(2) {
+      width: 150px;
+    }
+  
+    .Gantt_task-table th:nth-child(1),
+    .Gantt_task-table td:nth-child(1) {
+      width: 40px;
+    }
+  }
+  

@@ -1,6 +1,6 @@
 // frontend/src/components/TodoListView.jsx
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo} from 'react';
 import './TodoListView.css';
 import TaskModal from './TaskModal';
 import {
@@ -18,18 +18,22 @@ import { toast } from 'react-toastify';
 import { SketchPicker } from 'react-color';
 import { useDrag, useDrop } from 'react-dnd';
 import mongoose from 'mongoose'; // Ensure mongoose is imported
+import deleteIconSvg from '../assets/icons/delete-tilt.svg'
+import UnassignedIcon from '../assets/icons/AddPerson.svg';
 
 const ItemTypes = {
   TASK: 'task',
   LIST: 'list',
 };
 
-const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
+const TodoListView = ({ stages = [], lists = [], workspaceId, members = [] }) => {
   // Sort stages based on predefined order
   const stageOrder = ['Pending', 'Active', 'Done'];
-  const sortedStages = [...stages].sort(
-    (a, b) => stageOrder.indexOf(a.category) - stageOrder.indexOf(b.category)
-  );
+  const sortedStages = useMemo(() => {
+    return [...stages].sort(
+      (a, b) => stageOrder.indexOf(a.category) - stageOrder.indexOf(b.category)
+    );
+  }, [stages]);
 
   // State to manage open/closed stages per list
   const [openStages, setOpenStages] = useState(() => {
@@ -49,12 +53,17 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
 
   // Initialize collapsedLists when lists change
   useEffect(() => {
-    const initialCollapsed = {};
-    lists.forEach((list) => {
-      initialCollapsed[list._id] = false;
+    setCollapsedLists((prevState) => {
+      const updatedCollapsedLists = { ...prevState };
+      lists.forEach((list) => {
+        if (!(list._id in updatedCollapsedLists)) {
+          updatedCollapsedLists[list._id] = false; // Default to expanded
+        }
+      });
+      return updatedCollapsedLists;
     });
-    setCollapsedLists(initialCollapsed);
   }, [lists]);
+  
 
   // RTK Query mutations
   const [addListMutation] = useAddListToWorkspaceMutation();
@@ -415,12 +424,19 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
   });
 
   const [{ isOverRight }, dropRight] = useDrop({
-    accept: ItemTypes.LIST,
-    drop: (item) => handleDeleteList(item.listId),
+    accept: [ItemTypes.LIST, ItemTypes.TASK],
+    drop: (item) => {
+      if (item.type === ItemTypes.LIST) {
+        handleDeleteList(item.listId);
+      } else if (item.type === ItemTypes.TASK) {
+        handleDeleteTask(item.listId, item.task._id);
+      }
+    },
     collect: (monitor) => ({
       isOverRight: monitor.isOver() && monitor.canDrop(),
     }),
   });
+  
 
   const handleDeleteList = (listId) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this list?');
@@ -609,7 +625,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
         ></div>
 
         {/* Task List Content */}
-        <div className="task-list-content">
+        <div className="task-list-content" onDoubleClick={() => toggleList(list._id)}>
           {/* List Header */}
           <div className="task-list-header">
             {editingListId === list._id ? (
@@ -630,7 +646,9 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
               />
             ) : (
               <h2
-                onDoubleClick={() => handleStartEditing(list._id, list.name)}
+                onDoubleClick={(e) => 
+                  {e.stopPropagation();
+                  handleStartEditing(list._id, list.name)}}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -679,8 +697,13 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
 
     // Find the corresponding list from localLists
     const list = localLists.find((lst) => lst._id === listId);
-    const tasksInStage = list.tasks.filter((task) => task.stageId === stage.id);
 
+    if (!list) {
+      console.warn(`List with ID ${listId} not found.`);
+      return null; // Or render a placeholder
+    }
+
+    const tasksInStage = list.tasks.filter((task) => task.stageId === stage.id);
     return (
       <div
         ref={drop}
@@ -714,7 +737,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
         </div>
 
         {/* Tasks under the stage */}
-        {openStages[listId][stage.id] && (
+        {openStages[listId] && openStages[listId][stage.id] && (
           <>
             {/* Task Headings */}
             <div className="task_headingg">
@@ -727,7 +750,7 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
             {/* Task Items */}
             <ul className="task-list" style={{ listStyle: 'none', padding: 0 }}>
               {tasksInStage.map((task) => (
-                <Task key={task._id} task={task} listId={listId} />
+                <Task key={task._id} task={task} listId={listId} members={members}/>
               ))}
             </ul>
           </>
@@ -736,15 +759,35 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
     );
   };
 
-  const Task = ({ task, listId }) => {
+  useEffect(() => {
+    const initialState = {};
+    lists.forEach((list) => {
+      initialState[list._id] = {};
+      sortedStages.forEach((stage) => {
+        const tasksInStage = list.tasks.filter((task) => task.stageId === stage.id);
+        initialState[list._id][stage.id] = tasksInStage.length > 0;
+      });
+    });
+    setOpenStages(initialState);
+  }, [lists, sortedStages]);  
+
+  useEffect(() => {
+    setLocalLists(lists);
+  }, [lists]);
+  
+
+  const Task = ({ task, listId, members }) => {
     const [{ isDragging }, drag] = useDrag({
       type: ItemTypes.TASK,
-      item: { task, listId },
+      item: { type: ItemTypes.TASK, task, listId },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
     });
-
+  
+    // Find the assignee in the members array
+    const assignee = members.find((member) => member.user._id === task.assignee);
+  
     return (
       <li
         ref={drag}
@@ -757,22 +800,52 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
       >
         <div className="task-container">
           <div className="task-info">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="6" cy="6" r="6" fill={sortedStages.find((stage) => stage.id === task.stageId)?.color} />
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="6"
+                cy="6"
+                r="6"
+                fill={
+                  sortedStages.find((stage) => stage.id === task.stageId)?.color
+                }
+              />
             </svg>
             <div className="task-name">{task.name}</div>
           </div>
         </div>
-        <div className={`task-priority ${task.priority.toLowerCase()}-priority`}>{task.priority.toUpperCase()}</div>
-        <div className="task-due-date">{new Date(task.dueDate).toLocaleDateString()}</div>
+        <div
+          className={`task-priority ${task.priority.toLowerCase()}-priority`}
+        >
+          {task.priority.toUpperCase()}
+        </div>
+        <div className="task-due-date">
+          {new Date(task.dueDate).toLocaleDateString()}
+        </div>
         <div className="task-assignee">
-          <div className="avatar-group">
-            <img src="https://via.placeholder.com/30" alt="Assignee" />
-          </div>
+          {assignee ? (
+            <div className="avatar-group">
+              <img
+                src={`${import.meta.env.VITE_APP_BACKEND_URL}/${assignee.user.profileImage}`}
+                //src={`https://d0c7-2402-e280-21b0-55e-c79-8529-479-df00.ngrok-free.app/${assignee.user.profileImage}`}
+              />
+            </div>
+          ) : (
+            <div className="assign-icon">
+              {/* Placeholder for unassigned tasks */}
+              <img src={UnassignedIcon} alt="Unassigned" />
+            </div>
+          )}
         </div>
       </li>
     );
   };
+  
 
   return (
     <>
@@ -788,15 +861,12 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
         ref={dropRight}
         className={`delete-zone right ${isOverRight ? 'active' : ''}`}
       >
-        <span>Drag here to delete</span>
+        <img src={deleteIconSvg} alt="DeleteIconSVG" />
+        {/* <span>Drag here to delete</span> */}
       </div>
 
       <div className="todo-list-view">
-        {/* Add New List Button */}
-        <div className="add-new-list" onClick={handleAddList}>
-          + Add New List
-        </div>
-
+      
         {/* Render all lists */}
         {localLists.map((list, index) => (
           <List key={list._id} list={list} index={index} />
@@ -834,8 +904,15 @@ const TodoListView = ({ stages = [], lists = [], workspaceId }) => {
             onRequestClose={() => setIsModalOpen(false)}
             onSubmit={handleModalSubmit}
             initialData={modalData}
+            members={members}
           />
         )}
+
+        {/* Add New List Button */}
+        <div className="add-new-list" onClick={handleAddList}>
+          + Add New List
+        </div>
+        
       </div>
     </>
   );

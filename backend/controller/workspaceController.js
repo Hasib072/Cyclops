@@ -3,19 +3,35 @@
 import asyncHandler from 'express-async-handler';
 import Workspace from '../models/workspaceModel.js';
 import WorkspaceMember from '../models/workspaceMemberModel.js';
+import MindMap from '../models/mindMapModel.js'; 
 import User from '../models/userModel.js';
-import generateWorkspaceImage from '../utils/imageGenerator.js'; // Assuming you have a utility for generating images
+import Profile from '../models/profileModel.js';
+import generateWorkspaceImage from '../utils/imageGenerator.js';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique stage IDs
+
+// Keep track of connected clients for SSE
+let clients = []; // List of connected clients
+
+// Helper function to send SSE messages to clients connected to a workspace
+const sendSSEMessage = (workspaceId, message) => {
+  clients.forEach((client) => {
+    if (client.workspaceId === workspaceId) {
+      client.res.write(`data: ${JSON.stringify(message)}\n\n`);
+    }
+  });
+};
+
+
 
 // Allowed Workspace Types and Views (Adjust as per your application needs)
 const allowedWorkspaceTypes = ['Starter', 'Kanban', 'Project', 'Scrum']; // Extend as needed
 
 const defaultViewsByType = {
-  Starter: ['Lists', 'Board', 'Table', 'Chat', 'Timeline'],
-  Kanban: ['Board', 'Calendar', 'Timeline', 'Chat'],
-  Project: ['Gantt', 'Timeline', 'Chat'],
+  Starter: ['Lists', 'Board', 'Table', 'Chat'],
+  Kanban: ['Board', 'Calendar', 'Chat'],
+  Project: ['Gantt', 'Chat'],
   Scrum: ['Gantt', 'Board', 'Chat'],
   // Add other types and their default views as needed
 };
@@ -234,14 +250,46 @@ const createWorkspace = asyncHandler(async (req, res) => {
 
   if (workspace) {
     // Initialize WorkspaceMember with the creator as admin
+    const members = [
+      {
+        user: req.user._id,
+        role: 'admin',
+      },
+    ];
+
+    // Handle invited users
+    if (parsedInvitePeople.length > 0) {
+      for (const email of parsedInvitePeople) {
+        const user = await User.findOne({ email });
+
+        if (user) {
+          // Check if the user is already in the members array to prevent duplicates
+          const alreadyMember = members.some((member) => member.user.toString() === user._id.toString());
+          if (!alreadyMember) {
+            // Add user to members array with 'member' role
+            members.push({
+              user: user._id,
+              role: 'member',
+            });
+          }
+        } else {
+          // Optionally, handle users who don't exist (e.g., send email invitation)
+          console.warn(`User with email ${email} does not exist.`);
+        }
+      }
+    }
+
+    // Create the WorkspaceMember document
     await WorkspaceMember.create({
       workspace: workspace._id,
-      members: [
-        {
-          user: req.user._id,
-          role: 'admin',
-        },
-      ],
+      members,
+    });
+
+    // Create a default MindMap for the workspace
+    const defaultMindMap = await MindMap.create({
+      workspace: workspace._id,
+      nodes: [], // Initialize with empty nodes or add default nodes if desired
+      edges: [], // Initialize with empty edges or add default edges if desired
     });
 
     res.status(201).json({
@@ -256,6 +304,7 @@ const createWorkspace = asyncHandler(async (req, res) => {
       invitePeople: workspace.invitePeople,
       stages: workspace.stages,
       lists: workspace.lists,
+      mindMap: defaultMindMap,
     });
   } else {
     res.status(400);
@@ -305,6 +354,14 @@ const addListToWorkspace = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.status(201).json(newList);
+
+  const newListData = {
+    listId: newList._id,
+    list: newList,
+  };
+
+  sendSSEMessage(workspaceId, { type: 'LIST_ADDED', payload: newListData });
+
 });
 
 const updateListColor = asyncHandler(async (req, res) => {
@@ -327,6 +384,13 @@ const updateListColor = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.status(200).json(list);
+  // Send SSE message to clients connected to this workspace
+  const updatedListData = {
+    listId,
+    list,
+  };
+
+  sendSSEMessage(workspaceId, { type: 'LIST_COLOR_UPDATED', payload: updatedListData });
 });
 
 // @desc    Add a new task to a list within a workspace
@@ -368,6 +432,13 @@ const addTaskToList = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.status(201).json(newTask);
+  const newTaskData = {
+    listId,
+    taskId: newTask._id,
+    task: newTask,
+  };
+
+  sendSSEMessage(workspaceId, { type: 'TASK_ADDED', payload: newTaskData });
 });
 
 
@@ -403,6 +474,13 @@ const editTaskInList = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.status(200).json(task);
+  const updatedTaskData = {
+    listId,
+    taskId,
+    task,
+  };
+
+  sendSSEMessage(workspaceId, { type: 'TASK_UPDATED', payload: updatedTaskData });
 });
 
 // @desc    Update a list within a workspace
@@ -454,6 +532,14 @@ const updateListInWorkspace = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.json(list);
+
+  // Send SSE message to clients connected to this workspace
+  const updatedListData = {
+    listId,
+    list,
+  };
+
+  sendSSEMessage(workspaceId, { type: 'LIST_UPDATED', payload: updatedListData });
 });
 
 // @desc    Reorder lists within a workspace
@@ -509,6 +595,13 @@ const reorderLists = asyncHandler(async (req, res) => {
   console.log('Reordered Lists:', workspace.lists.map(list => list._id));
 
   res.json({ message: 'Lists reordered successfully', lists: workspace.lists });
+
+  // Send SSE message to clients connected to this workspace
+  sendSSEMessage(workspaceId, {
+    type: 'LISTS_REORDERED',
+    payload: { lists: workspace.lists },
+  });
+
 });
 
 
@@ -537,6 +630,13 @@ const deleteListFromWorkspace = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.json({ message: 'List deleted successfully' });
+
+  // Send SSE message to clients connected to this workspace
+  sendSSEMessage(workspaceId, {
+    type: 'LIST_DELETED',
+    payload: { listId },
+  });
+
 });
 
 // @desc    Update a task within a list in a workspace
@@ -616,8 +716,16 @@ const updateTaskInList = asyncHandler(async (req, res) => {
   await workspace.save();
 
   res.json(task);
-});
 
+  // Send SSE message to clients connected to this workspace
+  const updatedTaskData = {
+    listId,
+    taskId,
+    task,
+  };
+
+  sendSSEMessage(workspaceId, { type: 'TASK_UPDATED', payload: updatedTaskData });
+});
 
 // @desc    Delete a task within a list in a workspace
 // @route   DELETE /api/workspaces/:workspaceId/lists/:listId/tasks/:taskId
@@ -651,24 +759,57 @@ const deleteTaskFromList = asyncHandler(async (req, res) => {
 
 
   res.json({ message: 'Task deleted successfully' });
+
+  // Send SSE message to clients connected to this workspace
+  sendSSEMessage(workspaceId, {
+    type: 'TASK_DELETED',
+    payload: { listId, taskId },
+  });
 });
 
 // @desc    Get workspace by ID
 // @route   GET /api/workspaces/:id
 // @access  Private
 const getWorkspaceById = asyncHandler(async (req, res) => {
-  const workspace = await Workspace.findById(req.params.id)
+  const workspaceId = req.params.id;
+
+  // Check if the user is a member of the workspace
+  const workspaceMember = await WorkspaceMember.findOne({
+    workspace: workspaceId,
+    'members.user': req.user._id,
+  }).lean();
+
+  if (!workspaceMember) {
+    res.status(403);
+    throw new Error('You do not have access to this workspace');
+  }
+
+  const workspace = await Workspace.findById(workspaceId)
     .populate('createdBy', 'name email')
-    .lean(); // Use lean for better performance since we don't need mongoose documents
+    .lean();
 
   if (workspace) {
-    // Fetch members
-    const workspaceMembers = await WorkspaceMember.findOne({ workspace: workspace._id })
-      .populate('members.user', 'name email')
-      .lean();
+    // Fetch all members of the workspace
+    const membersWithDetails = await Promise.all(
+      workspaceMember.members.map(async (member) => {
+        // Fetch user data
+        const user = await User.findById(member.user).select('name email').lean();
+
+        // Fetch profile data
+        const profile = await Profile.findOne({ user: member.user }).select('profileImage').lean();
+
+        return {
+          user: {
+            ...user,
+            profileImage: profile?.profileImage || '',
+          },
+          role: member.role,
+        };
+      })
+    );
 
     // Add the members to the workspace object
-    workspace.members = workspaceMembers ? workspaceMembers.members : [];
+    workspace.members = membersWithDetails;
 
     res.json(workspace);
   } else {
@@ -881,6 +1022,11 @@ const updateWorkspace = asyncHandler(async (req, res) => {
       invitePeople: updatedWorkspace.invitePeople,
       stages: updatedWorkspace.stages,
     });
+    // Send SSE message to clients connected to this workspace
+    sendSSEMessage(workspace._id.toString(), {
+      type: 'WORKSPACE_UPDATED',
+      payload: { workspace: updatedWorkspace },
+    });
   } else {
     res.status(404);
     throw new Error('Workspace not found');
@@ -1001,6 +1147,12 @@ const addMember = asyncHandler(async (req, res) => {
   await workspaceMember.save();
 
   res.status(201).json({ message: 'Member added successfully' });
+
+  // Send SSE message to clients connected to this workspace
+  sendSSEMessage(req.params.id, {
+    type: 'MEMBER_ADDED',
+    payload: { userId, role },
+  });
 });
 
 // @desc    Remove member from workspace
@@ -1061,6 +1213,11 @@ const removeMember = asyncHandler(async (req, res) => {
   await workspaceMember.save();
 
   res.json({ message: 'Member removed successfully' });
+  // Send SSE message to clients connected to this workspace
+  sendSSEMessage(id, {
+    type: 'MEMBER_REMOVED',
+    payload: { userId: memberId },
+  });
 });
 
 // @desc    List all workspaces accessible to the user
@@ -1069,25 +1226,188 @@ const removeMember = asyncHandler(async (req, res) => {
 const listWorkspaces = asyncHandler(async (req, res) => {
   // Find all WorkspaceMembers where the user is a member
   const workspaceMembers = await WorkspaceMember.find({ 'members.user': req.user._id })
-    .populate('workspace')
-    .lean(); // Use lean for better performance since we don't need mongoose documents
+    .populate({
+      path: 'workspace',
+      populate: {
+        path: 'createdBy',
+        select: 'name email',
+      },
+    })
+    .lean();
 
-  const workspaces = workspaceMembers.map((wm) => ({
-    _id: wm.workspace._id,
-    workspaceTitle: wm.workspace.workspaceTitle,
-    coverImage: wm.workspace.coverImage,
-    workspaceDescription: wm.workspace.workspaceDescription,
-    createdBy: wm.workspace.createdBy,
-    creationDateTime: wm.workspace.creationDateTime,
-    workspaceType: wm.workspace.workspaceType,
-    selectedViews: wm.workspace.selectedViews,
-    invitePeople: wm.workspace.invitePeople,
-    stages: wm.workspace.stages,
-    role: wm.members.find((m) => m.user.toString() === req.user._id.toString()).role,
-  }));
+  const workspaces = [];
+
+  for (const wm of workspaceMembers) {
+    // Fetch all members of the workspace
+    const membersWithDetails = await Promise.all(
+      wm.members.map(async (member) => {
+        // Fetch user data
+        const user = await User.findById(member.user).select('name email').lean();
+
+        // Fetch profile data
+        const profile = await Profile.findOne({ user: member.user }).select('profileImage').lean();
+
+        return {
+          user: {
+            ...user,
+            profileImage: profile?.profileImage || '',
+          },
+          role: member.role,
+        };
+      })
+    );
+
+    workspaces.push({
+      _id: wm.workspace._id,
+      workspaceTitle: wm.workspace.workspaceTitle,
+      coverImage: wm.workspace.coverImage,
+      workspaceDescription: wm.workspace.workspaceDescription,
+      createdBy: wm.workspace.createdBy,
+      creationDateTime: wm.workspace.creationDateTime,
+      workspaceType: wm.workspace.workspaceType,
+      selectedViews: wm.workspace.selectedViews,
+      invitePeople: wm.workspace.invitePeople,
+      stages: wm.workspace.stages,
+      role: wm.members.find((m) => m.user.toString() === req.user._id.toString()).role,
+      members: membersWithDetails,
+    });
+  }
 
   res.json(workspaces);
 });
+
+
+
+// @desc    Get real-time updates for a workspace
+// @route   GET /api/workspaces/:workspaceId/updates
+// @access  Private
+const getWorkspaceUpdates = asyncHandler(async (req, res) => {
+  const { workspaceId } = req.params;
+
+  // Authorization: Check if the user is a member of the workspace
+  const isMember = await WorkspaceMember.exists({
+    workspace: workspaceId,
+    'members.user': req.user._id,
+  });
+
+  if (!isMember) {
+    res.status(403);
+    throw new Error('You do not have access to this workspace');
+  }
+
+  // Set headers for SSE
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  res.flushHeaders();
+
+  // Keep the connection alive with heartbeats
+  const keepAliveInterval = setInterval(() => {
+    res.write(':\n\n');
+  }, 30000); // Every 30 seconds
+
+  // Add client to the list
+  const clientId = Date.now();
+  const newClient = {
+    id: clientId,
+    workspaceId,
+    res,
+  };
+  clients.push(newClient);
+
+  console.log(`Client ${clientId} connected to workspace ${workspaceId}`);
+
+  // Remove client on connection close
+  req.on('close', () => {
+    console.log(`Client ${clientId} disconnected`);
+    clients = clients.filter((client) => client.id !== clientId);
+    clearInterval(keepAliveInterval);
+  });
+});
+
+// @desc    Get all messages for a workspace
+// @route   GET /api/workspaces/:workspaceId/messages
+// @access  Private (Members of the workspace)
+const getMessages = asyncHandler(async (req, res) => {
+  const workspace = await Workspace.findById(req.params.workspaceId)
+    .populate('messages.sender', 'name email profileImage')
+    .populate('members.user', 'name email profileImage');
+
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  // Check if the user is a member of the workspace
+  const isMember = workspace.members.some(
+    (member) => member.user._id.toString() === req.user._id.toString()
+  );
+
+  // if (!isMember) {
+  //   res.status(403);
+  //   throw new Error('Access denied');
+  // }
+
+  res.json(workspace.messages);
+});
+
+// @desc    Send a new message to a workspace
+// @route   POST /api/workspaces/:workspaceId/messages
+// @access  Private (Members of the workspace)
+const sendMessage = asyncHandler(async (req, res) => {
+  const { content } = req.body;
+
+  if (!content || content.trim() === '') {
+    res.status(400);
+    throw new Error('Message content is required');
+  }
+
+  const workspace = await Workspace.findById(req.params.workspaceId);
+
+  if (!workspace) {
+    res.status(404);
+    throw new Error('Workspace not found');
+  }
+
+  // Check if the user is a member of the workspace
+  const isMember = workspace.members.some(
+    (member) => member.user.toString() === req.user._id.toString()
+  );
+
+  // if (!isMember) {
+  //   res.status(403);
+  //   throw new Error('Access denied');
+  // }
+
+  const message = {
+    sender: req.user._id,
+    content: content.trim(),
+    createdAt: new Date(),
+  };
+
+  workspace.messages.push(message);
+  await workspace.save();
+
+  // Populate the sender's information for the response
+  await workspace.populate({
+    path: 'messages.sender',
+    select: 'name email profileImage',
+  });
+
+  // Retrieve the newly added message (last in the array)
+  const populatedMessage = workspace.messages[workspace.messages.length - 1];
+
+  // Emit the new message to all connected clients via SSE
+  sendSSEMessage(req.params.workspaceId, {
+    type: 'NEW_MESSAGE',
+    payload: populatedMessage,
+  });
+
+  res.status(201).json(populatedMessage);
+});
+
+
 
 // Export all controller functions
 export {
@@ -1107,4 +1427,9 @@ export {
   updateTaskInList,
   deleteTaskFromList,
   updateListColor,
+  getWorkspaceUpdates,
+  clients,
+  getMessages,
+  sendMessage,
+  sendSSEMessage,
 };

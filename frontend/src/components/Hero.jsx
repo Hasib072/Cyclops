@@ -18,10 +18,8 @@ import { v4 as uuidv4 } from 'uuid';
 import ListsIcon from '../assets/icons/Lists.svg';
 import CalendarIcon from '../assets/icons/Calendar.svg';
 import TableIcon  from '../assets/icons/Table.svg';
-import ChatIcon from '../assets/icons/Chat.svg';
 import GanttIcon from '../assets/icons/Gantt.svg';
 import BoardIcon from '../assets/icons/Board.svg';
-import TimelineIcon from '../assets/icons/timeline.svg';
 
 
 // RTK Query Hooks
@@ -34,7 +32,7 @@ import {
 } from '../slices/usersApiSlice';
 
 // Toast Notifications
-import { toast, ToastContainer } from 'react-toastify';
+import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const ItemTypes = {
@@ -158,7 +156,11 @@ const Hero = () => {
   const [activeTab, setActiveTab] = useState('recentlyVisited');
 
   // Get Backend URL from Environment Variable
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+  const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+  //const BACKEND_URL = 'https://d0c7-2402-e280-21b0-55e-c79-8529-479-df00.ngrok-free.app';
+
+  // Function to check if a string is a Data URL
+  const isDataURL = (str) => /^data:/.test(str);
 
   // Construct the full profile image URL
   const profileImageUrl = profile?.profileImage
@@ -286,7 +288,7 @@ const Hero = () => {
         {
           _id: uuidv4(),
           name: 'My list 01',
-          description: 'Add Decription here',
+          // description: 'Add Decription here',
           tasks: [], // Initialize with empty tasks or include predefined tasks
         },
       ];
@@ -346,10 +348,10 @@ const Hero = () => {
 
   // Define default views for each workspace type
   const defaultViewsByType = {
-    Starter: ['Lists', 'Board','Table','Chat', 'Timeline'],
-    Kanban: ['Board', 'Calendar', 'Timeline', 'Chat'],
-    Project: ['Gantt', 'Timeline','Chat'],
-    Scrum: ['Gantt', 'Board','Chat'],
+    Starter: ['Lists', 'Board','Table'],
+    Kanban: ['Board', 'Calendar'],
+    Project: ['Lists','Gantt'],
+    Scrum: ['Gantt', 'Board'],
     // Add other types and their default views as needed
   };
 
@@ -773,7 +775,7 @@ const Hero = () => {
                 >
                   {new Date(workspace.creationDateTime).toLocaleString()}
                 </small>
-                {workspace.members?.length > 0 && ( // Safeguard against undefined members
+                {workspace.members?.length > 1 && (
                   <div
                     style={{
                       position: 'absolute',
@@ -792,7 +794,7 @@ const Hero = () => {
                               : `${BACKEND_URL}/${member.user.profileImage}` // Prepend backend URL for server-hosted images
                             : 'https://via.placeholder.com/30'
                         }
-                        alt={`User ${index + 1}`}
+                        alt={member.user.name}
                         style={{
                           borderRadius: '50%',
                           width: '30px',
@@ -1235,10 +1237,9 @@ const Hero = () => {
                 { name: 'Lists', icon: ListsIcon },
                 { name: 'Calendar', icon: CalendarIcon },
                 { name: 'Table', icon: TableIcon },
-                { name: 'Chat', icon: ChatIcon },
                 { name: 'Gantt', icon: GanttIcon },
                 { name: 'Board', icon: BoardIcon },
-                { name: 'Timeline', icon: TimelineIcon },
+                
               ].map((view) => (
                 <label
                   className="option"
@@ -1447,10 +1448,6 @@ const Hero = () => {
         )}
       </div>
     </DndProvider>
-
-
-      {/* Toast Container for Notifications */}
-      <ToastContainer />
     </div>
   );
 };

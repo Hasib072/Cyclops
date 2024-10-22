@@ -1,6 +1,7 @@
 // frontend/src/slices/workspaceApiSlice.js
 
 import { apiSlice } from './apiSlice';
+// import { updateMindMap } from './mindMapSlice';
 
 // Inject workspace endpoints into the existing apiSlice
 export const workspaceApiSlice = apiSlice.injectEndpoints({
@@ -12,11 +13,32 @@ export const workspaceApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: formData,
       }),
-      invalidatesTags: [{ type: 'Workspace', id: 'LIST' }],
+      invalidatesTags: [{ type: 'Workspace', id: 'LIST' }, { type: 'Workspaces', id: 'LIST' }],
     }),
     getWorkspaceById: builder.query({
       query: (workspaceId) => `/workspaces/${workspaceId}`,
       providesTags: (result, error, arg) => [{ type: 'Workspace', id: arg }],
+    }),
+
+    // Delete Workspace Mutation
+    deleteWorkspace: builder.mutation({
+      query: (workspaceId) => ({
+        url: `/workspaces/${workspaceId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, workspaceId) => [
+        { type: 'Workspace', id: workspaceId },
+        { type: 'Workspaces', id: 'LIST' }, // Assuming you have a list of workspaces that should be refreshed
+      ],
+      // Optional: You can add onQueryStarted for optimistic updates or additional side effects
+      // onQueryStarted: async (workspaceId, { dispatch, queryFulfilled }) => {
+      //   try {
+      //     await queryFulfilled;
+      //     // Additional side effects if needed
+      //   } catch {
+      //     // Handle errors if needed
+      //   }
+      // },
     }),
 
     // List Endpoints
@@ -62,6 +84,77 @@ export const workspaceApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: (result, error, { workspaceId }) => [{ type: 'Workspace', id: workspaceId }],
     }),
 
+    getMessages: builder.query({
+      query: (workspaceId) => `/workspaces/${workspaceId}/messages`,
+      providesTags: (result, error, workspaceId) => [
+        { type: 'Messages', id: workspaceId },
+      ],
+    }),
+
+    // Send Message
+    sendMessage: builder.mutation({
+      query: ({ workspaceId, content }) => ({
+        url: `/workspaces/${workspaceId}/messages`,
+        method: 'POST',
+        body: { content },
+      }),
+      invalidatesTags: (result, error, { workspaceId }) => [
+        { type: 'Messages', id: workspaceId },
+      ],
+    }),
+
+     // Mind Map Endpoints
+     getMindMap: builder.query({
+      query: (workspaceId) => `/mindmap/${workspaceId}`,
+      providesTags: (result, error, workspaceId) => [{ type: 'MindMap', id: workspaceId }],
+    }),
+    addNode: builder.mutation({
+      query: ({ workspaceId, nodeData }) => ({
+        url: `/mindmap/${workspaceId}/nodes`,
+        method: 'POST',
+        body: nodeData,
+      }),
+      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'MindMap', id: workspaceId }],
+    }),
+    updateNode: builder.mutation({
+      query: ({ workspaceId, nodeId, nodeData }) => ({
+        url: `/mindmap/${workspaceId}/nodes/${nodeId}`,
+        method: 'PUT',
+        body: nodeData,
+      }),
+      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'MindMap', id: workspaceId }],
+    }),
+    deleteNode: builder.mutation({
+      query: ({ workspaceId, nodeId }) => ({
+        url: `/mindmap/${workspaceId}/nodes/${nodeId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'MindMap', id: workspaceId }],
+    }),
+    addEdge: builder.mutation({
+      query: ({ workspaceId, edgeData }) => ({
+        url: `/mindmap/${workspaceId}/edges`,
+        method: 'POST',
+        body: edgeData,
+      }),
+      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'MindMap', id: workspaceId }],
+    }),
+    updateEdge: builder.mutation({
+      query: ({ workspaceId, edgeId, edgeData }) => ({
+        url: `/mindmap/${workspaceId}/edges/${edgeId}`,
+        method: 'PUT',
+        body: edgeData,
+      }),
+      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'MindMap', id: workspaceId }],
+    }),
+    deleteEdge: builder.mutation({
+      query: ({ workspaceId, edgeId }) => ({
+        url: `/mindmap/${workspaceId}/edges/${edgeId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, { workspaceId }) => [{ type: 'MindMap', id: workspaceId }],
+    }),
+    
     // Task Endpoints
     addTaskToList: builder.mutation({
       query: ({ workspaceId, listId, taskData }) => ({
@@ -94,6 +187,7 @@ export const workspaceApiSlice = apiSlice.injectEndpoints({
 export const {
   useCreateWorkspaceMutation,
   useGetWorkspaceByIdQuery,
+  useDeleteWorkspaceMutation, // Newly added hook
   useAddListToWorkspaceMutation,
   useUpdateListInWorkspaceMutation,
   useDeleteListFromWorkspaceMutation,
@@ -102,4 +196,15 @@ export const {
   useAddTaskToListMutation,
   useEditTaskInListMutation,
   useDeleteTaskFromListMutation,
+  useGetMessagesQuery,
+  useSendMessageMutation,
+
+  // Mind Map Hooks
+  useGetMindMapQuery,
+  useAddNodeMutation,
+  useUpdateNodeMutation,
+  useDeleteNodeMutation,
+  useAddEdgeMutation,
+  useUpdateEdgeMutation,
+  useDeleteEdgeMutation,
 } = workspaceApiSlice;

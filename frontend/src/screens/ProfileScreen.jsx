@@ -314,7 +314,9 @@ const ProfileScreen = () => {
   };
 
   // Get Backend URL from Environment Variable
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+  const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+  //const BACKEND_URL = 'https://d0c7-2402-e280-21b0-55e-c79-8529-479-df00.ngrok-free.app';
+
 
   // Construct the full profile image URL
   const profileImageUrl = profile?.profileImage ? `${BACKEND_URL}/${profile.profileImage}` : null;
@@ -537,11 +539,12 @@ const ProfileScreen = () => {
       justifyContent: 'center',
       alignItems: 'center',
       height: '100%', // Full height of the modal
+      width: '500px', // 90% width to match design
       flexDirection: 'column',
       background: 'linear-gradient(to bottom, #2f263c 0%, #121212 100%)', // Gradient background
       padding: '25px 20px', // Padding inside the form container
       borderRadius: '10px', // Rounded corners
-      width: '100%', // 90% width to match design
+      
       color: '#fff',
       position: 'relative',
     }}

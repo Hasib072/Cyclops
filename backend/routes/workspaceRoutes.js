@@ -1,6 +1,8 @@
 // backend/routes/workspaceRoutes.js
 
 import express from 'express';
+import { sseMiddleware } from '../middleware/sseMiddleware.js';
+
 import {
   createWorkspace,
   getWorkspaceById,
@@ -17,8 +19,11 @@ import {
   updateTaskInList,
   deleteTaskFromList,
   updateListColor,
+  getWorkspaceUpdates,
+  getMessages,
+  sendMessage,
 } from '../controller/workspaceController.js';
-import { ValidateJWT } from '../controller/authMiddleware.js';
+import { ValidateJWT, sseAuthMiddleware} from '../controller/authMiddleware.js';
 import workspaceUpload from '../middleware/workspaceUpload.js';
 import multer from 'multer';
 import path from 'path';
@@ -140,5 +145,14 @@ router.put('/:workspaceId/lists/:listId/tasks/:taskId', updateTaskInList);
 // @desc    Delete a task within a list in a workspace
 // @access  Private
 router.delete('/:workspaceId/lists/:listId/tasks/:taskId', deleteTaskFromList);
+
+// SSE endpoint for workspace updates
+router.get('/:workspaceId/updates', sseAuthMiddleware, getWorkspaceUpdates);
+
+// GET all messages for a workspace
+router.get('/:workspaceId/messages', getMessages);
+
+// POST a new message to a workspace
+router.post('/:workspaceId/messages', sendMessage);
 
 export default router;
