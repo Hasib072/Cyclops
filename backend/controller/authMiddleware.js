@@ -7,10 +7,14 @@ import User from '../models/userModel.js';
 const ValidateJWT = asyncHandler(async (req, res, next) => {
   let token;
 
-  // Check for JWT in cookies
-  if (req.cookies && req.cookies.jwt) {
+  // Check for JWT in Authorization header
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
     try {
-      token = req.cookies.jwt;
+      // Extract token from header
+      token = req.headers.authorization.split(' ')[1];
 
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -29,7 +33,9 @@ const ValidateJWT = asyncHandler(async (req, res, next) => {
       res.status(401);
       throw new Error('Not authorized, token failed');
     }
-  } else {
+  }
+
+  if (!token) {
     res.status(401);
     throw new Error('Not authorized, no token');
   }
@@ -38,10 +44,14 @@ const ValidateJWT = asyncHandler(async (req, res, next) => {
 const sseAuthMiddleware = asyncHandler(async (req, res, next) => {
   let token;
 
-  // Check for JWT in cookies
-  if (req.cookies && req.cookies.jwt) {
+  // Check for JWT in Authorization header
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
     try {
-      token = req.cookies.jwt;
+      // Extract token from header
+      token = req.headers.authorization.split(' ')[1];
 
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -69,4 +79,5 @@ const sseAuthMiddleware = asyncHandler(async (req, res, next) => {
     res.end();
   }
 });
-export { ValidateJWT,sseAuthMiddleware };
+
+export { ValidateJWT, sseAuthMiddleware };

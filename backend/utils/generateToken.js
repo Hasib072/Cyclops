@@ -7,12 +7,18 @@ const generateToken = (res, userId) => {
     expiresIn: '30d',
   });
 
+  // Remove or comment out the cookie setting
+  /*
   res.cookie('jwt', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // true in production
-    sameSite: 'lax', // 'lax' in development, consider 'strict' or 'none' as needed
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
+  */
+
+  // Instead, send the token in the response body
+  return token;
 };
 
 export default generateToken;

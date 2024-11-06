@@ -6,10 +6,9 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser'; // Import cookie-parser
 import userRoutes from './routes/userRoutes.js';
-import profileRoutes from './routes/profileRoutes.js'; // Ensure you have profile routes
-import workspaceRoutes from './routes/workspaceRoutes.js'; // Import workspace routes
+import profileRoutes from './routes/profileRoutes.js';
+import workspaceRoutes from './routes/workspaceRoutes.js';
 import mindMapRoutes from './routes/mindMapRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import connectDB from './config/db.js';
@@ -20,7 +19,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cookieParser()); // Use cookie-parser
+// app.use(cookieParser()); // Remove if not using cookies
 
 // CORS Configuration using environment variable
 const allowedOrigins = process.env.CORS_ORIGIN
@@ -33,13 +32,14 @@ app.use(cors({
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
       const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}.`;
+      console.log(msg); // Log the CORS error
       return callback(new Error(msg), false);
     }
     return callback(null, true);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // Allow credentials (cookies)
+  credentials: false, // Set to false since we're not using cookies
 }));
 
 // Define __dirname for ES Modules
@@ -51,12 +51,11 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Routes
 app.use('/api/users', userRoutes);
-app.use('/api/profile', profileRoutes); // This should be /api/profile
-app.use('/api/workspaces', workspaceRoutes); // Mount workspace routes
+app.use('/api/profile', profileRoutes);
+app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/mindmap', mindMapRoutes);
 
 // **Remove Frontend Serving from Backend**
-// Since frontend is on Netlify, the backend doesn't need to serve frontend files.
 /*
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/build')));
