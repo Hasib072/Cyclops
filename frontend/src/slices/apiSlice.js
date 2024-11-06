@@ -5,7 +5,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const apiSlice = createApi({
   reducerPath: 'api', // Should be unique across your application
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api', // Ensure this matches your backend route prefix
+    baseUrl: import.meta.env.VITE_APP_BACKEND_URL + '/api', // Use environment variable
     credentials: 'include', // Include cookies if your backend uses them
     prepareHeaders: (headers, { getState }) => {
       const token = getState().auth.userInfo?.token; // Adjust path to token as needed
