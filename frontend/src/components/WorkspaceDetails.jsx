@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { useGetWorkspaceByIdQuery, useAddListToWorkspaceMutation, useDeleteListFromWorkspaceMutation } from '../slices/workspaceApiSlice';
-import { v4 as uuidv4 } from 'uuid';
 import TodoListView from './TodoListView'; // Assuming this component handles lists and tasks
 
 const WorkspaceDetails = ({ workspaceId }) => {
