@@ -23,11 +23,13 @@ app.use(express.json());
 app.use(cookieParser()); // Use cookie-parser
 
 // CORS Configuration using environment variable
-const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000'];
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',')
+  : ['http://localhost:3000']; // Default to localhost for development
 
 app.use(cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
       const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}.`;
@@ -35,6 +37,8 @@ app.use(cors({
     }
     return callback(null, true);
   },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true, // Allow credentials (cookies)
 }));
 

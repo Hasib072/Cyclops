@@ -8,7 +8,7 @@ export const apiSlice = createApi({
     baseUrl: import.meta.env.VITE_APP_BACKEND_URL + '/api', // Use environment variable
     credentials: 'include', // Include cookies if your backend uses them
     prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.userInfo?.token; // Adjust path to token as needed
+      const token = getState().auth.userInfo?.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
