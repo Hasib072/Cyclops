@@ -21,8 +21,20 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cookieParser()); // Use cookie-parser
+
+// CORS Configuration using environment variable
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000'];
+
 app.use(cors({
-  origin: 'https://cyclopsdemo.netlify.app', // Frontend URL
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}.`;
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true, // Allow credentials (cookies)
 }));
 
@@ -39,13 +51,9 @@ app.use('/api/profile', profileRoutes); // This should be /api/profile
 app.use('/api/workspaces', workspaceRoutes); // Mount workspace routes
 app.use('/api/mindmap', mindMapRoutes);
 
-// Optional: Remove or verify the Test Route
-// Ensure 'test.png' exists in the uploads directory or remove this route
-// app.get('/test-upload', (req, res) => {
-//   res.sendFile(path.join(__dirname, '..', 'uploads', 'test.png'));
-// });
-
-// Serve frontend in production (optional)
+// **Remove Frontend Serving from Backend**
+// Since frontend is on Netlify, the backend doesn't need to serve frontend files.
+/*
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/build')));
   app.get('*', (req, res) =>
@@ -56,13 +64,14 @@ if (process.env.NODE_ENV === 'production') {
     res.send('API is running...');
   });
 }
+*/
 
 // Error Handling Middlewares
 app.use(notFound);
 app.use(errorHandler);
 
 // Connect to DB and Start Server
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
