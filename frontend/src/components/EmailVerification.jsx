@@ -85,7 +85,7 @@ const EmailVerification = ({ onClose }) => {
     setIsVerifying(true);
     try {
       // Replace with your verification API endpoint
-      const response = await axios.post('/api/verify-otp', { otp: enteredOtp });
+      const response = await api.post('/api/verify-otp', { otp: enteredOtp });
       if (response.data.success) {
         alert('Email verified successfully!');
         onClose();
@@ -104,7 +104,7 @@ const EmailVerification = ({ onClose }) => {
     setIsResending(true);
     try {
       // Replace with your resend OTP API endpoint
-      const response = await axios.post('/api/resend-otp');
+      const response = await api.post('/api/resend-otp');
       if (response.data.success) {
         alert('OTP has been resent to your email.');
         setTimeLeft(300); // Reset timer

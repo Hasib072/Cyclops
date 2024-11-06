@@ -12,6 +12,7 @@ import mail_ico from '../assets/icons/mail.png';
 import pass_ico from '../assets/icons/pass.png';
 import emailjs from 'emailjs-com';
 import axios from 'axios'; // Ensure axios is installed: npm install axios
+import api from '../api';
 
 const LoginScreen = () => {
   // Login form state
@@ -143,7 +144,7 @@ const LoginScreen = () => {
 
         // Save verification code to backend
         try {
-          await axios.post('/api/users/save-verification-code', { email, code });
+          await api.post('/api/users/save-verification-code', { email, code });
           console.log('Verification code saved to backend');
         } catch (backendError) {
           console.error('Error saving verification code:', backendError);
