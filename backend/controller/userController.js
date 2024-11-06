@@ -8,9 +8,9 @@ import Profile from '../models/profileModel.js';
 import generateProfileImage from '../utils/imageGenerator.js';
 
 
-//  @desc   Auth user/set token
-//  @route   POST /api/users/auth
-//  @access Public
+// @desc   Auth user/set token
+// @route  POST /api/users/auth
+// @access Public
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -22,12 +22,15 @@ const authUser = asyncHandler(async (req, res) => {
       throw new Error('Email not verified');
     }
 
-    generateToken(res, user._id);
+    // Generate token without setting it in cookies
+    const token = generateToken(user._id); // Adjusted generateToken to return token
+
     res.status(200).json({
       _id: user._id,
       name: user.name,
       email: user.email,
       isVerified: user.isVerified,
+      token, // Include the token in the response body
     });
   } else {
     res.status(400);
