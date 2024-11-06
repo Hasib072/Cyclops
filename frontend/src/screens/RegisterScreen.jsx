@@ -17,6 +17,7 @@ import pass_ico from '../assets/icons/pass.png';
 import user_circle_ico from '../assets/icons/account_circle.png';
 import emailjs from 'emailjs-com';
 import axios from 'axios';
+import api from '../api';
 
 const RegisterScreen = () => {
   // Registration form state
@@ -148,7 +149,7 @@ useEffect(() => {
         });
 
       // Save verification code to backend
-      await axios.post('/api/users/save-verification-code', { email, code });
+      await api.post('/api/users/save-verification-code', { email, code });
 
       // Show the verification modal
       setShowModal(true);
