@@ -13,7 +13,7 @@
     z-index: 1000;
   }
   
-  .modal-content {
+  .nd_modal-content {
     background-color: #fff;
     padding: 20px 30px;
     border-radius: 8px;
@@ -22,7 +22,7 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
   
-  .modal-content h2 {
+  .nd_modal-content h2 {
     margin-top: 0;
     margin-bottom: 20px;
     text-align: center;

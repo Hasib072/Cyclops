@@ -19,7 +19,7 @@ const NodeDetailsModal = ({ node, onClose, onSave }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content" style={styles.modalContent}>
+      <div className="nd_modal-content" style={styles.modalContent}>
         <h2>Node Details</h2>
         <div className="form-group">
           <label htmlFor="node-label">Label:</label>

@@ -17,7 +17,6 @@ import RegisterScreen from "./screens/RegisterScreen.jsx";
 import ProfileScreen from "./screens/ProfileScreen.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import WorkSpaceScreen from "./screens/WorkSpaceScreen.jsx";
-import WorkspaceDetails from "./components/WorkspaceDetails.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
