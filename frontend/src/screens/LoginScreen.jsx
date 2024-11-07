@@ -142,7 +142,7 @@ const LoginScreen = () => {
         }
   
         try {
-          await api.post('/api/users/save-verification-code', { email, code });
+          await api.post('/users/save-verification-code', { email, code });
           console.log('Verification code saved to backend');
         } catch (backendError) {
           console.error('Error saving verification code:', backendError);

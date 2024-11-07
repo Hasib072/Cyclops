@@ -149,7 +149,7 @@ useEffect(() => {
         });
 
       // Save verification code to backend
-      await api.post('/api/users/save-verification-code', { email, code });
+      await api.post('/users/save-verification-code', { email, code });
 
       // Show the verification modal
       setShowModal(true);
