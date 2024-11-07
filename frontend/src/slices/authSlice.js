@@ -3,9 +3,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  userInfo: localStorage.getItem('userInfo')
-    ? JSON.parse(localStorage.getItem('userInfo'))
-    : null,
+  user: null,
+  token: localStorage.getItem('token') || null,
 };
 
 const authSlice = createSlice({
@@ -13,17 +12,16 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const user = action.payload;
-      state.userInfo = user;
-      if (user && user !== 'undefined') {
-        localStorage.setItem('userInfo', JSON.stringify(user));
-      } else {
-        localStorage.removeItem('userInfo');
+      state.user = action.payload.user || null;
+      state.token = action.payload.token || null;
+      if (action.payload.token) {
+        localStorage.setItem('token', action.payload.token);
       }
     },
     logout: (state) => {
-      state.userInfo = null;
-      localStorage.removeItem('userInfo');
+      state.user = null;
+      state.token = null;
+      localStorage.removeItem('token');
     },
   },
 });

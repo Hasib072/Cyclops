@@ -26,7 +26,7 @@ app.use(cors({
   origin: 'https://cyclopsdemo.netlify.app', // Frontend origin
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+  credentials: false, // Set to false since we're using header-based tokens
 }));
 
 // Define __dirname for ES Modules

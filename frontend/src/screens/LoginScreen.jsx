@@ -121,28 +121,26 @@ const LoginScreen = () => {
     try {
       // Attempt to log in the user
       const res = await login({ email, password }).unwrap();
-      dispatch(setCredentials({ ...res }));
+      dispatch(setCredentials({ ...res })); // Store token in Redux store
+      localStorage.setItem('token', res.token); // Also store token in localStorage
       navigate('/');
     } catch (err) {
       console.log(err);
       const errorMessage = err?.data?.message || err.error || err.status;
       toast.error(errorMessage);
-
+  
       if (errorMessage === 'Email not verified') {
-        // Generate a new verification code
+        // Handle email verification
         const code = generateVerificationCode();
         setGeneratedCode(code);
-
-        // Send verification email via EmailJS
+  
         try {
           await sendVerificationEmail(email, code);
         } catch (emailError) {
           console.error('Error sending verification email:', emailError);
-          // Optionally, you can decide whether to proceed or not
           return;
         }
-
-        // Save verification code to backend
+  
         try {
           await api.post('/api/users/save-verification-code', { email, code });
           console.log('Verification code saved to backend');
@@ -151,13 +149,13 @@ const LoginScreen = () => {
           toast.error('Failed to save verification code. Please try again.');
           return;
         }
-
-        // Show the verification modal
+  
         setShowModal(true);
         setTimeLeft(600); // Reset timer
       }
     }
   };
+  
 
   const verifyHandler = async () => {
     const code = verificationCode.join('');

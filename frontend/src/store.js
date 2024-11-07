@@ -18,4 +18,10 @@ const store = configureStore({
   devTools: true,
 });
 
+// Initialize store with token from localStorage
+const token = localStorage.getItem('token');
+if (token) {
+  store.dispatch(setCredentials({ token }));
+}
+
 export default store;
