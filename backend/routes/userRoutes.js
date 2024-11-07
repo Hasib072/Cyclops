@@ -34,22 +34,22 @@ router.post('/resend-verification', verifyEmailLimiter, resendVerificationCode);
 
 // Add new route to save verification code
 router.post('/save-verification-code', asyncHandler(async (req, res) => {
-   const { email, code } = req.body;
- 
-   const user = await User.findOne({ email });
-   
-   if (!user) {
-     res.status(400);
-     throw new Error('Invalid email');
-   }
- 
-   // Update verification code and expiry
-   user.verificationCode = code;
-   user.verificationCodeExpires = Date.now() + 10 * 60 * 1000; // 10 minutes from now
- 
-   await user.save();
- 
-   res.json({ message: 'Verification code saved successfully' });
- }));
+  const { email, code } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    res.status(400);
+    throw new Error('Invalid email');
+  }
+
+  // Update verification code and expiry
+  user.verificationCode = code;
+  user.verificationCodeExpires = Date.now() + 10 * 60 * 1000; // 10 minutes from now
+
+  await user.save();
+
+  res.json({ message: 'Verification code saved successfully' });
+}));
 
 export default router;

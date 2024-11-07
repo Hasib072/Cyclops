@@ -98,95 +98,96 @@ const registerUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users/verify-email
 // @access  Public
 const verifyEmail = asyncHandler(async (req, res) => {
-   const { email, code } = req.body;
- 
-   // Find user by email
-   const user = await User.findOne({ email });
- 
-   if (!user) {
-     res.status(400);
-     throw new Error('Invalid email');
-   }
- 
-   if (user.isVerified) {
-     res.status(400);
-     throw new Error('User already verified');
-   }
- 
-   // Check if verification code is valid and not expired
-   if (user.verificationCode !== code || user.verificationCodeExpires < Date.now()) {
-     res.status(400);
-     throw new Error('Invalid or expired verification code');
-   }
- 
-   // Update user's verification status
-   user.isVerified = true;
-   user.verificationCode = undefined;
-   user.verificationCodeExpires = undefined;
- 
-   await user.save();
- 
-   // Optionally, generate a token upon successful verification
-   generateToken(res, user._id);
- 
-   res.json({
-     message: 'Email verified successfully',
-     user: {
-       _id: user._id,
-       name: user.name,
-       email: user.email,
-       isVerified: user.isVerified,
-     },
-   });
- });
+  const { email, code } = req.body;
+
+  // Find user by email
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    res.status(400);
+    throw new Error('Invalid email');
+  }
+
+  if (user.isVerified) {
+    res.status(400);
+    throw new Error('User already verified');
+  }
+
+  // Check if verification code is valid and not expired
+  if (user.verificationCode !== code || user.verificationCodeExpires < Date.now()) {
+    res.status(400);
+    throw new Error('Invalid or expired verification code');
+  }
+
+  // Update user's verification status
+  user.isVerified = true;
+  user.verificationCode = undefined;
+  user.verificationCodeExpires = undefined;
+
+  await user.save();
+
+  // Generate a token upon successful verification
+  const token = generateToken(user._id);
+
+  res.json({
+    message: 'Email verified successfully',
+    token, // Include the token in the response
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified,
+    },
+  });
+});
 
 // Similarly, remove email sending from resendVerificationCode
 const resendVerificationCode = asyncHandler(async (req, res) => {
-   const { email } = req.body;
- 
-   // Find user by email
-   const user = await User.findOne({ email });
- 
-   if (!user) {
-     res.status(400);
-     throw new Error('Invalid email');
-   }
- 
-   if (user.isVerified) {
-     res.status(400);
-     throw new Error('User already verified');
-   }
- 
-   // Generate new verification code
-   const verificationCode = user.generateVerificationCode();
- 
-   // Save updated user to the database
-   await user.save();
- 
-   // Prepare email details (to be handled on frontend)
-   const subject = 'Email Verification';
-   const text = `Your new verification code is: ${verificationCode}`;
- 
-   // **Remove or comment out the backend email sending**
-   /*
-   try {
-     // Resend verification email via EmailJS
-     await sendEmail(user.email, subject, user.name, verificationCode);
-     res.json({
-       message: 'Verification code resent to email.',
-     });
-   } catch (error) {
-     console.error('Error in resendVerificationCode:', error);
-     res.status(500);
-     throw new Error('Email could not be sent');
-   }
-   */
- 
-   // Instead, respond with success
-   res.json({
-     message: 'Verification code resent. Please check your email.',
-   });
- });
+  const { email } = req.body;
+
+  // Find user by email
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    res.status(400);
+    throw new Error('Invalid email');
+  }
+
+  if (user.isVerified) {
+    res.status(400);
+    throw new Error('User already verified');
+  }
+
+  // Generate new verification code
+  const verificationCode = user.generateVerificationCode();
+
+  // Save updated user to the database
+  await user.save();
+
+  // Prepare email details (to be handled on frontend)
+  const subject = 'Email Verification';
+  const text = `Your new verification code is: ${verificationCode}`;
+
+  // **Remove or comment out the backend email sending**
+  /*
+  try {
+    // Resend verification email via EmailJS
+    await sendEmail(user.email, subject, user.name, verificationCode);
+    res.json({
+      message: 'Verification code resent to email.',
+    });
+  } catch (error) {
+    console.error('Error in resendVerificationCode:', error);
+    res.status(500);
+    throw new Error('Email could not be sent');
+  }
+  */
+
+  // Instead, respond with success
+  res.json({
+    message: 'Verification code resent. Please check your email.',
+  });
+});
 
 //  @desc   Logout user
 //  @route   POST /api/users/logout
