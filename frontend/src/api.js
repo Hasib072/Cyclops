@@ -3,7 +3,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL + '/api', // 'https://cyclops-ze9u.onrender.com/api'
+  baseURL: import.meta.env.VITE_APP_BACKEND_URL + '/api', // 'https://cyclops-ze9u.onrender.com/api'
 });
 
 // Add a request interceptor to include the token
