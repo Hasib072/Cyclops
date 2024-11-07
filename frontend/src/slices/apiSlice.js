@@ -6,7 +6,7 @@ import { logout, setCredentials } from './authSlice';
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_APP_BACKEND_URL, // 'https://cyclops-ze9u.onrender.com/api'
+    baseUrl: import.meta.env.VITE_APP_BACKEND_URL + '/api', // 'https://cyclops-ze9u.onrender.com/api'
     prepareHeaders: (headers, { getState }) => {
       const token = getState().auth.token || localStorage.getItem('token'); // Retrieve token from Redux store or localStorage
       if (token) {
