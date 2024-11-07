@@ -23,7 +23,7 @@ const authUser = asyncHandler(async (req, res) => {
     }
 
     // Generate token without setting it in cookies
-    const token = generateToken(user._id); // Adjusted generateToken to return token
+    const token = generateToken(user._id);
 
     res.status(200).json({
       _id: user._id,

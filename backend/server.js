@@ -21,25 +21,12 @@ const app = express();
 app.use(express.json());
 // app.use(cookieParser()); // Remove if not using cookies
 
-// CORS Configuration using environment variable
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',')
-  : ['http://localhost:3000']; // Default to localhost for development
-
+// CORS Configuration
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}.`;
-      console.log(msg); // Log the CORS error
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
+  origin: 'https://cyclopsdemo.netlify.app', // Frontend origin
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false, // Set to false since we're not using cookies
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 }));
 
 // Define __dirname for ES Modules

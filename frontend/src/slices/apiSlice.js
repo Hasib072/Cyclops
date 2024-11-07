@@ -7,10 +7,10 @@ export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_APP_BACKEND_URL + '/api', // Use environment variable
     credentials: 'include', // Include cookies if your backend uses them
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.userInfo?.token;
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem('token'); // Retrieve token from localStorage
       if (token) {
-        headers.set('authorization', `Bearer ${token}`);
+        headers.set('Authorization', `Bearer ${token}`); // Set Authorization header
       }
       return headers;
     },
