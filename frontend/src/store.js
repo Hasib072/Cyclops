@@ -4,7 +4,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { apiSlice } from './slices/apiSlice';
 import { usersApiSlice } from './slices/usersApiSlice';
 import { workspaceApiSlice } from './slices/workspaceApiSlice';
-import authReducer from './slices/authSlice'; // Import authReducer
+import authReducer, { setCredentials } from './slices/authSlice';
 
 const store = configureStore({
   reducer: {
