@@ -1,6 +1,7 @@
 // frontend/src/components/Maps.jsx
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -32,6 +33,7 @@ const nodeTypes = {
 };
 
 const Maps = ({ workspaceId }) => {
+  const { userInfo } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   // Fetch mind map data from the backend
@@ -221,9 +223,17 @@ const Maps = ({ workspaceId }) => {
     }
   };
 
+  
+  
+
   // Real-Time Updates via SSE
   useEffect(() => {
-    const eventSource = new EventSource(`/api/workspaces/${workspaceId}/updates`);
+    const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+    const { token } = userInfo || {}; // Extract token from userInfo
+
+    const eventSource = new EventSource(
+      `${BACKEND_URL}/api/workspaces/${workspaceId}/updates?token=${token}`
+    );
 
     eventSource.onmessage = (e) => {
       const data = JSON.parse(e.data);

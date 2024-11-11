@@ -126,17 +126,40 @@ const WorkSpaceScreen = () => {
 
   useEffect(() => {
     if (workspaceId) {
-      const eventSource = new EventSource(`/api/workspaces/${workspaceId}/updates`);
+      
+
+      const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+      const { token } = userInfo || {}; // Extract token from userInfo
+
+      if (!token) {
+        toast.error('Authentication token not found. Please log in again.');
+        return;
+      }
+
+      // Initialize EventSource with absolute URL and token as query parameter
+      const eventSource = new EventSource(
+        `${BACKEND_URL}/api/workspaces/${workspaceId}/updates?token=${token}`
+      );
+
       eventSourceRef.current = eventSource;
-  
+
+      eventSource.onopen = () => {
+        console.log('SSE connection opened.');
+      };
+
       eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        handleServerEvent(data);
+        try {
+          const data = JSON.parse(event.data);
+          handleServerEvent(data);
+        } catch (err) {
+          console.error('Failed to parse SSE data:', err);
+        }
       };
   
       eventSource.onerror = (err) => {
         console.error('EventSource failed:', err);
         eventSource.close();
+        toast.error('Real-time updates lost.');
       };
   
       return () => {
