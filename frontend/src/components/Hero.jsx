@@ -135,6 +135,17 @@ const Hero = () => {
       });
     } else {
       console.log("Hello no user auth here go to login navigate to /login");
+      try {
+        dispatch(logout());
+        navigate('/login');
+      } catch (err) {
+        console.error(err);
+        toast.error(err.data?.message || 'Failed to logout', {
+          // position: toast.POSITION.TOP_RIGHT,
+          autoClose: 5000,
+        });
+      }
+      
     }
   }, [profile]);
 
