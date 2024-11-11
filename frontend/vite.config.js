@@ -23,7 +23,8 @@ export default defineConfig({
         '@reduxjs/toolkit',
         'react-bootstrap',
         'react-toastify',
-        'react-toastify/dist/ReactToastify.css'
+        'react-toastify/dist/ReactToastify.css',
+        '@reduxjs/toolkit/query/react'
       ]
     }
   }
