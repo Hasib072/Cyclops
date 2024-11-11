@@ -141,7 +141,6 @@ const Hero = () => {
       } catch (err) {
         console.error(err);
         toast.error(err.data?.message || 'Failed to logout', {
-          // position: toast.POSITION.TOP_RIGHT,
           autoClose: 5000,
         });
       }
