@@ -13,18 +13,5 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-  },
-  build: {
-    rollupOptions: {
-      external: [
-        'bootstrap/dist/css/bootstrap.min.css', // Added Bootstrap CSS as external
-        'react-redux',
-        '@reduxjs/toolkit',
-        'react-router-bootstrap',
-        'react-toastify',
-        'react-toastify/dist/ReactToastify.css',
-        '@reduxjs/toolkit/query/react'
-      ]
-    }
   }
 })
