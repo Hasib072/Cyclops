@@ -21,7 +21,8 @@ export default defineConfig({
         'bootstrap/dist/css/bootstrap.min.css', // Added Bootstrap CSS as external
         'react-redux',
         '@reduxjs/toolkit',
-        'react-bootstrap'
+        'react-bootstrap',
+        'react-toastify'
       ]
     }
   }
