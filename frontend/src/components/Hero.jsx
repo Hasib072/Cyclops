@@ -120,6 +120,7 @@ const Hero = () => {
   });
 
   useEffect(() => {
+    console.log("useEffect Start");
     if (profile) {
       console.log('Profile Data: ', profile); // Debugging line
       setProfileFormData({
@@ -133,7 +134,7 @@ const Hero = () => {
         linkedInLink: profile.linkedInLink || '',
       });
     } else {
-      console.log("Hello no user auth here go to login");
+      console.log("Hello no user auth here go to login navigate to /login");
     }
   }, [profile]);
 

@@ -1,7 +1,8 @@
 import Hero from "../components/Hero"
+import LoginScreen from "./LoginScreen"
 
 const HomeScreen = () => {
-   return <Hero />
+   return <LoginScreen />
 }
 
 export default HomeScreen
