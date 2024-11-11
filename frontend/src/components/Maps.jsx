@@ -232,7 +232,9 @@ const Maps = ({ workspaceId }) => {
     
 
     const eventSource = new EventSource(
-      `${BACKEND_URL}/api/workspaces/${workspaceId}/updates`
+      `${BACKEND_URL}/api/workspaces/${workspaceId}/updates`,{
+        withCredentials: true, // Ensures cookies are sent
+      }
     );
 
     eventSource.onmessage = (e) => {

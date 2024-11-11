@@ -93,7 +93,9 @@ const TeamChat = ({ workspaceId, members }) => {
 
     // Initialize EventSource with absolute URL and token as query parameter
     const eventSource = new EventSource(
-      `${BACKEND_URL}/api/workspaces/${workspaceId}/updates`
+      `${BACKEND_URL}/api/workspaces/${workspaceId}/updates`,{
+        withCredentials: true, // Ensures cookies are sent
+      }
     );
 
     eventSourceRef.current = eventSource;
