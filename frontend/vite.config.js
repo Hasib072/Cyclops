@@ -19,7 +19,8 @@ export default defineConfig({
       external: [
         'react-router-dom',
         'bootstrap/dist/css/bootstrap.min.css', // Added Bootstrap CSS as external
-        'react-redux'
+        'react-redux',
+        '@reduxjs/toolkit'
       ]
     }
   }
