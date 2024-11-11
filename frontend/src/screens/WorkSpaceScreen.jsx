@@ -132,6 +132,10 @@ const WorkSpaceScreen = () => {
 
       const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
       const { token } = userInfo || {}; // Extract token from userInfo
+      console.log(" token: " + token);
+      console.log(" userInfo: " + userInfo);
+      
+
 
       if (!token) {
         toast.error('Authentication token not found. Please log in again.');
