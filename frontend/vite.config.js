@@ -18,7 +18,8 @@ export default defineConfig({
     rollupOptions: {
       external: [
         'react-router-dom',
-        'bootstrap/dist/css/bootstrap.min.css' // Added Bootstrap CSS as external
+        'bootstrap/dist/css/bootstrap.min.css', // Added Bootstrap CSS as external
+        'react-redux'
       ]
     }
   }
