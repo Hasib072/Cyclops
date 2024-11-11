@@ -229,10 +229,10 @@ const Maps = ({ workspaceId }) => {
   // Real-Time Updates via SSE
   useEffect(() => {
     const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
-    const { token } = userInfo || {}; // Extract token from userInfo
+    
 
     const eventSource = new EventSource(
-      `${BACKEND_URL}/api/workspaces/${workspaceId}/updates?token=${token}`
+      `${BACKEND_URL}/api/workspaces/${workspaceId}/updates`
     );
 
     eventSource.onmessage = (e) => {

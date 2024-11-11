@@ -89,16 +89,11 @@ const TeamChat = ({ workspaceId, members }) => {
     if (!workspaceId) return;
 
     const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
-    const { token } = userInfo || {}; // Extract token from userInfo
 
-    if (!token) {
-      toast.error('Authentication token not found. Please log in again.');
-      return;
-    }
 
     // Initialize EventSource with absolute URL and token as query parameter
     const eventSource = new EventSource(
-      `${BACKEND_URL}/api/workspaces/${workspaceId}/updates?token=${token}`
+      `${BACKEND_URL}/api/workspaces/${workspaceId}/updates`
     );
 
     eventSourceRef.current = eventSource;
