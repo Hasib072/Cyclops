@@ -158,7 +158,7 @@ const WorkSpaceScreen = () => {
       eventSource.onerror = (err) => {
         console.error('EventSource failed:', err);
         eventSource.close();
-        toast.error('Real-time updates lost.');
+        toast.error('Real-time updates lost. Refresh the page once!');
       };
   
       return () => {
