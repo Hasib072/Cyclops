@@ -1,7 +1,4 @@
 <p align="center">
-# Cyclops
-</p>
-<p align="center">
     <img src="https://i.imgur.com/L67hMEe.png" alt="Cyclops logo">
 </p>
 
