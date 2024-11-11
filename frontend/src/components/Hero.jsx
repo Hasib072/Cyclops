@@ -132,6 +132,8 @@ const Hero = () => {
         gitHubLink: profile.gitHubLink || '',
         linkedInLink: profile.linkedInLink || '',
       });
+    } else {
+      console.log("Hello no user auth here go to login");
     }
   }, [profile]);
 
