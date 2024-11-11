@@ -1,10 +1,13 @@
 <p align="center">
 # Cyclops
-
-![Cyclops Logo](./frontend/public/Cyclops_logo.svg)
+</p>
+<p align="center">
+    <img src="https://i.imgur.com/L67hMEe.png" alt="Cyclops logo">
 </p>
 
-## [Click Here For Live Demo](https://cyclopswebapp.netlify.app)
+
+# Live Demo: [Click Here](https://cyclopswebapp.netlify.app)
+## link: https://cyclopswebapp.netlify.app
 
 ## Overview
 Cyclops is a unified software development platform designed to address challenges in project management, communication, bug tracking, and version control. Cyclops integrates essential tools like Gantt charts, Kanban boards, dashboards, and issue tracking systems, improving team efficiency and collaboration by 60%. Developed using the MERN stack for a robust and user-friendly experience, Cyclops also offers flexible customization for Agile, Scrum, and Waterfall methodologies.
