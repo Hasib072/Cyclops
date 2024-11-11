@@ -148,7 +148,7 @@ useEffect(() => {
         });
 
       // Save verification code to backend
-      await axiosInstance.post('/api/users/save-verification-code', { email, code });
+      await axiosInstance.post('/users/save-verification-code', { email, code });
 
       // Show the verification modal
       setShowModal(true);

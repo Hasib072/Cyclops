@@ -143,7 +143,7 @@ const LoginScreen = () => {
 
         // Save verification code to backend
         try {
-          await axiosInstance.post('/api/users/save-verification-code', { email, code });
+          await axiosInstance.post('/users/save-verification-code', { email, code });
           console.log('Verification code saved to backend');
         } catch (backendError) {
           console.error('Error saving verification code:', backendError);
