@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import './TeamChat.css';
 import Loader from './Loader';
 
-// MessageBubble Component as defined earlier
+// MessageBubble Component
 const MessageBubble = ({ message, sender, isOwnMessage }) => {
   const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
 
@@ -40,7 +40,7 @@ const MessageBubble = ({ message, sender, isOwnMessage }) => {
       <div
         style={{
           backgroundColor: isOwnMessage ? '#382251' : '#2f2f2f',
-          color: isOwnMessage ? '#fff' : '#fff',
+          color: '#fff',
           padding: '10px 15px',
           borderRadius: '15px',
           maxWidth: '60%',
@@ -88,12 +88,24 @@ const TeamChat = ({ workspaceId, members }) => {
   useEffect(() => {
     if (!workspaceId) return;
 
-    // Initialize EventSource
-    const eventSource = new EventSource(`/api/workspaces/${workspaceId}/updates`, {
-      withCredentials: true, // Ensures cookies are sent
-    });
+    const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+    const { token } = userInfo || {}; // Extract token from userInfo
+
+    if (!token) {
+      toast.error('Authentication token not found. Please log in again.');
+      return;
+    }
+
+    // Initialize EventSource with absolute URL and token as query parameter
+    const eventSource = new EventSource(
+      `${BACKEND_URL}/api/workspaces/${workspaceId}/updates?token=${token}`
+    );
 
     eventSourceRef.current = eventSource;
+
+    eventSource.onopen = () => {
+      console.log('SSE connection opened.');
+    };
 
     eventSource.onmessage = (event) => {
       try {
@@ -113,7 +125,7 @@ const TeamChat = ({ workspaceId, members }) => {
     return () => {
       eventSource.close();
     };
-  }, [workspaceId]);
+  }, [workspaceId, userInfo]);
 
   const handleServerEvent = (data) => {
     switch (data.type) {
