@@ -22,7 +22,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser()); // Use cookie-parser
 app.use(cors({
-  origin: 'http://localhost:3000', // Frontend URL
+  origin: 'https://ha51b-cyclops.netlify.app', // Frontend URL
   credentials: true, // Allow credentials (cookies)
 }));
 

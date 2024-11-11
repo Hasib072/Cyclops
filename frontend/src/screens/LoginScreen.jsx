@@ -11,7 +11,7 @@ import { toast } from 'react-toastify';
 import mail_ico from '../assets/icons/mail.png';
 import pass_ico from '../assets/icons/pass.png';
 import emailjs from 'emailjs-com';
-import axios from 'axios'; // Ensure axios is installed: npm install axios
+import axios from 'axios';
 
 const LoginScreen = () => {
   // Login form state
