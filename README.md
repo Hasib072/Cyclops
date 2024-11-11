@@ -16,7 +16,7 @@ Cyclops is a unified software development platform designed to address challenge
 - cd frontend then again npm install
 - create another .env file inside the frontend folder with VITE_APP_BACKEND_URL=http://localhost:5000 (here 5000 reffers to the PORT define in root directory)
 - cd .. (return to root directory)
-- npm run dev (to start bot backend and frontend)
+- npm run dev (to start both backend and frontend)
 
 ## Correct File Structure
 ![image](https://github.com/user-attachments/assets/c684f582-fd96-41fb-8ed4-0f5d45b9af26)
