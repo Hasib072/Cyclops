@@ -4,8 +4,9 @@
 
 
 # Live Demo: [Click Here](https://cyclopswebapp.netlify.app)
-## link: https://cyclopswebapp.netlify.app
-## Figma UI: https://www.figma.com/community/file/1440223540631066521/cyclops-ui
+### link: https://cyclopswebapp.netlify.app
+### Figma UI: https://www.figma.com/community/file/1440223540631066521/cyclops-ui
+### Docs: https://drive.google.com/file/d/1Wm19zDgf0Bd3JOOk2STYP7zjOCY1tM8p
 
 ## Overview
 Cyclops is a unified software development platform designed to address challenges in project management, communication, bug tracking, and version control. Cyclops integrates essential tools like Gantt charts, Kanban boards, dashboards, and issue tracking systems, improving team efficiency and collaboration by 60%. Developed using the MERN stack for a robust and user-friendly experience, Cyclops also offers flexible customization for Agile, Scrum, and Waterfall methodologies.
