@@ -4,7 +4,7 @@
 
 
 # Live Demo: [Click Here](https://cyclopswebapp.netlify.app)
-### link: https://cyclopswebapp.netlify.app
+### Link: https://cyclopswebapp.netlify.app
 ### Figma UI: https://www.figma.com/community/file/1440223540631066521/cyclops-ui
 ### Docs: https://drive.google.com/file/d/1Wm19zDgf0Bd3JOOk2STYP7zjOCY1tM8p
 
